@@ -1,0 +1,15 @@
+import { defineConfig } from "vitest/config";
+const REPO = "/sessions/rcw-013fwov9wuas8a6wt7w9ckaa/mnt/tatilin-yeri-next";
+export default defineConfig({
+  esbuild: { jsx: "automatic" },
+  root: "/sessions/rcw-013fwov9wuas8a6wt7w9ckaa/parity",
+  resolve: { alias: { "@": REPO, "server-only": REPO + "/tests/stubs/server-only.ts" } },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: [REPO + "/tests/setup.ts"],
+    include: ["*.test.tsx"],
+    env: { TZ: "Europe/Istanbul" },
+    testTimeout: 170000,
+  },
+});

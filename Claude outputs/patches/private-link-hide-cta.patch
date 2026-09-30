@@ -1,0 +1,173 @@
+diff --git a/app/components/private-villa/PrivateVillaPageBody.tsx b/app/components/private-villa/PrivateVillaPageBody.tsx
+index 2fcadee..704f9c0 100644
+--- a/app/components/private-villa/PrivateVillaPageBody.tsx
++++ b/app/components/private-villa/PrivateVillaPageBody.tsx
+@@ -779,6 +779,9 @@ export default async function PrivateVillaPageBody({
+                 minimum_stay_nights={villa.minimum_stay_nights ?? null}
+                 initialStart={hasInitialRange ? initialStart : undefined}
+                 initialEnd={hasInitialRange ? initialEnd : undefined}
++                /* 🛡️ Gizli link: pasif villa → rezervasyon akışı yok;
++                   yalnız tarih seçimi + fiyat hesabı (CTA gizli). */
++                hideReservationCta
+               />
+ 
+               {/* TOURISM DOCUMENT TRUST CARD (Faz 24) — aynı semantic */}
+diff --git a/app/components/villa/BookingSidebar.tsx b/app/components/villa/BookingSidebar.tsx
+index c2750c9..5b716b0 100644
+--- a/app/components/villa/BookingSidebar.tsx
++++ b/app/components/villa/BookingSidebar.tsx
+@@ -117,6 +117,12 @@ type Props = {
+   externalBlocks?: ExternalCalendarStringArrays;
+   /* 🛡️ PHASE 10B — opsiyonel, default "tr". */
+   locale?: Locale;
++  /* 🛡️ Gizli villa linki (/v/[token]) — villa pasif/yayında değil;
++     amaç yalnız "göster + tarih seç + fiyat hesapla". true → yalnız
++     "Rezervasyon Yap" butonu render EDİLMEZ (normal rezervasyon sayfası
++     pasif villayı bulamaz). Tarih seçimi, fiyat hesabı ve özet AYNEN.
++     Default false → normal villa sayfaları DEĞİŞMEZ. */
++  hideReservationCta?: boolean;
+ };
+ 
+ /* 🛡️ Aşama 7B — lazy BookingCalendar yükleyici (modül seviyesi, tek
+@@ -165,6 +171,7 @@ export default function BookingSidebar({
+   initialStart = null,
+   initialEnd = null,
+   locale,
++  hideReservationCta = false,
+ }: Props) {
+   const dict = getDictionary(locale);
+   const bcp47 = LOCALE_BCP47[locale ?? "tr"];
+@@ -532,22 +539,24 @@ export default function BookingSidebar({
+       {/* CTA — FAZ 26B: minimum stay invalid → disabled (koşul AYNEN).
+           onClick/disabled/handler DEĞİŞMEDİ; yalnız görünüm yenilendi. */}
+       <div className="space-y-3">
+-        <button
+-          onClick={handleReservation}
+-          disabled={!minimumStayValid || priceUnavailable}
+-          className={`
+-            w-full rounded-full py-4
+-            text-[14px] font-semibold tracking-[0.01em] text-white
+-            transition-all duration-200 motion-reduce:transition-none
+-            ${
+-              !minimumStayValid || priceUnavailable
+-                ? "bg-[var(--color-stone-300)] cursor-not-allowed"
+-                : "bg-gradient-to-r from-[#ED7926] to-[#0973BA] shadow-[0_16px_32px_-12px_rgba(9,115,186,0.45)] hover:shadow-[0_20px_40px_-12px_rgba(9,115,186,0.55)] hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
+-            }
+-          `}
+-        >
+-          {dict.booking.bookNow}
+-        </button>
++        {!hideReservationCta && (
++          <button
++            onClick={handleReservation}
++            disabled={!minimumStayValid || priceUnavailable}
++            className={`
++              w-full rounded-full py-4
++              text-[14px] font-semibold tracking-[0.01em] text-white
++              transition-all duration-200 motion-reduce:transition-none
++              ${
++                !minimumStayValid || priceUnavailable
++                  ? "bg-[var(--color-stone-300)] cursor-not-allowed"
++                  : "bg-gradient-to-r from-[#ED7926] to-[#0973BA] shadow-[0_16px_32px_-12px_rgba(9,115,186,0.45)] hover:shadow-[0_20px_40px_-12px_rgba(9,115,186,0.55)] hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
++              }
++            `}
++          >
++            {dict.booking.bookNow}
++          </button>
++        )}
+ 
+         <p className="text-[11px] text-[var(--color-stone-400)] text-center leading-relaxed">
+           {dict.booking.feeAutoCalculated}
+diff --git a/tests/unit/BookingSidebar.hide-reservation-cta.test.tsx b/tests/unit/BookingSidebar.hide-reservation-cta.test.tsx
+new file mode 100644
+index 0000000..2e40d13
+--- /dev/null
++++ b/tests/unit/BookingSidebar.hide-reservation-cta.test.tsx
+@@ -0,0 +1,87 @@
++/* ===============================================================
++   🛡️ Gizli villa linki (/v/[token]) — "Rezervasyon Yap" CTA'sı gizli
++   ===============================================================
++   Gizli link pasif villayı gösterir; rezervasyon sayfası pasif villayı
++   bulamadığı için CTA gösterilmez. Tarih + fiyat hesabı AYNEN kalır.
++   Normal villa sayfası (prop verilmez) DEĞİŞMEZ.
++   Network yok: fetch + settings action mock'lanır (pool-heating testi
++   ile aynı desen).
++=============================================================== */
++
++import { describe, it, expect, vi, beforeEach } from "vitest";
++import { render, screen, waitFor, cleanup } from "@testing-library/react";
++import { readFileSync } from "node:fs";
++import { join } from "node:path";
++
++vi.mock("@/app/services/settings.action", () => ({
++  getPublicSettingsAction: vi.fn(async () => ({ prepayment_rate: 0 })),
++}));
++
++import BookingSidebar from "@/app/components/villa/BookingSidebar";
++import type { VillaPriceEmbed } from "@/lib/villa-row.types";
++
++const PRICES: VillaPriceEmbed[] = [
++  { price: 4000, currency: "TRY", start_date: "2026-10-01", end_date: "2026-12-31" },
++];
++
++beforeEach(() => {
++  vi.stubGlobal(
++    "fetch",
++    vi.fn(async () => ({
++      ok: true,
++      json: async () => ({ ok: true, ranges: [] }),
++    })) as unknown as typeof fetch
++  );
++});
++
++const PROPS = {
++  villaSlug: "test-villa",
++  villaId: "v1",
++  prices: PRICES,
++  cleaning_fee: 3500,
++  cleaning_currency: "TRY",
++  custom_prepayment_rate: 20,
++  initialStart: "2026-10-05",
++  initialEnd: "2026-10-10",
++};
++
++/* Özet (fiyat) metni — CTA metni hariç. */
++async function renderAndReadSummary(hide?: boolean) {
++  const { container } = render(
++    <BookingSidebar {...PROPS} {...(hide ? { hideReservationCta: true } : {})} />
++  );
++  await waitFor(() => expect(screen.getByText(/Toplam Tutar/)).toBeTruthy());
++  const text = (container.textContent || "").replace("Rezervasyon Yap", "");
++  const cta = screen.queryByRole("button", { name: "Rezervasyon Yap" });
++  cleanup();
++  return { text, cta };
++}
++
++describe("BookingSidebar — hideReservationCta", () => {
++  it("varsayılan (normal villa sayfası): CTA görünür", async () => {
++    const { cta } = await renderAndReadSummary();
++    expect(cta).not.toBeNull();
++  });
++
++  it("gizli link: CTA YOK, fiyat özeti normal sayfayla BİREBİR aynı", async () => {
++    const normal = await renderAndReadSummary();
++    const hidden = await renderAndReadSummary(true);
++    expect(hidden.cta).toBeNull();
++    expect(hidden.text).toContain("Toplam Tutar");
++    expect(hidden.text).toBe(normal.text);
++  });
++});
++
++describe("prop yalnız gizli link gövdesinde", () => {
++  const read = (rel: string) => readFileSync(join(process.cwd(), rel), "utf-8");
++
++  it("PrivateVillaPageBody (TR/EN/DE /v/[token]) CTA'yı gizler", () => {
++    expect(read("app/components/private-villa/PrivateVillaPageBody.tsx")).toMatch(
++      /<BookingSidebar[\s\S]*?hideReservationCta[\s\S]*?\/>/
++    );
++  });
++
++  it("normal villa detay gövdesi prop'u VERMEZ", () => {
++    expect(read("app/components/villa/VillaDetailBody.tsx")).not.toContain("hideReservationCta");
++  });
++});

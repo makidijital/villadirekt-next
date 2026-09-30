@@ -1,0 +1,828 @@
+--- a/README.md
++++ b/README.md
+@@ -29,8 +29,7 @@
+ 
+ You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ 
+-## Deploy on Vercel
++## Deploy
+ 
+-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+-
+-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
++Production: Coolify (self-hosted `next start`). Environment değişkenleri ve
++zamanlanmış görevler için bkz. `docs/coolify-scheduled-tasks.md`.
+--- a/app/api/cron/activity-logs-cleanup/route.ts
++++ b/app/api/cron/activity-logs-cleanup/route.ts
+@@ -6,8 +6,8 @@
+ /* ===============================================================
+    🛡️ CRON — ACTIVITY LOGS RETENTION (thin wrapper)
+    ===============================================================
+-   Vercel cron schedule: her gece (vercel.json crons[]).
+-   Tetikleyici: Vercel cron infrastructure → GET /api/cron/activity-
++   Zamanlama: her gece (Coolify Scheduled Task).
++   Tetikleyici: zamanlanmış görev → GET /api/cron/activity-
+    logs-cleanup (Authorization: Bearer <CRON_SECRET>).
+ 
+    ⚠️ TASARIM PRENSİBİ:
+--- a/app/api/cron/exchange-rates-refresh/route.ts
++++ b/app/api/cron/exchange-rates-refresh/route.ts
+@@ -7,7 +7,7 @@
+ /* ===============================================================
+    🛡️ CRON — EXCHANGE RATES REFRESH (thin wrapper)
+    ===============================================================
+-   Vercel cron schedule: `0 6 * * *` (UTC) → 09:00 TR saati.
++   Zamanlama: `0 6 * * *` (UTC) → 09:00 TR saati (Coolify Scheduled Task).
+    TCMB merkez bankası gün içi 15:30 TR'ye kadar günceller; sabah
+    ilk refresh ile günlük başlangıç kuru DB'de hazır olur.
+ 
+@@ -25,7 +25,7 @@
+ 
+    ⚠️ BEFORE SNAPSHOT diff log YOK:
+      Admin route activity log için before/after diff hesaplıyordu.
+-     Cron için bu gereksiz; refresh sonucu Vercel cron logs +
++     Cron için bu gereksiz; refresh sonucu uygulama log'ları +
+      console.log'da görünür. DB upsert davranışı aynen.
+ =============================================================== */
+ 
+--- a/app/api/cron/external-calendar-sync/route.ts
++++ b/app/api/cron/external-calendar-sync/route.ts
+@@ -7,8 +7,8 @@
+ /* ===============================================================
+    🛡️ CRON — EXTERNAL CALENDAR SYNC (thin wrapper)
+    ===============================================================
+-   Vercel cron schedule: her 4 saatte bir (vercel.json crons[]).
+-   Tetikleyici: Vercel cron infrastructure → GET /api/cron/external-
++   Zamanlama: her 4 saatte bir (Coolify Scheduled Task).
++   Tetikleyici: zamanlanmış görev → GET /api/cron/external-
+    calendar-sync (Authorization: Bearer <CRON_SECRET>).
+ 
+    ⚠️ TASARIM PRENSİBİ:
+@@ -27,7 +27,7 @@
+    ⚠️ ACTIVITY LOG:
+      Admin sync route'undaki `insertAdminActivityLog` cron context'inde
+      YOK (cron operation admin değil; activity log admin operasyonları
+-     içindir). Cron sonucu Vercel cron logs'unda izlenir. Sentry'ye
++     içindir). Cron sonucu uygulama log'larında izlenir. Sentry'ye
+      fail durumunda otomatik akar (instrumentation onRequestError).
+ 
+    ⚠️ KAPSAM:
+@@ -39,7 +39,7 @@
+ export const runtime = "nodejs";
+ export const dynamic = "force-dynamic";
+ 
+-/* GET — Vercel cron varsayılan method.
++/* GET — zamanlanmış görevin çağırdığı method.
+    POST eklemiyoruz; tek entry point yeterli. */
+ export async function GET(req: Request) {
+   const auth = authorizeCronRequest(req);
+@@ -124,9 +124,9 @@
+     `fail=${failCount}`
+   );
+ 
+-  /* HTTP 200 — Vercel cron başarı kabul eder; partial failure
+-     individual source error'larında. Aggregate JSON Vercel cron logs
+-     panel'inde görünür. */
++  /* HTTP 200 — zamanlayıcı başarı kabul eder; partial failure
++     individual source error'larında. Aggregate JSON yanıtta ve
++     uygulama log'larında görünür. */
+   return NextResponse.json({
+     ok: true,
+     total: results.length,
+--- a/app/api/cron/mail-logs-cleanup/route.ts
++++ b/app/api/cron/mail-logs-cleanup/route.ts
+@@ -6,8 +6,8 @@
+ /* ===============================================================
+    🛡️ CRON — MAIL LOGS RETENTION (thin wrapper)
+    ===============================================================
+-   Vercel cron schedule: her gece (vercel.json crons[]).
+-   Tetikleyici: Vercel cron infrastructure → GET /api/cron/mail-logs-
++   Zamanlama: her gece (Coolify Scheduled Task).
++   Tetikleyici: zamanlanmış görev → GET /api/cron/mail-logs-
+    cleanup (Authorization: Bearer <CRON_SECRET>).
+ 
+    ⚠️ TASARIM PRENSİBİ:
+@@ -26,7 +26,7 @@
+    ⚠️ ACTIVITY LOG:
+      Admin cleanup route'undaki `insertAdminActivityLog` cron
+      context'inde YOK (cron operation admin değil; existing cron
+-     wrapper'larıyla aynı disiplin). Cron sonucu Vercel cron logs +
++     wrapper'larıyla aynı disiplin). Cron sonucu uygulama log'ları +
+      console.log üzerinden izlenir; fail → Sentry instrumentation
+      onRequestError üzerinden otomatik akar.
+ =============================================================== */
+--- a/app/api/exchange-rates/route.ts
++++ b/app/api/exchange-rates/route.ts
+@@ -32,7 +32,7 @@
+ 
+    CACHE SEMANTICS:
+      `runtime=nodejs` + `dynamic=force-dynamic` + `Cache-Control:
+-     no-store` → Next/Vercel/CDN cache'lemesin. exchange_rates
++     no-store` → Next/proxy/CDN cache'lemesin. exchange_rates
+      güncellenince public sayfa anında yeni değeri görsün.
+      (Rate-limit zaten request başına çalışıyor; cache olsa idi
+      limit anlamsızlaşırdı.)
+--- a/app/api/health/route.ts
++++ b/app/api/health/route.ts
+@@ -22,9 +22,8 @@
+ 
+    YORUM:
+    - serverStartTime: bu Node process'in başladığı an (module load
+-     zamanı). Vercel serverless'te cold start anı. Self-hosted'da
+-     `next start` çağrı anı. Deploy sonrası bu değerin değişmesi
+-     beklenir → eğer aynı kalıyorsa stale runtime.
++     zamanı); Coolify'da `next start` çağrı anı. Deploy sonrası bu
++     değerin değişmesi beklenir → eğer aynı kalıyorsa stale runtime.
+    - now: current request time. serverStartTime ile farkı uptime
+      verir.
+    - nodeVersion: pin doğrulama (.nvmrc ile uyumlu mu).
+--- a/app/api/mail/payment-confirmed/route.ts
++++ b/app/api/mail/payment-confirmed/route.ts
+@@ -217,9 +217,9 @@
+        müşteri response'unu ve aşağıdaki status update'i ETKİLEMEZ.
+        Ayrı mailType → müşteri mail_logs satırı değişmez.
+        Şablon / diğer route'lar DOKUNULMADI. */
+-    const adminNotifyTo = (
+-      process.env.MAIL_ADMIN_NOTIFY_TO || "rezervasyon@villayagel.com"
+-    ).trim();
++    /* Alıcı YALNIZ env'den; tanımsız/boşsa admin kopyası atlanır
++       (sabit/eski bir adrese fallback YOK). */
++    const adminNotifyTo = (process.env.MAIL_ADMIN_NOTIFY_TO || "").trim();
+     if (adminNotifyTo) {
+       const adminSubject = subject.replace(
+         "Ödemeniz alındı",
+@@ -245,6 +245,8 @@
+           adminErr instanceof Error ? adminErr.message : adminErr
+         );
+       }
++    } else {
++      console.warn("[mail.payment_confirmed.admin] SKIPPED — MAIL_ADMIN_NOTIFY_TO tanımsız");
+     }
+ 
+     // 🔥 STATUS UPDATE — payment_link_status = "paid"
+--- a/app/api/mail/reservation-approved/route.ts
++++ b/app/api/mail/reservation-approved/route.ts
+@@ -208,9 +208,9 @@
+        Müşteri maili (yukarıda) AYNEN gönderildi; bu EK gönderim
+        BEST-EFFORT — müşteri response'unu etkilemez. Ayrı mailType →
+        müşteri mail_logs satırı değişmez. Şablon/diğer route DOKUNULMADI. */
+-    const adminNotifyTo = (
+-      process.env.MAIL_ADMIN_NOTIFY_TO || "rezervasyon@villayagel.com"
+-    ).trim();
++    /* Alıcı YALNIZ env'den; tanımsız/boşsa admin kopyası atlanır
++       (sabit/eski bir adrese fallback YOK). */
++    const adminNotifyTo = (process.env.MAIL_ADMIN_NOTIFY_TO || "").trim();
+     if (adminNotifyTo) {
+       const adminSubject = subject.replace(
+         "Rezervasyonunuz onaylandı",
+@@ -236,6 +236,8 @@
+           adminErr instanceof Error ? adminErr.message : adminErr
+         );
+       }
++    } else {
++      console.warn("[mail.reservation_approved.admin] SKIPPED — MAIL_ADMIN_NOTIFY_TO tanımsız");
+     }
+ 
+     console.log("[mail.reservation_approved] SENT", {
+--- a/app/api/mail/reservation-request/route.ts
++++ b/app/api/mail/reservation-request/route.ts
+@@ -208,11 +208,11 @@
+        AYNEN gönderildi; bu EK gönderim BEST-EFFORT — başarısızlığı
+        müşteri response'unu ETKİLEMEZ. Ayrı `mailType` → müşteri
+        mail_logs satırı değişmez (admin için ayrı satır eklenir).
+-       Adres env'den (default rezervasyon@villayagel.com); boşsa atlanır.
++       Adres yalnız env'den (MAIL_ADMIN_NOTIFY_TO); boşsa atlanır.
+        Şablon / diğer route'lar / müşteri subject DOKUNULMADI. */
+-    const adminNotifyTo = (
+-      process.env.MAIL_ADMIN_NOTIFY_TO || "rezervasyon@villayagel.com"
+-    ).trim();
++    /* Alıcı YALNIZ env'den; tanımsız/boşsa admin kopyası atlanır
++       (sabit/eski bir adrese fallback YOK). */
++    const adminNotifyTo = (process.env.MAIL_ADMIN_NOTIFY_TO || "").trim();
+     if (adminNotifyTo) {
+       const adminSubject = subject.replace(
+         "Rezervasyon talebiniz alındı",
+@@ -238,6 +238,8 @@
+           adminErr instanceof Error ? adminErr.message : adminErr
+         );
+       }
++    } else {
++      console.warn("[mail.reservation_request.admin] SKIPPED — MAIL_ADMIN_NOTIFY_TO tanımsız");
+     }
+ 
+     console.log("[mail.reservation_request] SENT", {
+--- a/app/components/layout/FooterWrapper.tsx
++++ b/app/components/layout/FooterWrapper.tsx
+@@ -178,7 +178,7 @@
+   );
+ 
+   const year = new Date().getFullYear();
+-  const siteName = settings?.site_name || "VillayaGel";
++  const siteName = settings?.site_name || "Villa Kiralama";
+   const phoneDigits = settings?.phone?.replace(/[^\d]/g, "") || "";
+ 
+   return (
+--- a/app/components/search/KiralikVillalarPageBody.tsx
++++ b/app/components/search/KiralikVillalarPageBody.tsx
+@@ -127,7 +127,6 @@
+ 
+ const SITE_URL = (
+   process.env.NEXT_PUBLIC_SITE_URL ||
+-  process.env.NEXT_PUBLIC_VERCEL_URL ||
+   ""
+ ).replace(/\/+$/, "");
+ 
+--- a/app/components/search/kiralik-villalar-metadata.ts
++++ b/app/components/search/kiralik-villalar-metadata.ts
+@@ -61,7 +61,6 @@
+      yoksa relative path. Locale canonical'ı kullanılır. */
+   const siteUrl = (
+     process.env.NEXT_PUBLIC_SITE_URL ||
+-    process.env.NEXT_PUBLIC_VERCEL_URL ||
+     ""
+   ).replace(/\/+$/, "");
+   const pageUrl = siteUrl ? `${siteUrl}${canonical}` : canonical;
+--- a/app/components/seo/StructuredData.tsx
++++ b/app/components/seo/StructuredData.tsx
+@@ -21,7 +21,6 @@
+ 
+ const SITE_URL = (
+   process.env.NEXT_PUBLIC_SITE_URL ||
+-  process.env.NEXT_PUBLIC_VERCEL_URL ||
+   ""
+ ).replace(/\/+$/, "");
+ 
+--- a/app/components/ui/PageHero.tsx
++++ b/app/components/ui/PageHero.tsx
+@@ -4,7 +4,7 @@
+ import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
+ 
+ /* ===============================================================
+-   🛡️ PageHero — "YazVillam Signature" (from-scratch, v2)
++   🛡️ PageHero — "Signature" (from-scratch, v2)
+    ===============================================================
+    Tüm public iç sayfaların ortak üst başlık bandı. Ortalanmış
+    editorial masthead; tipografi odak. Async server component.
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -102,7 +102,7 @@
+   return {
+     /* 🛡️ metadataBase — TÜM relative canonical/OG URL'lerini canonical
+        domain'e çözer (yoksa Next localhost'a düşerdi). Yalnız
+-       NEXT_PUBLIC_SITE_URL'den; preview/VERCEL domain canonical'a sızmaz. */
++       NEXT_PUBLIC_SITE_URL'den (bkz. lib/seo.ts). */
+     metadataBase: siteMetadataBase(),
+     title,
+     description,
+--- a/app/not-found.tsx
++++ b/app/not-found.tsx
+@@ -25,7 +25,7 @@
+ import { getCachedSettings } from "@/lib/cache.helpers";
+ 
+ /* ===============================================================
+-   🛡️ ÖZEL 404 — VillaYaGel (app/not-found.tsx)
++   🛡️ ÖZEL 404 (app/not-found.tsx)
+    ===============================================================
+    Global eşleşmeyen URL'ler için. Root layout içinde render olur
+    (header/footer (public) layout'ta olduğundan burada KENDİMİZ
+--- a/app/robots.ts
++++ b/app/robots.ts
+@@ -40,9 +40,7 @@
+      referans basılmaz) + uyarı loglanır.
+ 
+    ⚠️ ÖN KOŞUL: NEXT_PUBLIC_SITE_URL prod'da `https://<domain>` olarak
+-     SET EDİLMELİ. NEXT_PUBLIC_VERCEL_URL fallback şema-siz/preview-domain
+-     olduğundan production canonical host için GÜVENİLİR DEĞİL (yanlış
+-     domain'e crawl yönlendirme riski) — yalnız son-çare.
++     SET EDİLMELİ (build anında da; robots.txt static üretilir).
+ 
+    FUTURE-PROOF: yeni public route eklenince DEFAULT ALLOW olur (kök açık).
+      Yalnız yeni bir internal/token/duplicate path çıkarsa buraya disallow
+@@ -85,7 +83,6 @@
+ 
+ const SITE_URL = (
+   process.env.NEXT_PUBLIC_SITE_URL ||
+-  process.env.NEXT_PUBLIC_VERCEL_URL ||
+   ""
+ ).replace(/\/+$/, "");
+ 
+--- a/app/sitemap.ts
++++ b/app/sitemap.ts
+@@ -58,9 +58,8 @@
+ 
+    ⚠️ ÖN KOŞUL — ABSOLUTE URL:
+      Sitemap spec absolute URL ister. SITE_URL boşsa URL'ler relative
+-     kalır → geçersiz sitemap. NEXT_PUBLIC_SITE_URL (veya
+-     NEXT_PUBLIC_VERCEL_URL) prod'da SET EDİLMELİ. StructuredData ile
+-     aynı kaynak/öncelik.
++     kalır → geçersiz sitemap. NEXT_PUBLIC_SITE_URL prod'da SET
++     EDİLMELİ. StructuredData ile aynı kaynak.
+ 
+    SCALING:
+      - Tek sitemap.ts → 50.000 URL / 50MB limitine kadar (1000+ villa
+@@ -74,7 +73,6 @@
+ 
+ const SITE_URL = (
+   process.env.NEXT_PUBLIC_SITE_URL ||
+-  process.env.NEXT_PUBLIC_VERCEL_URL ||
+   ""
+ ).replace(/\/+$/, "");
+ 
+--- a/docs/coolify-scheduled-tasks.md
++++ b/docs/coolify-scheduled-tasks.md
+@@ -1,13 +1,11 @@
+ # Coolify Scheduled Tasks — Kurulum Dokümanı
+ 
+-**Bağlam:** Deploy ortamı Hetzner VPS + Coolify. `vercel.json` içindeki `crons[]`
+-**yalnız Vercel platformunda** çalışır → bu ortamda **hiçbiri tetiklenmiyor**.
+-Coolify "Scheduled Tasks" ekranı boş olduğu için 4 mevcut cron şu an otomatik
+-çalışmıyor. Bu doküman, aynı işleri Coolify Scheduled Tasks ile çalıştırmak için
+-eksiksiz kurulumu verir.
++**Bağlam:** Deploy ortamı Hetzner VPS + Coolify. Cron işleri Coolify
++"Scheduled Tasks" ile tetiklenir. Eski Vercel'e özgü `vercel.json` (`crons[]`)
++Coolify tarafından okunmadığı için repodan kaldırıldı; zamanlamaların tek
++kaynağı bu dokümandır.
+ 
+-> Kod/dosya değişikliği YOK. Bu yalnız operasyon dokümanıdır. `vercel.json`
+-> olduğu gibi kalabilir (Vercel'e taşınırsa diye); Coolify onu yok sayar.
++> Bu yalnız operasyon dokümanıdır.
+ 
+ ---
+ 
+@@ -60,7 +58,7 @@
+ 2. Container'da `curl` olmalı. Next.js node image'larında genelde vardır;
+    yoksa komutu `wget` ile değiştir (bkz. her task'ın altındaki not).
+ 3. **Zaman dilimi:** Coolify cron'ları container TZ'sinde (genelde **UTC**)
+-   çalışır. Aşağıdaki saatler `vercel.json`'daki UTC değerleridir. Türkiye
++   çalışır. Aşağıdaki saatler UTC değerleridir. Türkiye
+    saati (UTC+3) istiyorsan saatleri 3 saat geri al (örn. TR 06:00 → UTC `0 3 * * *`).
+ 4. **`DOMAIN`** = sitenin public host'u (`NEXT_PUBLIC_SITE_URL`). Aşağıda
+    `https://DOMAIN` yerine onu yaz. Alternatif: container içinden
+--- a/lib/cron-auth.ts
++++ b/lib/cron-auth.ts
+@@ -1,11 +1,10 @@
+ import "server-only";
+ 
+ /* ===============================================================
+-   🛡️ CRON AUTH GUARD — Vercel cron Bearer secret doğrulama
++   🛡️ CRON AUTH GUARD — zamanlanmış görev Bearer secret doğrulama
+    ===============================================================
+-   Vercel cron her scheduled invocation'da `Authorization: Bearer
+-   <CRON_SECRET>` header'ı otomatik gönderir (env CRON_SECRET set
+-   ise). Bu guard:
++   Zamanlanmış görev (Coolify Scheduled Task) her çağrıda
++   `Authorization: Bearer <CRON_SECRET>` header'ı gönderir. Bu guard:
+      • CRON_SECRET env eksik → 503 (fail-closed; production'da
+        cron'un sessiz çalışıyor görünmesin)
+      • Authorization header yok / yanlış → 401
+--- a/lib/date-format.ts
++++ b/lib/date-format.ts
+@@ -108,7 +108,7 @@
+    🛡️ MANUAL OFFSET (Intl-INDEPENDENT) — NEDEN:
+    Üst üste yapılan denemelerde Intl.DateTimeFormat'in `dateStyle/
+    timeStyle` ve hatta granular options + `timeZone` kombinasyonları
+-   bazı production runtime'larda (Vercel edge, Next.js minified
++   bazı production runtime'larda (edge runtime, Next.js minified
+    bundle, ICU-small) sessizce `timeZone`'u yutuyor → UTC bleed.
+ 
+    Çözüm: hiç Intl'a girmeden manuel matematik. Türkiye 2016'da
+--- a/lib/rate-limit.ts
++++ b/lib/rate-limit.ts
+@@ -28,12 +28,12 @@
+        → Production'da bu env'ler set EDİLMELİ.
+ 
+    IP RESOLUTION (graceful fallback chain):
+-     1) `x-forwarded-for` (Vercel/proxy chain ilk IP)
++     1) `x-forwarded-for` (reverse proxy chain ilk IP)
+      2) `x-real-ip` (bazı reverse proxy'ler)
+      3) `cf-connecting-ip` (Cloudflare)
+      4) → "unknown" (rate-limit yine uygulanır, bucket "unknown"
+         olur — tüm anonim trafik aynı bucket'ı paylaşır;
+-        production'da Vercel `x-forwarded-for` her zaman set
++        production'da reverse proxy (Coolify/Traefik) `x-forwarded-for`'u set
+         edildiği için pratik bir sorun yok)
+ 
+    KEY NAMESPACE:
+@@ -45,8 +45,8 @@
+      - Her grup için Ratelimit instance singleton (modül-level cache)
+      - Sliding window: daha gerçekçi davranış (sabit pencere edge'lerinde
+        burst patlamaz)
+-     - ~3-10ms typical Upstash latency (Europe edge), Vercel function
+-       cold start dışında trivial
++     - ~3-10ms typical Upstash latency (Europe edge); pratikte
++       trivial
+ 
+    GROUP LIMITS:
+      mail              → 5  req/dakika/IP   (spam koruması)
+@@ -186,7 +186,7 @@
+ }
+ 
+ /* ---------------------------------------------------------------
+-   IP resolution — Vercel/proxy chain fallback
++   IP resolution — reverse proxy chain fallback
+    --------------------------------------------------------------- */
+ function resolveClientIp(req: Request): string {
+   const h = req.headers;
+--- a/lib/seo.ts
++++ b/lib/seo.ts
+@@ -7,24 +7,17 @@
+      için TEK source-of-truth sağlar.
+ 
+    İKİ AYRI KAVRAM (bilinçli):
+-     • SITE_URL — genel kullanım (sitemap/robots base). VERCEL_URL
+-       fallback'i dahil (preview deploy'larda da bir base olsun diye).
++     • SITE_URL — genel kullanım (sitemap/robots base). Yalnız
++       NEXT_PUBLIC_SITE_URL; tanımsızsa "" (relative).
+      • siteMetadataBase() — CANONICAL domain. YALNIZ explicit
+-       NEXT_PUBLIC_SITE_URL. Preview/VERCEL domain'i canonical'a ASLA
+-       sızmasın diye fallback YOK. Tanımsızsa undefined → Next default
+-       (prod'da NEXT_PUBLIC_SITE_URL set EDİLMELİ).
+-
+-   ⚠️ Canonical neden VERCEL_URL kullanmamalı:
+-     VERCEL_URL preview/deploy domain'idir (proje-hash.vercel.app) ve
+-     şema-sizdir. Canonical'a girerse arama motoru yanlış domain'i
+-     kanonik sanar (duplicate-domain). Bu yüzden metadataBase yalnız
+-     gerçek canonical domain'den türetilir.
++       NEXT_PUBLIC_SITE_URL; şema yoksa https:// eklenir. Tanımsızsa
++       undefined → Next default (prod'da NEXT_PUBLIC_SITE_URL set
++       EDİLMELİ; build anında da tanımlı olmalı).
+    =============================================================== */
+ 
+-/** Genel site URL — sitemap/robots base. VERCEL_URL fallback dahil. */
++/** Genel site URL — sitemap/robots base (yalnız NEXT_PUBLIC_SITE_URL). */
+ export const SITE_URL = (
+   process.env.NEXT_PUBLIC_SITE_URL ||
+-  process.env.NEXT_PUBLIC_VERCEL_URL ||
+   ""
+ ).replace(/\/+$/, "");
+ 
+--- a/lib/storage/cdn.config.ts
++++ b/lib/storage/cdn.config.ts
+@@ -6,8 +6,8 @@
+    AMAÇ:
+      Read (public URL) tarafı. `getPublicUrl` bucket başına CDN base
+      URL'inden absolute R2 URL üretir:
+-       villa-images → NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES (cdn.villayagel.com)
+-       site-assets  → NEXT_PUBLIC_CDN_BASE_SITE_ASSETS  (assets.villayagel.com)
++       villa-images → NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES
++       site-assets  → NEXT_PUBLIC_CDN_BASE_SITE_ASSETS
+ 
+    ⚠️ KAPSAM — yalnız READ (public URL üretimi):
+      upload / remove bu dosyaya dokunmaz.
+@@ -45,7 +45,7 @@
+ /**
+  * Bucket için CDN base tanımlıysa absolute R2 URL döner; aksi halde null.
+  *   resolveCdnPublicUrl("tatilinyeri-villa-images", "villas/x/y.webp")
+- *     → "https://cdn.villayagel.com/villas/x/y.webp"
++ *     → "<NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES>/villas/x/y.webp"
+  */
+ export function resolveCdnPublicUrl(
+   bucket: string,
+@@ -61,7 +61,7 @@
+ 
+ /**
+  * CDN host → bucket eşlemesi (parseVillaStorageUrl remove yolu için).
+- * Bir CDN URL'inin (cdn./assets.villayagel.com) hangi bucket'a ait
++ * Bir CDN URL'inin (NEXT_PUBLIC_CDN_BASE_* host'ları) hangi bucket'a ait
+  * olduğunu, env'deki CDN base host'larıyla eşleştirerek bulur.
+  * Eşleşme yoksa null.
+  */
+--- a/lib/villa-image.helpers.ts
++++ b/lib/villa-image.helpers.ts
+@@ -321,7 +321,7 @@
+     return { bucket, path: pathWithoutQuery };
+   }
+ 
+-  /* 🛡️ FAZ B — Pattern 1b: CDN host (cdn./assets.villayagel.com).
++  /* 🛡️ FAZ B — Pattern 1b: CDN host (NEXT_PUBLIC_CDN_BASE_* host'ları).
+      CDN path R2'ye eski sağlayıcı path'i ile BİREBİR kopyalandığı için,
+      CDN URL'inin pathname'i hem R2 hem eski sağlayıcı bucket-relative
+      path'ine eşittir → remove (eski sağlayıcı) doğru hedefi bulur. */
+--- a/next.config.ts
++++ b/next.config.ts
+@@ -4,30 +4,36 @@
+    🛡️ NEXT.JS CONFIG — next/image remote patterns
+    ===============================================================
+    Görseller Cloudflare R2'den, CDN host'ları üzerinden servis edilir.
+-   Host'lar env'den türetilir; env yoksa proje default'larına düşer.
++   Host'lar YALNIZ env'den (`NEXT_PUBLIC_CDN_BASE_*`) türetilir. Env
++   yoksa/geçersizse o CDN host'u remotePatterns'a EKLENMEZ (eski/sabit
++   bir domain'e sessizce dönülmez) ve build/start sırasında uyarı
++   yazılır. `lib/storage/cdn.config.ts` ve CSP de aynı kuralı izler.
+    =============================================================== */
+-function hostFromBase(
+-  base: string | undefined,
+-  fallback: string
+-): string {
++function hostFromBase(base: string | undefined, envName: string): string | null {
+   try {
+-    return base ? new URL(base).hostname : fallback;
++    if (base) return new URL(base).hostname || null;
+   } catch {
+-    return fallback;
++    /* geçersiz URL → aşağıda uyarı */
+   }
++  if (process.env.NODE_ENV === "production") {
++    console.warn(
++      `[next.config] ${envName} tanımsız/geçersiz — bu CDN host'u next/image remotePatterns'a eklenmedi.`
++    );
++  }
++  return null;
+ }
+ const villaImagesCdnHost = hostFromBase(
+   process.env.NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES,
+-  "cdn.villayagel.com"
++  "NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES"
+ );
+ const siteAssetsCdnHost = hostFromBase(
+   process.env.NEXT_PUBLIC_CDN_BASE_SITE_ASSETS,
+-  "assets.villayagel.com"
++  "NEXT_PUBLIC_CDN_BASE_SITE_ASSETS"
+ );
+ 
+ const cdnHosts = Array.from(
+   new Set([villaImagesCdnHost, siteAssetsCdnHost])
+-).filter(Boolean);
++).filter((h): h is string => !!h);
+ 
+ /* ⚠️ LEGACY ASSET HOST — GEÇİCİ, VERİ TEMİZLİĞİ BEKLİYOR
+    Veritabanındaki bazı asset alanları (villa_images.image_url,
+--- a/tests/unit/footer-locale.test.tsx
++++ b/tests/unit/footer-locale.test.tsx
+@@ -38,7 +38,7 @@
+   villaTypes: [],
+   corporatePages: [],
+   year: 2026,
+-  siteName: "VillayaGel",
++  siteName: "Tatilin Yeri",
+   phoneDigits: "",
+ };
+ 
+@@ -222,7 +222,7 @@
+     },
+   ],
+   year: 2026,
+-  siteName: "VillayaGel",
++  siteName: "Tatilin Yeri",
+   phoneDigits: "",
+ };
+ 
+--- a/tests/unit/layout-wrappers-cache-usage.test.tsx
++++ b/tests/unit/layout-wrappers-cache-usage.test.tsx
+@@ -233,7 +233,7 @@
+     const el = await FooterWrapper();
+ 
+     expect(el.props.settings).toBeNull();
+-    expect(el.props.siteName).toBe("VillayaGel");
++    expect(el.props.siteName).toBe("Villa Kiralama");
+     /* Diğer fetch'ler etkilenmez — ÖNCEKİ davranış. */
+     expect(el.props.locations[0].name).toBe("REPO-REGION");
+   });
+--- a/tests/unit/sec05-csp-report-only.test.ts
++++ b/tests/unit/sec05-csp-report-only.test.ts
+@@ -126,14 +126,36 @@
+     }
+   });
+ 
+-  it("images.remotePatterns aynen korunur (legacy + CDN)", () => {
++  it("images.remotePatterns: legacy korunur; CDN env yoksa eski/sabit domain'e dönülmez", () => {
+     const pats = nextConfig.images?.remotePatterns ?? [];
+     expect(pats[0]).toEqual({
+       protocol: "https",
+       hostname: "**.supabase.co",
+       pathname: "/storage/v1/object/public/**",
+     });
+-    expect(pats.length).toBeGreaterThanOrEqual(2);
++    /* Test ortamında NEXT_PUBLIC_CDN_BASE_* tanımsız → yalnız legacy. */
++    expect(pats).toHaveLength(1);
++    expect(JSON.stringify(pats)).not.toMatch(/villayagel/i);
++  });
++
++  it("images.remotePatterns: CDN host'ları env'den eklenir", async () => {
++    vi.resetModules();
++    vi.stubEnv("NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES", "https://cdn.env-test.example");
++    vi.stubEnv("NEXT_PUBLIC_CDN_BASE_SITE_ASSETS", "https://assets.env-test.example/");
++    try {
++      const cfg = (await import("@/next.config")).default;
++      const hosts = (cfg.images?.remotePatterns ?? []).map((p) =>
++        typeof p === "object" && "hostname" in p ? p.hostname : ""
++      );
++      expect(hosts).toEqual([
++        "**.supabase.co",
++        "cdn.env-test.example",
++        "assets.env-test.example",
++      ]);
++    } finally {
++      vi.unstubAllEnvs();
++      vi.resetModules();
++    }
+   });
+ });
+ 
+--- a/tests/unit/sec05-jsonld-escape.test.tsx
++++ b/tests/unit/sec05-jsonld-escape.test.tsx
+@@ -43,7 +43,7 @@
+     const data = {
+       "@context": "https://schema.org",
+       "@type": "Organization",
+-      name: "VillaYaGel",
++      name: "Tatilin Yeri",
+       url: "https://example.test/",
+       sameAs: ["https://instagram.com/x"],
+       text: "Çok güzel & şık > villa",
+--- a/tests/unit/settings-public-payload.test.ts
++++ b/tests/unit/settings-public-payload.test.ts
+@@ -60,7 +60,7 @@
+   it("1) multilingual KAPALI → çeviri sorgusu HİÇ atılmaz, AYNI referans döner", async () => {
+     const rpcObject = {
+       id: "settings-1",
+-      site_name: "VillayaGel",
++      site_name: "Tatilin Yeri",
+       multilingual_enabled: false,
+       footer_copyright: "© {year} {site_name} · Tüm hakları saklıdır",
+     };
+@@ -74,7 +74,7 @@
+   });
+ 
+   it("2) multilingual alanı HİÇ YOKSA (null/undefined) → yine sorgu atılmaz", async () => {
+-    const rpcObject = { id: "settings-1", site_name: "VillayaGel" };
++    const rpcObject = { id: "settings-1", site_name: "Tatilin Yeri" };
+     findPublicViaRpcMock.mockResolvedValue({ data: rpcObject, error: null });
+ 
+     const result = await getPublicSettings();
+--- a/tests/unit/settings-translation-fallback.test.tsx
++++ b/tests/unit/settings-translation-fallback.test.tsx
+@@ -191,7 +191,7 @@
+   villaTypes: [],
+   corporatePages: [],
+   year: 2026,
+-  siteName: "VillayaGel",
++  siteName: "Tatilin Yeri",
+   phoneDigits: "",
+ };
+ 
+@@ -207,7 +207,7 @@
+       />
+     );
+     expect(
+-      screen.getByText("© 2026 VillayaGel · Tüm hakları saklıdır.")
++      screen.getByText("© 2026 Tatilin Yeri · Tüm hakları saklıdır.")
+     ).toBeInTheDocument();
+   });
+ 
+@@ -220,10 +220,10 @@
+       />
+     );
+     expect(
+-      screen.getByText("© 2026 VillayaGel · All rights reserved.")
++      screen.getByText("© 2026 Tatilin Yeri · All rights reserved.")
+     ).toBeInTheDocument();
+     expect(
+-      screen.queryByText("© 2026 VillayaGel · Tüm hakları saklıdır.")
++      screen.queryByText("© 2026 Tatilin Yeri · Tüm hakları saklıdır.")
+     ).not.toBeInTheDocument();
+   });
+ 
+@@ -236,7 +236,7 @@
+       />
+     );
+     expect(
+-      screen.getByText("© 2026 VillayaGel · Alle Rechte vorbehalten.")
++      screen.getByText("© 2026 Tatilin Yeri · Alle Rechte vorbehalten.")
+     ).toBeInTheDocument();
+   });
+ 
+@@ -249,7 +249,7 @@
+       />
+     );
+     expect(
+-      screen.getByText("© 2026 VillayaGel · Tüm hakları saklıdır.")
++      screen.getByText("© 2026 Tatilin Yeri · Tüm hakları saklıdır.")
+     ).toBeInTheDocument();
+   });
+ 
+@@ -257,7 +257,7 @@
+     usePathnameMock.mockReturnValue("/");
+     render(<Footer {...FOOTER_BASE} settings={{ footer_copyright: "" }} />);
+     expect(
+-      screen.getByText("© 2026 VillayaGel · Tüm hakları saklıdır")
++      screen.getByText("© 2026 Tatilin Yeri · Tüm hakları saklıdır")
+     ).toBeInTheDocument();
+   });
+ 
+@@ -265,7 +265,7 @@
+     usePathnameMock.mockReturnValue("/");
+     render(<Footer {...FOOTER_BASE} settings={null} />);
+     expect(
+-      screen.getByText("© 2026 VillayaGel · Tüm hakları saklıdır")
++      screen.getByText("© 2026 Tatilin Yeri · Tüm hakları saklıdır")
+     ).toBeInTheDocument();
+   });
+ 
+@@ -278,7 +278,7 @@
+       />
+     );
+     expect(
+-      screen.getByText("© 2026 VillayaGel · All rights reserved.")
++      screen.getByText("© 2026 Tatilin Yeri · All rights reserved.")
+     ).toBeInTheDocument();
+   });
+ });
+--- a/tests/unit/villa-type-name-locale.test.tsx
++++ b/tests/unit/villa-type-name-locale.test.tsx
+@@ -208,7 +208,7 @@
+   locations: [],
+   corporatePages: [],
+   year: 2026,
+-  siteName: "VillayaGel",
++  siteName: "Tatilin Yeri",
+   phoneDigits: "",
+ };
+ 
+--- /dev/null
++++ b/tests/unit/legacy-brand-cleanup.test.ts
+@@ -0,0 +1,60 @@
++/* ===============================================================
++   🧹 ESKİ DOMAIN / MARKA / HOSTING KALINTISI KİLİDİ
++   ===============================================================
++   - Admin bildirim alıcısı YALNIZ env'den (eski adrese fallback YOK).
++   - CDN host'ları YALNIZ env'den (eski CDN'e fallback YOK).
++   - Site URL YALNIZ NEXT_PUBLIC_SITE_URL (Vercel fallback YOK).
++   - Footer marka fallback'i nötr.
++   =============================================================== */
++import { describe, it, expect } from "vitest";
++import fs from "node:fs";
++import path from "node:path";
++
++const root = process.cwd();
++const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
++/* Yorumları at → yalnız çalışan kod kontrol edilir. */
++const code = (p: string) =>
++  read(p)
++    .replace(/\/\*[\s\S]*?\*\//g, "")
++    .replace(/^\s*\/\/.*$/gm, "");
++
++const MAIL_ROUTES = [
++  "app/api/mail/reservation-request/route.ts",
++  "app/api/mail/reservation-approved/route.ts",
++  "app/api/mail/payment-confirmed/route.ts",
++];
++
++describe("eski domain/marka kalıntısı yok", () => {
++  it("admin bildirim alıcısı yalnız MAIL_ADMIN_NOTIFY_TO; boşsa atlanır", () => {
++    for (const p of MAIL_ROUTES) {
++      const c = code(p);
++      expect(c).not.toMatch(/villayagel/i);
++      expect(c).toContain('(process.env.MAIL_ADMIN_NOTIFY_TO || "").trim()');
++      expect(c).toContain("if (adminNotifyTo) {");
++    }
++  });
++
++  it("next.config.ts eski CDN domain'ine fallback içermez", () => {
++    expect(read("next.config.ts")).not.toMatch(/villayagel/i);
++  });
++
++  it("site URL üretiminde NEXT_PUBLIC_VERCEL_URL kullanılmaz", () => {
++    for (const p of [
++      "lib/seo.ts",
++      "app/components/seo/StructuredData.tsx",
++      "app/robots.ts",
++      "app/sitemap.ts",
++      "app/components/search/KiralikVillalarPageBody.tsx",
++      "app/components/search/kiralik-villalar-metadata.ts",
++    ]) {
++      expect(read(p)).not.toContain("NEXT_PUBLIC_VERCEL_URL");
++      expect(code(p)).toContain("process.env.NEXT_PUBLIC_SITE_URL");
++    }
++  });
++
++  it("footer marka fallback'i nötr (site_name varsa o kullanılır)", () => {
++    const c = code("app/components/layout/FooterWrapper.tsx");
++    expect(c).toContain('settings?.site_name || "Villa Kiralama"');
++    expect(c).not.toMatch(/villa ?ya ?gel/i);
++  });
++});
+--- a/vercel.json
++++ /dev/null
+@@ -1,21 +0,0 @@
+-{
+-  "$schema": "https://openapi.vercel.sh/vercel.json",
+-  "crons": [
+-    {
+-      "path": "/api/cron/external-calendar-sync",
+-      "schedule": "0 */4 * * *"
+-    },
+-    {
+-      "path": "/api/cron/exchange-rates-refresh",
+-      "schedule": "0 6 * * *"
+-    },
+-    {
+-      "path": "/api/cron/mail-logs-cleanup",
+-      "schedule": "0 3 * * *"
+-    },
+-    {
+-      "path": "/api/cron/activity-logs-cleanup",
+-      "schedule": "30 3 * * *"
+-    }
+-  ]
+-}

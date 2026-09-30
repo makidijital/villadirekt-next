@@ -1,0 +1,2507 @@
+diff --git a/app/api/public/reservations/route.ts b/app/api/public/reservations/route.ts
+index 21d08e6..045cc26 100644
+--- a/app/api/public/reservations/route.ts
++++ b/app/api/public/reservations/route.ts
+@@ -4,6 +4,7 @@ import { createReservation } from "@/app/services/reservation.service";
+ import { reservationServerRepository } from "@/lib/db/reservation.repository.server";
+ import { verifyPublicReservationPrice } from "@/app/services/reservation/_helpers/price-verify";
+ import { verifyPublicReservationStayRules } from "@/app/services/reservation/_helpers/stay-verify";
++import { validatePublicReservationDates } from "@/app/services/reservation/_helpers/date-verify";
+ import { applyRateLimit } from "@/lib/rate-limit";
+ /* 🛡️ Uluslararası telefon — TR-only regex KALDIRILDI. Yeni kütüphane YOK. */
+ import {
+@@ -87,6 +88,32 @@ export async function POST(req: Request): Promise<Response> {
+     body.phone2 = p2;
+   }
+ 
++  /* 🛡️ SEC-06 F1 — SIKI TARİH DOĞRULAMASI (fiyat hesabından ÖNCE).
++     Yalnız "YYYY-MM-DD" + gerçek takvim günü + en az 1 gece; tamamı
++     geçmişte kalan konaklama reddedilir. Otomatik parse YOK. Mevcut
++     datepicker/link akışları zaten bu biçimi üretir → etkilenmez.
++     Hata zarfı ({ ok:false, error }, 400) mevcut catch ile AYNI. */
++  {
++    const dateError = validatePublicReservationDates(
++      body?.start_date,
++      body?.end_date
++    );
++    if (dateError) {
++      console.error("[api.public.reservations] create FAILED:", dateError);
++      return NextResponse.json(
++        { ok: false, error: dateError },
++        { status: 400 }
++      );
++    }
++  }
++
++  /* 🛡️ SEC-06 F2 — `paid_amount` ASLA client'tan alınmaz. Public
++     rezervasyon her zaman ödenmemiş (pending) başlar; tahsilat admin
++     tarafından sonradan işlenir. Client zaten 0 gönderiyor
++     (buildPublicReservationPayload) ve payload builder'ın alan yokken
++     yazdığı değer de 0 → meşru akış için sonuç BİREBİR aynı. */
++  body.paid_amount = 0;
++
+   /* 🛡️ SERVER-SIDE PRICE VERIFY + FAZ 3 SERVER-AUTHORITATIVE OVERRIDE.
+      Client'ın gönderdiği finansal alanları (total_price / total_price_try /
+      original_price / original_currency / exchange_rate / original_cleaning_fee /
+@@ -99,8 +126,8 @@ export async function POST(req: Request): Promise<Response> {
+      ilgili finansal alanları server-authoritative değerlerle OVERRIDE
+      edilir — pool heating'in ZATEN VAR OLAN 4-kolon override desenini
+      BİREBİR TEKRARLAR, yalnız kapsam finansal alanlara genişletildi.
+-     Recompute başarısızsa (fail-open) `body` DEĞİŞTİRİLMEZ — mevcut
+-     fail-open felsefe (pool heating precedent'i) KORUNUR.
++     🛡️ SEC-06 F5: Recompute başarısızsa artık FAIL-CLOSED — aşağıdaki
++     try bloğunda rezervasyon reddedilir (client tutarlarına düşülmez).
+ 
+      🛡️ HAVUZ ISITMA — 6. adım: EXPLICIT ENFORCEMENT (kullanıcı kuralı —
+      bu 4 kolon ASLA client'tan güvenilmez). `verification.poolHeating`
+@@ -108,9 +135,8 @@ export async function POST(req: Request): Promise<Response> {
+      snapshot alanı server-authoritative değerlerle OVERRIDE edilir —
+      `createReservation`'a ve dolayısıyla `create.service.ts`'e (DOKUNULMADI,
+      admin path ile paylaşılıyor) bu adımdan SONRA, zaten düzeltilmiş
+-     `body` geçer. Recompute başarısızsa (fail-open) `body` DEĞİŞTİRİLMEZ —
+-     client'ın gönderdiği (zaten ReservationForm'da doğru hesaplanan)
+-     değerler aynen kullanılır. */
++     `body` geçer. Recompute başarısızsa (SEC-06 F5) rezervasyon
++     aşağıda reddedilir. */
+   const verification = await verifyPublicReservationPrice(body);
+   if (verification.poolHeating) {
+     body.pool_heating_selected = verification.poolHeating.pool_heating_selected;
+@@ -140,8 +166,7 @@ export async function POST(req: Request): Promise<Response> {
+      için server recompute başarılıysa yine de false/null'a sabitlenir
+      (defense-in-depth; fiyat hesabını ETKİLEMEZ, yalnız admin-only bir
+      flag'in public path'ten sızmasını engeller).
+-     Recompute başarısızsa (fail-open, pool heating İLE AYNI davranış)
+-     `body` DEĞİŞTİRİLMEZ — mevcut çalışan akış BOZULMAZ. */
++     Recompute başarısızsa (SEC-06 F5) rezervasyon aşağıda reddedilir. */
+   if (verification.authoritative) {
+     body.total_price = verification.authoritative.total_price;
+     body.total_price_try = verification.authoritative.total_price_try;
+@@ -169,6 +194,9 @@ export async function POST(req: Request): Promise<Response> {
+       verification.authoritative.original_stay_total_try;
+     body.stay_discount_amount_try =
+       verification.authoritative.stay_discount_amount_try;
++    /* 🛡️ SEC-06 F4 — hasar depozitosu villanın kendi kaydından
++       (client formülüyle aynı: Number(villa.deposit) || 0). */
++    body.damage_deposit = verification.authoritative.damage_deposit;
+   }
+ 
+   try {
+@@ -180,15 +208,26 @@ export async function POST(req: Request): Promise<Response> {
+        yazılıyordu). Burada throw edilir → aşağıdaki catch 400 döner;
+        mevcut hata zarfı ({ ok:false, error }) AYNEN kullanılır.
+ 
+-       ⚠️ Bu, fail-open dalından AYRIDIR: recompute'un kendisi patlarsa
+-       (`priceUnavailable === false`, `authoritative === null`) mevcut
+-       fail-open davranışı DEĞİŞMEDEN korunur. */
+-    if (verification.priceUnavailable) {
++       ⚠️ Recompute'un kendisi patlarsa (`recomputeFailed`) aşağıdaki
++       SEC-06 F5 kapısı reddeder. */
++    /* 🛡️ SEC-06 F3 — hesapta kullanılan dövizin geçerli kuru yoksa
++       (eskiden sessiz 1:1) aynı mesajla reddedilir. */
++    if (verification.priceUnavailable || verification.rateUnavailable) {
+       throw new Error(
+         "Seçilen tarihler için fiyat hesaplanamadı"
+       );
+     }
+ 
++    /* 🛡️ SEC-06 F5 — FAIL-CLOSED. Sunucu fiyatı güvenilir şekilde
++       hesaplayamadıysa (villa ayarı/settings okunamadı, beklenmeyen
++       hata) rezervasyon OLUŞTURULMAZ; client tutarlarına ASLA
++       düşülmez. Başarılı hesapta `authoritative` daima doludur. */
++    if (verification.recomputeFailed || !verification.authoritative) {
++      throw new Error(
++        "Fiyat şu anda doğrulanamadı. Lütfen biraz sonra tekrar deneyin."
++      );
++    }
++
+     /* 🛡️ ORPHAN-GAP GATE — frontend bypass edilirse min-stay'den kısa
+        kullanılamaz boşluk bırakan rezervasyon backend'de de reddedilir.
+        Ayar kapalı/okunamaz veya veri toplanamazsa BLOKLAMAZ (fail-open);
+diff --git a/app/services/reservation/_helpers/date-verify.ts b/app/services/reservation/_helpers/date-verify.ts
+new file mode 100644
+index 0000000..32cbb2e
+--- /dev/null
++++ b/app/services/reservation/_helpers/date-verify.ts
+@@ -0,0 +1,86 @@
++import { calculateNights } from "@/lib/price.engine";
++import { formatLocalDate, parseLocalDate } from "@/lib/date-format";
++
++/* ===============================================================
++   🛡️ SEC-06 — PUBLIC REZERVASYON TARİH DOĞRULAMASI (SAF / PURE)
++   ===============================================================
++   Yalnız `POST /api/public/reservations` kullanır (admin akışı ve
++   `createReservation` DEĞİŞMEDİ).
++
++   NEDEN: Fiyat motoru (`parseLocalDate`) yalnız "YYYY-MM-DD" anlar;
++   "2027/09/27", "20270918", "2027-09-23 00:00" gibi değerler motorda
++   Invalid Date → 0 gece → 0 TL üretirken Postgres aynı değeri geçerli
++   bir tarih olarak kaydediyordu (F1). Motor DEĞİŞTİRİLMEDİ; bunun
++   yerine tarih, motora girmeden ÖNCE sıkı biçimde doğrulanır.
++
++   KURALLAR:
++     - Tarih yoksa → "Tarih zorunlu" (createReservation ile AYNI mesaj).
++     - Tam olarak "YYYY-MM-DD" ve gerçek bir takvim günü olmalı
++       (2027-02-30 gibi taşan günler RED). Otomatik parse/normalize
++       YAPILMAZ; boşluk, saat, "T", "/" vb. hepsi reddedilir.
++     - En az 1 gece (çıkış > giriş) → aksi halde "Tarih aralığı hatalı"
++       (createReservation ile AYNI mesaj).
++     - Konaklamanın TAMAMI geçmişteyse (çıkış günü, UTC bugünden 1 gün
++       tolerans ile daha önceyse) RED. Mevcut public akışların hiçbiri
++       böyle bir aralık üretmez (takvim geçmişi kapatır; indirim ve kısa
++       boşluk listeleri yalnız bitişi bugün/ileride olan kayıtları
++       gösterir). Giriş günü geçmişte olan ama çıkışı gelecekte olan
++       aralıklara BİLEREK dokunulmaz (devam eden indirim CTA'sı böyle
++       link üretebiliyor — raporda ayrıca işaretlendi).
++   =============================================================== */
++
++export const RESERVATION_DATE_ERRORS = {
++  required: "Tarih zorunlu",
++  invalidFormat: "Geçersiz tarih formatı. Tarihler YYYY-AA-GG biçiminde olmalı",
++  invalidRange: "Tarih aralığı hatalı",
++  past: "Geçmiş tarihler için rezervasyon yapılamaz",
++} as const;
++
++const STRICT_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
++
++/** Tam olarak "YYYY-MM-DD" ve takvimde var olan bir gün mü? */
++export function isStrictIsoDate(value: unknown): value is string {
++  if (typeof value !== "string" || !STRICT_DATE_RE.test(value)) return false;
++  const d = parseLocalDate(value);
++  if (Number.isNaN(d.getTime())) return false;
++  // Round-trip: "2027-02-30" → 2 Mart'a taşar → eşleşmez → RED.
++  return formatLocalDate(d) === value;
++}
++
++/** UTC takvim gününden `days` gün önceki "YYYY-MM-DD". */
++function utcDayKey(now: Date, days: number): string {
++  const t = Date.UTC(
++    now.getUTCFullYear(),
++    now.getUTCMonth(),
++    now.getUTCDate() - days
++  );
++  return new Date(t).toISOString().slice(0, 10);
++}
++
++/**
++ * Public rezervasyon tarihlerini doğrular.
++ * @returns hata mesajı (reddet) veya null (geçerli).
++ */
++export function validatePublicReservationDates(
++  start: unknown,
++  end: unknown,
++  now: Date = new Date()
++): string | null {
++  if (!start || !end) return RESERVATION_DATE_ERRORS.required;
++
++  if (!isStrictIsoDate(start) || !isStrictIsoDate(end)) {
++    return RESERVATION_DATE_ERRORS.invalidFormat;
++  }
++
++  const nights = calculateNights(start, end);
++  if (!Number.isFinite(nights) || nights < 1) {
++    return RESERVATION_DATE_ERRORS.invalidRange;
++  }
++
++  // "YYYY-MM-DD" karşılaştırması sözlük sırasıyla güvenli.
++  if (end < utcDayKey(now, 1)) {
++    return RESERVATION_DATE_ERRORS.past;
++  }
++
++  return null;
++}
+diff --git a/app/services/reservation/_helpers/price-verify.ts b/app/services/reservation/_helpers/price-verify.ts
+index 7336354..2a085ce 100644
+--- a/app/services/reservation/_helpers/price-verify.ts
++++ b/app/services/reservation/_helpers/price-verify.ts
+@@ -9,7 +9,14 @@ import {
+   /* 🛡️ İndirim snapshot'ı artık price.engine'de (public+admin ORTAK). */
+   detectAppliedDiscountForStay,
+   buildStayDiscountSnapshot,
++  /* 🛡️ SEC-06 F3 — yalnız "hangi para birimleri gerçekten kullanıldı"
++     tespiti için (hesaplama DEĞİL; motorun kendi eşleştirme kuralları). */
++  getDailyPrice,
++  getActiveDiscount,
++  type DiscountRange,
+ } from "@/lib/price.engine";
++import { parseLocalDate } from "@/lib/date-format";
++import type { PriceRange } from "@/lib/villa-row.types";
+ import { normalizePriceRanges } from "@/lib/villa-row.types";
+ import { getVillaPrices } from "@/app/services/villa-price.service";
+ import { getExchangeRatesMap } from "@/app/services/exchange-rate.service";
+@@ -68,10 +75,11 @@ import { getVillaDiscounts } from "@/app/services/villa-discount.service";
+        bilgisine erişip DOĞRU final fiyatı hesaplayabilmesi bu fazın
+        kapsamı (kalıcı snapshot persistansı SONRAKİ bir faz).
+ 
+-   FAIL-OPEN (DEĞİŞMEDİ): herhangi bir fetch/parse hatası → null döner;
+-   route loglar ve booking'i ASLA bloklamaz — bu durumda `authoritative`
+-   de `poolHeating` gibi null döner, route body'yi DEĞİŞTİRMEDEN bırakır
+-   (mevcut fail-open felsefe — pool heating precedent'iyle BİREBİR aynı).
++   🛡️ SEC-06 — FAIL-CLOSED (eskiden fail-open): recompute tamamlanamazsa
++   (villa ayarı/settings okunamadı, hata) `recomputeFailed`, hesapta
++   kullanılan bir dövizin kuru yoksa `rateUnavailable` döner; her iki
++   durumda `authoritative`/`poolHeating` null'dır ve route rezervasyonu
++   OLUŞTURMAZ. Başarılı hesapların sonuçları DEĞİŞMEDİ.
+ 
+    server-only: client bundle'a sızmaz.
+    =============================================================== */
+@@ -120,8 +128,68 @@ export type ServerPriceResult = {
+   discountCurrency: string | null;
+   originalStayTotalTry: number | null;
+   stayDiscountAmountTry: number | null;
++  /* 🛡️ SEC-06 F4 — hasar depozitosu villanın KENDİ kaydından
++     (`villa.deposit`, TRY). Client formülüyle BİREBİR:
++     `Number(villa.deposit) || 0` (buildPublicReservationPayload). */
++  damageDeposit: number;
++  /* 🛡️ SEC-06 F3 — hesapta GERÇEKTEN kullanılan ama geçerli kuru
++     (finite, > 0) bulunmayan para birimleri. Boş değilse `convertPrice`
++     bu dövizleri sessizce 1:1 çevirmiştir → sonuç GEÇERSİZ sayılır. */
++  missingRates: string[];
+ };
+ 
++/* 🛡️ SEC-06 F3 — HESAPTA KULLANILAN DÖVİZLER İÇİN KUR KONTROLÜ
++   ===============================================================
++   `convertPrice` → `resolveRate` geçersiz/eksik kurda sessizce 1'e
++   düşer (lib/currency.ts). Bu fallback DEĞİŞTİRİLMEDİ (UI'ler de
++   kullanıyor); bunun yerine sunucu, hesabın gerçekten dokunduğu
++   dövizlerin kurunu doğrular:
++     - Her gece için eşleşen villa_prices satırının para birimi
++       (`getDailyPrice` — motorun kendi "ilk eşleşen" kuralı),
++     - O gece aktif "fixed" özel fiyatın para birimi, gecenin para
++       biriminden farklıysa (`getActiveDiscount` — motorun kuralı),
++     - Tahsil edilen temizlik ücreti (> 0) para birimi,
++     - Tahsil edilen havuz ısıtma ücreti (> 0) para birimi.
++   TRY kur gerektirmez. Kur geçerliliği `resolveRate` ile AYNI ölçüt
++   (finite ve > 0). Hesaplanan TUTARLARA dokunulmaz. */
++function findMissingRates(input: {
++  start: string;
++  end: string;
++  prices: PriceRange[];
++  discounts: DiscountRange[] | null | undefined;
++  rates: Record<string, number>;
++  extraCharges: Array<{ amount: number; currency: string | null | undefined }>;
++}): string[] {
++  const used = new Set<string>();
++
++  const current = parseLocalDate(input.start);
++  const endD = parseLocalDate(input.end);
++  while (current < endD) {
++    const daily = getDailyPrice(current, input.prices, "TRY", input.rates);
++    if (daily.original > 0) {
++      used.add(daily.original_currency);
++      const disc = getActiveDiscount(current, input.discounts);
++      if (disc && disc.discount_type !== "percent") {
++        const discCurrency = disc.currency || daily.original_currency;
++        if (discCurrency !== daily.original_currency) used.add(discCurrency);
++      }
++    }
++    current.setDate(current.getDate() + 1);
++  }
++
++  for (const c of input.extraCharges) {
++    if ((Number(c.amount) || 0) > 0) used.add(c.currency || "TRY");
++  }
++
++  const missing: string[] = [];
++  for (const code of used) {
++    if (code === "TRY") continue;
++    const rate = Number(input.rates?.[code]);
++    if (!(Number.isFinite(rate) && rate > 0)) missing.push(code);
++  }
++  return missing.sort();
++}
++
+ /* 🛡️ FAZ 4 — bir rezervasyon tarih aralığındaki GECELERDEN en az biri
+    için villa_discounts'ta aktif bir kayıt var mı, varsa HANGİSİ?
+    ===============================================================
+@@ -174,8 +242,21 @@ export async function recomputePublicReservationPrice(input: {
+     getVillaDiscounts(villa_id),
+   ]);
+ 
++  /* 🛡️ SEC-06 F5 — villa ayarları okunamazsa veya villa yoksa hesap
++     GÜVENİLİR DEĞİLDİR (eskiden temizlik/havuz/ön ödeme oranı sessizce
++     0/varsayılana düşüyordu). Throw → verifyPublicReservationPrice
++     `recomputeFailed` döner → route rezervasyonu OLUŞTURMAZ. Başarılı
++     okumada villaRow AYNEN eskisi gibi kullanılır. */
++  if (villaRes?.error) {
++    throw new Error(
++      `villa config okunamadı: ${villaRes.error.message ?? "unknown"}`
++    );
++  }
+   const villaRow =
+-    (villaRes.data as Record<string, unknown> | null) || null;
++    (villaRes?.data as Record<string, unknown> | null) || null;
++  if (!villaRow) {
++    throw new Error("villa config bulunamadı");
++  }
+ 
+   /* Engine `rates: Record<string, number>` bekler; getExchangeRatesMap
+      `Partial<Record<"USD"|"EUR"|"GBP", number>>` döner — yapı uyumlu. */
+@@ -216,8 +297,17 @@ export async function recomputePublicReservationPrice(input: {
+      custom_prepayment_rate (null/undefined/"" değilse) → onu kullan,
+      yoksa settings.prepayment_rate (truthy ise), yoksa 20. */
+   const override = villaRow?.custom_prepayment_rate;
++  const hasVillaOverride =
++    override !== null && override !== undefined && override !== "";
++  /* 🛡️ SEC-06 F5 — oran settings'ten gelecekse ve settings OKUNAMADIYSA
++     (getPublicSettings hata → null) sessiz 20 varsayılanı KULLANILMAZ;
++     hesap güvenilir değildir. Okunan settings'te prepayment_rate boş
++     ise mevcut 20 varsayılanı AYNEN geçerli (değişmedi). */
++  if (!hasVillaOverride && !settings) {
++    throw new Error("settings okunamadı (ön ödeme oranı belirsiz)");
++  }
+   let prepaymentRate = 20;
+-  if (override !== null && override !== undefined && override !== "") {
++  if (hasVillaOverride) {
+     prepaymentRate = Number(override);
+   } else if (settings?.prepayment_rate) {
+     prepaymentRate = Number(settings.prepayment_rate);
+@@ -347,7 +437,32 @@ export async function recomputePublicReservationPrice(input: {
+   const discountValue = discountSnapshot.discount_value;
+   const discountCurrency = discountSnapshot.discount_currency;
+ 
++  /* 🛡️ SEC-06 F3 — yalnız TESPİT; yukarıdaki hiçbir tutar değişmez.
++     Eksik gece varsa (priceAvailable=false) zaten reddedilir → atlanır. */
++  const missingRates = snapshot.priceAvailable
++    ? findMissingRates({
++        start: start_date,
++        end: end_date,
++        prices: normalizedPrices,
++        discounts,
++        rates,
++        extraCharges: [
++          {
++            amount: snapshot.original_cleaning,
++            currency: snapshot.original_cleaning_currency,
++          },
++          {
++            amount: poolHeatingSnapshot.original_pool_heating_total,
++            currency: poolHeatingSnapshot.original_pool_heating_currency,
++          },
++        ],
++      })
++    : [];
++
+   return {
++    // 🛡️ SEC-06 F3 / F4
++    missingRates,
++    damageDeposit: Number(villaRow?.deposit) || 0,
+     /* 🛡️ Motorun kapsama kararı AYNEN taşınır (yeni hesap YOK). */
+     priceAvailable: snapshot.priceAvailable,
+     totalPriceTry,
+@@ -474,6 +589,8 @@ export type PublicReservationAuthoritativeSnapshot = {
+   discount_currency: string | null;
+   original_stay_total_try: number | null;
+   stay_discount_amount_try: number | null;
++  // 🛡️ SEC-06 F4 — villa.deposit snapshot (client değeri YOK SAYILIR).
++  damage_deposit: number;
+ };
+ 
+ export type PublicReservationServerVerification = {
+@@ -493,6 +610,14 @@ export type PublicReservationServerVerification = {
+      "client'a güven" durumu DEĞİLDİR: route bu bayrağı görünce
+      rezervasyonu REDDEDER. Tam kapsanan hesaplarda DAİMA false. */
+   priceUnavailable: boolean;
++  /* 🛡️ SEC-06 F3 — hesapta kullanılan bir dövizin geçerli kuru yok
++     (eskiden sessizce 1:1 çevriliyordu). Route REDDEDER. */
++  rateUnavailable: boolean;
++  /* 🛡️ SEC-06 F5 — recompute tamamlanamadı (villa ayarı/settings
++     okunamadı, beklenmeyen hata). Eskiden fail-open idi (client
++     tutarları kaydediliyordu); artık route rezervasyonu OLUŞTURMAZ.
++     `authoritative`/`poolHeating`/`comparison` yine null döner. */
++  recomputeFailed: boolean;
+ };
+ 
+ /* ---------------------------------------------------------------
+@@ -529,15 +654,37 @@ export async function verifyPublicReservationPrice(
+         poolHeating: null,
+         authoritative: null,
+         priceUnavailable: true,
++        rateUnavailable: false,
++        recomputeFailed: false,
+       };
+     }
++    /* 🛡️ SEC-06 F5 — girdi eksik → recompute yapılamadı; route
++       rezervasyonu oluşturmaz (eskiden client tutarlarına güveniliyordu). */
+     if (!server)
+       return {
+         comparison: null,
+         poolHeating: null,
+         authoritative: null,
+         priceUnavailable: false,
++        rateUnavailable: false,
++        recomputeFailed: true,
+       };
++    /* 🛡️ SEC-06 F3 — kullanılan bir dövizin kuru yok → tutar 1:1
++       çevrilmiş olur; authoritative ÜRETİLMEZ, route reddeder. */
++    if (server.missingRates.length > 0) {
++      console.warn("[price-verify] EKSİK KUR — rezervasyon reddedilecek", {
++        villa_id: payload.villa_id,
++        missingRates: server.missingRates,
++      });
++      return {
++        comparison: null,
++        poolHeating: null,
++        authoritative: null,
++        priceUnavailable: false,
++        rateUnavailable: true,
++        recomputeFailed: false,
++      };
++    }
+ 
+     const cmp = comparePublicReservationPrice(payload, server);
+ 
+@@ -560,6 +707,8 @@ export async function verifyPublicReservationPrice(
+     return {
+       /* Tam kapsanan hesap → fiyat geçerli (eski davranış aynen). */
+       priceUnavailable: false,
++      rateUnavailable: false,
++      recomputeFailed: false,
+       comparison: cmp,
+       poolHeating: {
+         pool_heating_selected: server.poolHeatingSelected,
+@@ -586,14 +735,16 @@ export async function verifyPublicReservationPrice(
+         discount_currency: server.discountCurrency,
+         original_stay_total_try: server.originalStayTotalTry,
+         stay_discount_amount_try: server.stayDiscountAmountTry,
++        // 🛡️ SEC-06 F4
++        damage_deposit: server.damageDeposit,
+       },
+     };
+   } catch (err) {
+-    /* FAIL-OPEN: recompute patlasa bile booking sürer; pool heating
+-       snapshot'ı ve FAZ 3 authoritative snapshot'ı da override EDİLMEZ
+-       (route client değerlerini korur). */
++    /* 🛡️ SEC-06 F5 — FAIL-CLOSED: recompute patlarsa authoritative
++       ÜRETİLMEZ ve `recomputeFailed` işaretlenir; route rezervasyonu
++       OLUŞTURMAZ (eskiden client tutarlarıyla devam ediliyordu). */
+     console.error(
+-      "[price-verify] recompute FAILED (fail-open, booking sürüyor):",
++      "[price-verify] recompute FAILED (fail-closed, rezervasyon reddedilecek):",
+       err instanceof Error ? err.message : err
+     );
+     return {
+@@ -601,6 +752,8 @@ export async function verifyPublicReservationPrice(
+       poolHeating: null,
+       authoritative: null,
+       priceUnavailable: false,
++      rateUnavailable: false,
++      recomputeFailed: true,
+     };
+   }
+ }
+diff --git a/lib/db/reservation.repository.ts b/lib/db/reservation.repository.ts
+index b85ca38..e1a2cfb 100644
+--- a/lib/db/reservation.repository.ts
++++ b/lib/db/reservation.repository.ts
+@@ -209,12 +209,16 @@ export const reservationRepository = {
+      🛡️ Migration 076 — sezonluk ay kısıtı: `pool_heating_months`
+         EKLENDİ (7-field projeksiyon). Server-authoritative sezon
+         kontrolü (isPoolHeatingActiveForRange) bu alana ihtiyaç
+-        duyuyor — bkz. pool-heating-verify.ts/price-verify.ts. */
++        duyuyor — bkz. pool-heating-verify.ts/price-verify.ts.
++
++     🛡️ SEC-06 F4 — `deposit` EKLENDİ (8-field). Public create'te
++        damage_deposit client'tan değil villanın kendi kaydından
++        yazılır (tek call site — price-verify.ts). */
+   async findVillaCleaningConfig(villaId: string) {
+     return await db
+       .from("villa")
+       .select(
+-        "cleaning_fee, cleaning_currency, cleaning_limit, custom_prepayment_rate, pool_heating_fee, pool_heating_currency, pool_heating_months"
++        "cleaning_fee, cleaning_currency, cleaning_limit, custom_prepayment_rate, pool_heating_fee, pool_heating_currency, pool_heating_months, deposit"
+       )
+       .eq("id", villaId)
+       .maybeSingle();
+diff --git a/tests/unit/reservation-service/__fixtures__/sec06-price-baseline.json b/tests/unit/reservation-service/__fixtures__/sec06-price-baseline.json
+new file mode 100644
+index 0000000..2be2b5b
+--- /dev/null
++++ b/tests/unit/reservation-service/__fixtures__/sec06-price-baseline.json
+@@ -0,0 +1,898 @@
++{
++  "01 TRY 4 gece": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 40000,
++      "total_price_try": 40000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 8000,
++      "remaining_payment": 32000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "02 TRY 1 gece": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 10000,
++      "total_price_try": 10000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 2000,
++      "remaining_payment": 8000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "03 TRY 30 gece iki sezon": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 326000,
++      "total_price_try": 326000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 65200,
++      "remaining_payment": 260800,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "04 sezon geçişi EUR→TRY karışık para birimi": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 39060,
++      "total_price_try": 39060,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 7812,
++      "remaining_payment": 31248,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "05 EUR villa 4 gece": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 28080,
++      "total_price_try": 28080,
++      "original_price": 800,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 5616,
++      "remaining_payment": 22464,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "06 USD villa 3 gece": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 32499.69,
++      "total_price_try": 32499.69,
++      "original_price": 999.99,
++      "original_currency": "USD",
++      "exchange_rate": 32.5,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 6500,
++      "remaining_payment": 25999.69,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "07 GBP villa 2 gece": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 14832,
++      "total_price_try": 14832,
++      "original_price": 360,
++      "original_currency": "GBP",
++      "exchange_rate": 41.2,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 2966,
++      "remaining_payment": 11866,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "08 temizlik TRY limit altı (4<7) → alınır": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 41500,
++      "total_price_try": 41500,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 1500,
++      "prepayment_amount": 8000,
++      "remaining_payment": 33500,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "09 temizlik TRY limit eşit (7) → alınmaz": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 70000,
++      "total_price_try": 70000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 14000,
++      "remaining_payment": 56000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "10 temizlik GBP limit altı, EUR villa": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 25180,
++      "total_price_try": 25180,
++      "original_price": 600,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 100,
++      "original_cleaning_currency": "GBP",
++      "cleaning_fee_try": 4120,
++      "prepayment_amount": 4212,
++      "remaining_payment": 20968,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "11 temizlik limit 0 → her zaman": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 142000,
++      "total_price_try": 142000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 2000,
++      "prepayment_amount": 28000,
++      "remaining_payment": 114000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "12 temizlik EUR, TRY villa": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 21404,
++      "total_price_try": 21404,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 40,
++      "original_cleaning_currency": "EUR",
++      "cleaning_fee_try": 1404,
++      "prepayment_amount": 4000,
++      "remaining_payment": 17404,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "13 percent %20 tüm geceler": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 32000,
++      "total_price_try": 32000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 6400,
++      "remaining_payment": 25600,
++      "discount_applied": true,
++      "discount_type": "percent",
++      "discount_value": 20,
++      "discount_currency": null,
++      "original_stay_total_try": 40000,
++      "stay_discount_amount_try": 8000
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "14 percent %10 kısmi çakışma (EUR)": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 40014,
++      "total_price_try": 40014,
++      "original_price": 1140,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 8003,
++      "remaining_payment": 32011,
++      "discount_applied": true,
++      "discount_type": "percent",
++      "discount_value": 10,
++      "discount_currency": null,
++      "original_stay_total_try": 42120,
++      "stay_discount_amount_try": 2106
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "15 fixed TRY özel fiyat, TRY villa": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 30000,
++      "total_price_try": 30000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 6000,
++      "remaining_payment": 24000,
++      "discount_applied": true,
++      "discount_type": "fixed",
++      "discount_value": 7500,
++      "discount_currency": "TRY",
++      "original_stay_total_try": 40000,
++      "stay_discount_amount_try": 10000
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "16 fixed EUR özel fiyat, EUR villa, kısmi": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 31590,
++      "total_price_try": 31590,
++      "original_price": 900,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 6318,
++      "remaining_payment": 25272,
++      "discount_applied": true,
++      "discount_type": "fixed",
++      "discount_value": 150,
++      "discount_currency": "EUR",
++      "original_stay_total_try": 42120,
++      "stay_discount_amount_try": 10530
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "17 fixed TRY özel fiyat, EUR villa (çapraz kur)": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 14999.97,
++      "total_price_try": 14999.97,
++      "original_price": 427.34999999999997,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 3000,
++      "remaining_payment": 11999.97,
++      "discount_applied": true,
++      "discount_type": "fixed",
++      "discount_value": 5000,
++      "discount_currency": "TRY",
++      "original_stay_total_try": 21060,
++      "stay_discount_amount_try": 6060.030000000001
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "18 fixed normalden YÜKSEK özel fiyat": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 45000,
++      "total_price_try": 45000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 9000,
++      "remaining_payment": 36000,
++      "discount_applied": true,
++      "discount_type": "fixed",
++      "discount_value": 15000,
++      "discount_currency": "TRY",
++      "original_stay_total_try": 30000,
++      "stay_discount_amount_try": -15000
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "19 percent %100 → konaklama 0 (meşru)": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 1000,
++      "total_price_try": 1000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 1000,
++      "prepayment_amount": 0,
++      "remaining_payment": 1000,
++      "discount_applied": true,
++      "discount_type": "percent",
++      "discount_value": 100,
++      "discount_currency": null,
++      "original_stay_total_try": 20000,
++      "stay_discount_amount_try": 20000
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "20 fixed USD özel fiyat, EUR villa (çapraz döviz)": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 16249.9,
++      "total_price_try": 16249.9,
++      "original_price": 462.96,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 3250,
++      "remaining_payment": 12999.9,
++      "discount_applied": true,
++      "discount_type": "fixed",
++      "discount_value": 250,
++      "discount_currency": "USD",
++      "original_stay_total_try": 14040,
++      "stay_discount_amount_try": -2209.8999999999996
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "21 havuz TRY seçili, ay kısıtı yok": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 42000,
++      "total_price_try": 42000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 8000,
++      "remaining_payment": 34000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": true,
++      "original_pool_heating_total": 2000,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 2000
++    }
++  },
++  "22 havuz EUR seçili, sezon içi": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 35100,
++      "total_price_try": 35100,
++      "original_price": 800,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 5616,
++      "remaining_payment": 29484,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": true,
++      "original_pool_heating_total": 200,
++      "original_pool_heating_currency": "EUR",
++      "pool_heating_total_try": 7020
++    }
++  },
++  "23 havuz seçili, sezon dışı → 0": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 40000,
++      "total_price_try": 40000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 8000,
++      "remaining_payment": 32000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": true,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "24 havuz seçilmedi, ücret tanımlı → 0": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 40000,
++      "total_price_try": 40000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 8000,
++      "remaining_payment": 32000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "25 kombine: EUR + temizlik GBP + %10 + havuz EUR": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 37114,
++      "total_price_try": 37114,
++      "original_price": 740,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 100,
++      "original_cleaning_currency": "GBP",
++      "cleaning_fee_try": 4120,
++      "prepayment_amount": 5195,
++      "remaining_payment": 31919,
++      "discount_applied": true,
++      "discount_type": "percent",
++      "discount_value": 10,
++      "discount_currency": null,
++      "original_stay_total_try": 28080,
++      "stay_discount_amount_try": 2106
++    },
++    "poolHeating": {
++      "pool_heating_selected": true,
++      "original_pool_heating_total": 200,
++      "original_pool_heating_currency": "EUR",
++      "pool_heating_total_try": 7020
++    }
++  },
++  "26 villa ön ödeme override 30": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 41500,
++      "total_price_try": 41500,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 1500,
++      "prepayment_amount": 12000,
++      "remaining_payment": 29500,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "27 villa ön ödeme override 0": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 40000,
++      "total_price_try": 40000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 0,
++      "remaining_payment": 40000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "28 villa override boş string → settings 25": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 40000,
++      "total_price_try": 40000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 10000,
++      "remaining_payment": 30000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "29 settings 35, override yok": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 28080,
++      "total_price_try": 28080,
++      "original_price": 800,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 9828,
++      "remaining_payment": 18252,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "30 settings prepayment_rate null → 20": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 40000,
++      "total_price_try": 40000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 8000,
++      "remaining_payment": 32000,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "31 eksik gece → priceUnavailable": {
++    "priceUnavailable": true,
++    "authoritative": null,
++    "poolHeating": null
++  },
++  "32 çakışan fiyat dönemleri (ilk eşleşen)": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 27000,
++      "total_price_try": 27000,
++      "original_price": 0,
++      "original_currency": "TRY",
++      "exchange_rate": 1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 5400,
++      "remaining_payment": 21600,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "33 yuvarlama: küsuratlı EUR + override 33": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 15524.550000000001,
++      "total_price_try": 15524.550000000001,
++      "original_price": 370.35,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 77.7,
++      "original_cleaning_currency": "USD",
++      "cleaning_fee_try": 2525.25,
++      "prepayment_amount": 4290,
++      "remaining_payment": 11234.550000000001,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  },
++  "34 uzun konaklama 91 gece (3 sezon)": {
++    "priceUnavailable": false,
++    "authoritative": {
++      "total_price": 827950,
++      "total_price_try": 827950,
++      "original_price": 674500,
++      "original_currency": "EUR",
++      "exchange_rate": 35.1,
++      "original_cleaning_fee": 0,
++      "original_cleaning_currency": "TRY",
++      "cleaning_fee_try": 0,
++      "prepayment_amount": 165590,
++      "remaining_payment": 662360,
++      "discount_applied": false,
++      "discount_type": null,
++      "discount_value": null,
++      "discount_currency": null,
++      "original_stay_total_try": null,
++      "stay_discount_amount_try": null
++    },
++    "poolHeating": {
++      "pool_heating_selected": false,
++      "original_pool_heating_total": 0,
++      "original_pool_heating_currency": "TRY",
++      "pool_heating_total_try": 0
++    }
++  }
++}
+diff --git a/tests/unit/reservation-service/_sec06-price-scenarios.ts b/tests/unit/reservation-service/_sec06-price-scenarios.ts
+new file mode 100644
+index 0000000..7178018
+--- /dev/null
++++ b/tests/unit/reservation-service/_sec06-price-scenarios.ts
+@@ -0,0 +1,321 @@
++/* ===============================================================
++   🛡️ SEC-06 — FİYAT PARİTE SENARYOLARI (test verisi, test DEĞİL)
++   ===============================================================
++   `sec06-price-parity.test.ts` bu senaryoları server recompute'tan
++   (verifyPublicReservationPrice) geçirir ve sonucu SEC-06 düzeltmesi
++   ÖNCESİ kodla üretilmiş `__fixtures__/sec06-price-baseline.json`
++   ile BİREBİR karşılaştırır → "önceki fiyat = sonraki fiyat" kanıtı.
++
++   Kapsam: TRY/EUR/USD/GBP villa, sezon geçişi, karışık para birimi,
++   temizlik (limit altı/üstü, dövizli), percent/fixed indirim (kısmi,
++   çapraz kur, %100, normalden yüksek özel fiyat), havuz ısıtma
++   (sezon içi/dışı, dövizli), ön ödeme oranı önceliği (villa override
++   0/30/"" → settings → 20), çakışan fiyat dönemleri, eksik gece.
++   =============================================================== */
++
++export type Sec06PriceRow = {
++  start_date: string;
++  end_date: string;
++  price: number;
++  currency: string;
++};
++
++export type Sec06DiscountRow = {
++  start_date: string;
++  end_date: string;
++  discount_type: "percent" | "fixed";
++  discount_value: number;
++  currency: string | null;
++};
++
++export type Sec06Scenario = {
++  name: string;
++  start: string;
++  end: string;
++  pool?: boolean;
++  prices: Sec06PriceRow[];
++  discounts?: Sec06DiscountRow[];
++  villa?: Record<string, unknown>;
++  settings?: Record<string, unknown>;
++};
++
++export const SEC06_RATES = { USD: 32.5, EUR: 35.1, GBP: 41.2 };
++
++export const SEC06_BASE_VILLA = {
++  cleaning_fee: 0,
++  cleaning_currency: "TRY",
++  cleaning_limit: 0,
++  custom_prepayment_rate: null,
++  pool_heating_fee: 0,
++  pool_heating_currency: "TRY",
++  pool_heating_months: null,
++};
++
++const TRY_OCT: Sec06PriceRow[] = [
++  { start_date: "2026-10-01", end_date: "2026-10-31", price: 10000, currency: "TRY" },
++];
++const EUR_JUN: Sec06PriceRow[] = [
++  { start_date: "2027-06-01", end_date: "2027-06-30", price: 200, currency: "EUR" },
++];
++
++export const SEC06_SCENARIOS: Sec06Scenario[] = [
++  { name: "01 TRY 4 gece", start: "2026-10-01", end: "2026-10-05", prices: TRY_OCT },
++  { name: "02 TRY 1 gece", start: "2026-10-10", end: "2026-10-11", prices: TRY_OCT },
++  {
++    name: "03 TRY 30 gece iki sezon",
++    start: "2026-10-15",
++    end: "2026-11-14",
++    prices: [
++      ...TRY_OCT,
++      { start_date: "2026-11-01", end_date: "2026-11-30", price: 12000, currency: "TRY" },
++    ],
++  },
++  {
++    name: "04 sezon geçişi EUR→TRY karışık para birimi",
++    start: "2027-06-28",
++    end: "2027-07-03",
++    prices: [
++      ...EUR_JUN,
++      { start_date: "2027-07-01", end_date: "2027-07-31", price: 9000, currency: "TRY" },
++    ],
++  },
++  { name: "05 EUR villa 4 gece", start: "2027-06-02", end: "2027-06-06", prices: EUR_JUN },
++  {
++    name: "06 USD villa 3 gece",
++    start: "2027-06-02",
++    end: "2027-06-05",
++    prices: [{ start_date: "2027-06-01", end_date: "2027-06-30", price: 333.33, currency: "USD" }],
++  },
++  {
++    name: "07 GBP villa 2 gece",
++    start: "2027-06-02",
++    end: "2027-06-04",
++    prices: [{ start_date: "2027-06-01", end_date: "2027-06-30", price: 180, currency: "GBP" }],
++  },
++  {
++    name: "08 temizlik TRY limit altı (4<7) → alınır",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    prices: TRY_OCT,
++    villa: { cleaning_fee: 1500, cleaning_currency: "TRY", cleaning_limit: 7 },
++  },
++  {
++    name: "09 temizlik TRY limit eşit (7) → alınmaz",
++    start: "2026-10-01",
++    end: "2026-10-08",
++    prices: TRY_OCT,
++    villa: { cleaning_fee: 1500, cleaning_currency: "TRY", cleaning_limit: 7 },
++  },
++  {
++    name: "10 temizlik GBP limit altı, EUR villa",
++    start: "2027-06-02",
++    end: "2027-06-05",
++    prices: EUR_JUN,
++    villa: { cleaning_fee: 100, cleaning_currency: "GBP", cleaning_limit: 5 },
++  },
++  {
++    name: "11 temizlik limit 0 → her zaman",
++    start: "2026-10-01",
++    end: "2026-10-15",
++    prices: TRY_OCT,
++    villa: { cleaning_fee: 2000, cleaning_currency: "TRY", cleaning_limit: 0 },
++  },
++  {
++    name: "12 temizlik EUR, TRY villa",
++    start: "2026-10-01",
++    end: "2026-10-03",
++    prices: TRY_OCT,
++    villa: { cleaning_fee: 40, cleaning_currency: "EUR", cleaning_limit: 3 },
++  },
++  {
++    name: "13 percent %20 tüm geceler",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    prices: TRY_OCT,
++    discounts: [
++      { start_date: "2026-10-01", end_date: "2026-10-10", discount_type: "percent", discount_value: 20, currency: null },
++    ],
++  },
++  {
++    name: "14 percent %10 kısmi çakışma (EUR)",
++    start: "2027-06-08",
++    end: "2027-06-14",
++    prices: EUR_JUN,
++    discounts: [
++      { start_date: "2027-06-10", end_date: "2027-06-12", discount_type: "percent", discount_value: 10, currency: null },
++    ],
++  },
++  {
++    name: "15 fixed TRY özel fiyat, TRY villa",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    prices: TRY_OCT,
++    discounts: [
++      { start_date: "2026-10-01", end_date: "2026-10-31", discount_type: "fixed", discount_value: 7500, currency: "TRY" },
++    ],
++  },
++  {
++    name: "16 fixed EUR özel fiyat, EUR villa, kısmi",
++    start: "2027-07-08",
++    end: "2027-07-12",
++    prices: [{ start_date: "2027-07-01", end_date: "2027-07-31", price: 300, currency: "EUR" }],
++    discounts: [
++      { start_date: "2027-07-10", end_date: "2027-07-11", discount_type: "fixed", discount_value: 150, currency: "EUR" },
++    ],
++  },
++  {
++    name: "17 fixed TRY özel fiyat, EUR villa (çapraz kur)",
++    start: "2027-06-02",
++    end: "2027-06-05",
++    prices: EUR_JUN,
++    discounts: [
++      { start_date: "2027-06-01", end_date: "2027-06-30", discount_type: "fixed", discount_value: 5000, currency: "TRY" },
++    ],
++  },
++  {
++    name: "18 fixed normalden YÜKSEK özel fiyat",
++    start: "2026-10-01",
++    end: "2026-10-04",
++    prices: TRY_OCT,
++    discounts: [
++      { start_date: "2026-10-01", end_date: "2026-10-31", discount_type: "fixed", discount_value: 15000, currency: "TRY" },
++    ],
++  },
++  {
++    name: "19 percent %100 → konaklama 0 (meşru)",
++    start: "2026-10-01",
++    end: "2026-10-03",
++    prices: TRY_OCT,
++    villa: { cleaning_fee: 1000, cleaning_currency: "TRY", cleaning_limit: 0 },
++    discounts: [
++      { start_date: "2026-10-01", end_date: "2026-10-31", discount_type: "percent", discount_value: 100, currency: null },
++    ],
++  },
++  {
++    name: "20 fixed USD özel fiyat, EUR villa (çapraz döviz)",
++    start: "2027-06-02",
++    end: "2027-06-04",
++    prices: EUR_JUN,
++    discounts: [
++      { start_date: "2027-06-01", end_date: "2027-06-30", discount_type: "fixed", discount_value: 250, currency: "USD" },
++    ],
++  },
++  {
++    name: "21 havuz TRY seçili, ay kısıtı yok",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    pool: true,
++    prices: TRY_OCT,
++    villa: { pool_heating_fee: 500, pool_heating_currency: "TRY", pool_heating_months: null },
++  },
++  {
++    name: "22 havuz EUR seçili, sezon içi",
++    start: "2027-06-02",
++    end: "2027-06-06",
++    pool: true,
++    prices: EUR_JUN,
++    villa: { pool_heating_fee: 50, pool_heating_currency: "EUR", pool_heating_months: [6, 7, 8] },
++  },
++  {
++    name: "23 havuz seçili, sezon dışı → 0",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    pool: true,
++    prices: TRY_OCT,
++    villa: { pool_heating_fee: 500, pool_heating_currency: "TRY", pool_heating_months: [6, 7, 8] },
++  },
++  {
++    name: "24 havuz seçilmedi, ücret tanımlı → 0",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    pool: false,
++    prices: TRY_OCT,
++    villa: { pool_heating_fee: 500, pool_heating_currency: "TRY", pool_heating_months: null },
++  },
++  {
++    name: "25 kombine: EUR + temizlik GBP + %10 + havuz EUR",
++    start: "2027-06-09",
++    end: "2027-06-13",
++    pool: true,
++    prices: EUR_JUN,
++    villa: {
++      cleaning_fee: 100,
++      cleaning_currency: "GBP",
++      cleaning_limit: 5,
++      pool_heating_fee: 50,
++      pool_heating_currency: "EUR",
++      pool_heating_months: [6, 7, 8],
++    },
++    discounts: [
++      { start_date: "2027-06-10", end_date: "2027-06-12", discount_type: "percent", discount_value: 10, currency: null },
++    ],
++  },
++  {
++    name: "26 villa ön ödeme override 30",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    prices: TRY_OCT,
++    villa: { custom_prepayment_rate: 30, cleaning_fee: 1500, cleaning_limit: 7 },
++  },
++  {
++    name: "27 villa ön ödeme override 0",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    prices: TRY_OCT,
++    villa: { custom_prepayment_rate: 0 },
++  },
++  {
++    name: "28 villa override boş string → settings 25",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    prices: TRY_OCT,
++    villa: { custom_prepayment_rate: "" },
++    settings: { prepayment_rate: 25 },
++  },
++  {
++    name: "29 settings 35, override yok",
++    start: "2027-06-02",
++    end: "2027-06-06",
++    prices: EUR_JUN,
++    settings: { prepayment_rate: 35 },
++  },
++  {
++    name: "30 settings prepayment_rate null → 20",
++    start: "2026-10-01",
++    end: "2026-10-05",
++    prices: TRY_OCT,
++    settings: { prepayment_rate: null },
++  },
++  {
++    name: "31 eksik gece → priceUnavailable",
++    start: "2026-10-29",
++    end: "2026-11-03",
++    prices: TRY_OCT,
++  },
++  {
++    name: "32 çakışan fiyat dönemleri (ilk eşleşen)",
++    start: "2027-09-12",
++    end: "2027-09-15",
++    prices: [
++      { start_date: "2027-08-11", end_date: "2027-09-30", price: 9000, currency: "TRY" },
++      { start_date: "2027-09-10", end_date: "2027-09-15", price: 999, currency: "EUR" },
++    ],
++  },
++  {
++    name: "33 yuvarlama: küsuratlı EUR + override 33",
++    start: "2027-06-02",
++    end: "2027-06-05",
++    prices: [{ start_date: "2027-06-01", end_date: "2027-06-30", price: 123.45, currency: "EUR" }],
++    villa: { custom_prepayment_rate: 33, cleaning_fee: 77.7, cleaning_currency: "USD", cleaning_limit: 4 },
++  },
++  {
++    name: "34 uzun konaklama 91 gece (3 sezon)",
++    start: "2026-10-01",
++    end: "2026-12-31",
++    prices: [
++      ...TRY_OCT,
++      { start_date: "2026-11-01", end_date: "2026-11-30", price: 12000, currency: "TRY" },
++      { start_date: "2026-12-01", end_date: "2026-12-31", price: 150, currency: "EUR" },
++    ],
++  },
++];
+diff --git a/tests/unit/reservation-service/sec06-date-verify.test.ts b/tests/unit/reservation-service/sec06-date-verify.test.ts
+new file mode 100644
+index 0000000..651621c
+--- /dev/null
++++ b/tests/unit/reservation-service/sec06-date-verify.test.ts
+@@ -0,0 +1,99 @@
++import { describe, it, expect } from "vitest";
++
++/* ===============================================================
++   🛡️ SEC-06 F1 — SIKI TARİH DOĞRULAMASI (saf helper)
++   =============================================================== */
++import {
++  isStrictIsoDate,
++  validatePublicReservationDates,
++  RESERVATION_DATE_ERRORS,
++} from "@/app/services/reservation/_helpers/date-verify";
++
++// Sabit "şimdi": 2026-09-24 12:00 UTC.
++const NOW = new Date(Date.UTC(2026, 8, 24, 12, 0, 0));
++const v = (s: unknown, e: unknown) => validatePublicReservationDates(s, e, NOW);
++
++describe("isStrictIsoDate", () => {
++  it("geçerli YYYY-MM-DD kabul", () => {
++    for (const d of ["2027-09-01", "2028-02-29", "2027-12-31", "2027-01-01"]) {
++      expect(isStrictIsoDate(d)).toBe(true);
++    }
++  });
++
++  it("belirsiz / otomatik parse edilebilir biçimler RED", () => {
++    for (const d of [
++      "20270918",
++      "2027/09/27",
++      "2027-09-23 00:00",
++      "2027-09-23T00:00:00",
++      "2027-09-23T00:00:00.000Z",
++      "Aug 27 2027",
++      "27.09.2027",
++      "09-27-2027",
++      " 2027-09-27",
++      "2027-09-27 ",
++      "2027-9-7",
++      "+2027-09-27",
++      "",
++    ]) {
++      expect(isStrictIsoDate(d)).toBe(false);
++    }
++  });
++
++  it("takvimde olmayan gün RED (taşma yok)", () => {
++    for (const d of ["2027-02-29", "2027-02-30", "2027-04-31", "2027-13-01", "2027-00-10", "2027-01-00"]) {
++      expect(isStrictIsoDate(d)).toBe(false);
++    }
++  });
++
++  it("string olmayan değer RED", () => {
++    for (const d of [null, undefined, 20270918, {}, [], new Date()]) {
++      expect(isStrictIsoDate(d)).toBe(false);
++    }
++  });
++});
++
++describe("validatePublicReservationDates", () => {
++  it("normal YYYY-MM-DD aralık → geçerli", () => {
++    expect(v("2027-06-02", "2027-06-06")).toBeNull();
++    expect(v("2026-09-24", "2026-09-25")).toBeNull(); // bugün giriş
++    expect(v("2027-06-02", "2027-06-03")).toBeNull(); // 1 gece
++  });
++
++  it("eksik tarih → 'Tarih zorunlu' (createReservation ile aynı mesaj)", () => {
++    expect(v("", "2027-06-06")).toBe(RESERVATION_DATE_ERRORS.required);
++    expect(v("2027-06-02", undefined)).toBe(RESERVATION_DATE_ERRORS.required);
++    expect(RESERVATION_DATE_ERRORS.required).toBe("Tarih zorunlu");
++  });
++
++  it("geçersiz biçim → reddedilir", () => {
++    expect(v("20270918", "20270922")).toBe(RESERVATION_DATE_ERRORS.invalidFormat);
++    expect(v("2027/09/27", "2027/09/30")).toBe(RESERVATION_DATE_ERRORS.invalidFormat);
++    expect(v("2027-09-23 00:00", "2027-09-27 00:00")).toBe(RESERVATION_DATE_ERRORS.invalidFormat);
++    expect(v("Aug 27 2027", "Aug 31 2027")).toBe(RESERVATION_DATE_ERRORS.invalidFormat);
++    expect(v("2027-08-23T00:00:00", "2027-08-27T00:00:00")).toBe(RESERVATION_DATE_ERRORS.invalidFormat);
++    expect(v("2027-06-02", "2027-02-30")).toBe(RESERVATION_DATE_ERRORS.invalidFormat);
++  });
++
++  it("0 gece ve ters aralık → 'Tarih aralığı hatalı' (mevcut mesaj)", () => {
++    expect(v("2027-09-05", "2027-09-05")).toBe(RESERVATION_DATE_ERRORS.invalidRange);
++    expect(v("2027-09-06", "2027-09-05")).toBe(RESERVATION_DATE_ERRORS.invalidRange);
++    expect(RESERVATION_DATE_ERRORS.invalidRange).toBe("Tarih aralığı hatalı");
++  });
++
++  it("tamamı geçmişte kalan konaklama → reddedilir", () => {
++    expect(v("2026-06-01", "2026-06-05")).toBe(RESERVATION_DATE_ERRORS.past);
++    expect(v("2020-01-01", "2020-01-05")).toBe(RESERVATION_DATE_ERRORS.past);
++    expect(v("2026-09-20", "2026-09-22")).toBe(RESERVATION_DATE_ERRORS.past);
++  });
++
++  it("saat dilimi toleransı: çıkışı dün/bugün olan aralık reddedilmez", () => {
++    // Ör. UTC-10'daki bir kullanıcının yerel "bugün"ü UTC'den 1 gün geride olabilir.
++    expect(v("2026-09-22", "2026-09-23")).toBeNull();
++    expect(v("2026-09-23", "2026-09-24")).toBeNull();
++  });
++
++  it("girişi geçmişte, çıkışı gelecekte olan aralığa dokunulmaz (mevcut indirim CTA davranışı)", () => {
++    expect(v("2026-09-20", "2026-09-27")).toBeNull();
++  });
++});
+diff --git a/tests/unit/reservation-service/sec06-price-parity.test.ts b/tests/unit/reservation-service/sec06-price-parity.test.ts
+new file mode 100644
+index 0000000..205884a
+--- /dev/null
++++ b/tests/unit/reservation-service/sec06-price-parity.test.ts
+@@ -0,0 +1,128 @@
++import { describe, it, expect, vi, beforeEach } from "vitest";
++
++/* ===============================================================
++   🛡️ SEC-06 — "ÖNCEKİ FİYAT = SONRAKİ FİYAT" PARİTE KİLİDİ
++   ===============================================================
++   `__fixtures__/sec06-price-baseline.json`, SEC-06 düzeltmesi
++   UYGULANMADAN ÖNCEKİ kodla (aynı senaryolar, aynı mock'lar)
++   üretildi. Bu test, düzeltme sonrası server recompute'un her
++   senaryoda BİREBİR aynı sonucu ürettiğini doğrular:
++     - total / total_try / temizlik / ön ödeme / kalan
++     - original_price / original_currency / exchange_rate
++     - indirim snapshot'ı (percent / fixed / çapraz kur / %100)
++     - havuz ısıtma snapshot'ı (sezon içi / dışı / dövizli)
++     - priceUnavailable (eksik gece)
++   Tek EK alan `damage_deposit` (SEC-06 F4) karşılaştırmadan ayrılır ve
++   ayrıca villa.deposit formülüyle doğrulanır.
++   =============================================================== */
++
++const findVillaCleaningConfig = vi.fn();
++const getVillaPrices = vi.fn();
++const getExchangeRatesMap = vi.fn();
++const getPublicSettings = vi.fn();
++const getVillaDiscounts = vi.fn();
++
++vi.mock("@/lib/db/reservation.repository", () => ({
++  reservationRepository: {
++    findVillaCleaningConfig: (...a: unknown[]) => findVillaCleaningConfig(...a),
++  },
++}));
++vi.mock("@/app/services/villa-price.service", () => ({
++  getVillaPrices: (...a: unknown[]) => getVillaPrices(...a),
++}));
++vi.mock("@/app/services/exchange-rate.service", () => ({
++  getExchangeRatesMap: (...a: unknown[]) => getExchangeRatesMap(...a),
++}));
++vi.mock("@/app/services/settings.service", () => ({
++  getPublicSettings: (...a: unknown[]) => getPublicSettings(...a),
++}));
++vi.mock("@/app/services/villa-discount.service", () => ({
++  getVillaDiscounts: (...a: unknown[]) => getVillaDiscounts(...a),
++}));
++
++import { verifyPublicReservationPrice } from "@/app/services/reservation/_helpers/price-verify";
++import type { ReservationCreateInput } from "@/app/services/reservation/types";
++import {
++  SEC06_SCENARIOS,
++  SEC06_RATES,
++  SEC06_BASE_VILLA,
++  type Sec06Scenario,
++} from "./_sec06-price-scenarios";
++import baseline from "./__fixtures__/sec06-price-baseline.json";
++
++type Baseline = Record<
++  string,
++  {
++    priceUnavailable: boolean;
++    authoritative: Record<string, unknown> | null;
++    poolHeating: Record<string, unknown> | null;
++  }
++>;
++const BASELINE = baseline as Baseline;
++
++function arrange(s: Sec06Scenario, villaExtra: Record<string, unknown> = {}) {
++  findVillaCleaningConfig.mockResolvedValue({
++    data: { ...SEC06_BASE_VILLA, ...(s.villa || {}), ...villaExtra },
++    error: null,
++  });
++  getVillaPrices.mockResolvedValue(s.prices);
++  getExchangeRatesMap.mockResolvedValue({ rates: SEC06_RATES, updatedAt: null });
++  getPublicSettings.mockResolvedValue(s.settings ?? { prepayment_rate: 20 });
++  getVillaDiscounts.mockResolvedValue(s.discounts ?? []);
++}
++
++function payload(s: Sec06Scenario): ReservationCreateInput {
++  return {
++    villa_id: "villa-sec06",
++    start_date: s.start,
++    end_date: s.end,
++    pool_heating_selected: !!s.pool,
++    name: "Test",
++    phone: "+905551112233",
++  } as ReservationCreateInput;
++}
++
++beforeEach(() => {
++  vi.clearAllMocks();
++  vi.spyOn(console, "log").mockImplementation(() => {});
++  vi.spyOn(console, "warn").mockImplementation(() => {});
++});
++
++describe("SEC-06 — fiyat paritesi (düzeltme öncesi baseline ile birebir)", () => {
++  it("baseline tüm senaryoları içerir", () => {
++    expect(Object.keys(BASELINE).sort()).toEqual(
++      SEC06_SCENARIOS.map((s) => s.name).sort()
++    );
++  });
++
++  for (const s of SEC06_SCENARIOS) {
++    it(s.name, async () => {
++      arrange(s);
++      const v = await verifyPublicReservationPrice(payload(s));
++      const before = BASELINE[s.name];
++
++      expect(v.priceUnavailable).toBe(before.priceUnavailable);
++      expect(v.poolHeating).toEqual(before.poolHeating);
++
++      if (before.authoritative === null) {
++        expect(v.authoritative).toBeNull();
++        return;
++      }
++      expect(v.recomputeFailed).toBe(false);
++      expect(v.rateUnavailable).toBe(false);
++      const { damage_deposit, ...rest } = v.authoritative!;
++      expect(rest).toEqual(before.authoritative);
++      // Yeni alan: villa.deposit yok → 0 (client formülü: Number(x) || 0).
++      expect(damage_deposit).toBe(0);
++    });
++  }
++
++  it("damage_deposit villa.deposit'ten gelir; fiyat alanları DEĞİŞMEZ", async () => {
++    const s = SEC06_SCENARIOS.find((x) => x.name.startsWith("25 "))!;
++    arrange(s, { deposit: 7500 });
++    const v = await verifyPublicReservationPrice(payload(s));
++    const { damage_deposit, ...rest } = v.authoritative!;
++    expect(damage_deposit).toBe(7500);
++    expect(rest).toEqual(BASELINE[s.name].authoritative);
++  });
++});
+diff --git a/tests/unit/reservation-service/sec06-price-verify-hardening.test.ts b/tests/unit/reservation-service/sec06-price-verify-hardening.test.ts
+new file mode 100644
+index 0000000..762406f
+--- /dev/null
++++ b/tests/unit/reservation-service/sec06-price-verify-hardening.test.ts
+@@ -0,0 +1,228 @@
++import { describe, it, expect, vi, beforeEach } from "vitest";
++
++/* ===============================================================
++   🛡️ SEC-06 — price-verify SERTLEŞTİRMESİ (F3 / F4 / F5)
++   ===============================================================
++   F3: hesapta KULLANILAN bir dövizin kuru yoksa → rateUnavailable
++       (eskiden resolveRate sessizce 1:1 çeviriyordu).
++   F4: damage_deposit villa.deposit'ten (client formülüyle aynı).
++   F5: villa ayarı / settings okunamaz veya recompute patlarsa →
++       recomputeFailed (eskiden fail-open, client tutarları yazılıyordu).
++   =============================================================== */
++
++const findVillaCleaningConfig = vi.fn();
++const getVillaPrices = vi.fn();
++const getExchangeRatesMap = vi.fn();
++const getPublicSettings = vi.fn();
++const getVillaDiscounts = vi.fn();
++
++vi.mock("@/lib/db/reservation.repository", () => ({
++  reservationRepository: {
++    findVillaCleaningConfig: (...a: unknown[]) => findVillaCleaningConfig(...a),
++  },
++}));
++vi.mock("@/app/services/villa-price.service", () => ({
++  getVillaPrices: (...a: unknown[]) => getVillaPrices(...a),
++}));
++vi.mock("@/app/services/exchange-rate.service", () => ({
++  getExchangeRatesMap: (...a: unknown[]) => getExchangeRatesMap(...a),
++}));
++vi.mock("@/app/services/settings.service", () => ({
++  getPublicSettings: (...a: unknown[]) => getPublicSettings(...a),
++}));
++vi.mock("@/app/services/villa-discount.service", () => ({
++  getVillaDiscounts: (...a: unknown[]) => getVillaDiscounts(...a),
++}));
++
++import { verifyPublicReservationPrice } from "@/app/services/reservation/_helpers/price-verify";
++import type { ReservationCreateInput } from "@/app/services/reservation/types";
++
++const RATES = { USD: 32.5, EUR: 35.1, GBP: 41.2 };
++const VILLA = {
++  cleaning_fee: 0,
++  cleaning_currency: "TRY",
++  cleaning_limit: 0,
++  custom_prepayment_rate: null,
++  pool_heating_fee: 0,
++  pool_heating_currency: "TRY",
++  pool_heating_months: null,
++  deposit: 5000,
++};
++const TRY_PRICES = [{ start_date: "2027-06-01", end_date: "2027-06-30", price: 9000, currency: "TRY" }];
++const EUR_PRICES = [{ start_date: "2027-06-01", end_date: "2027-06-30", price: 200, currency: "EUR" }];
++
++const payload = (over: Partial<ReservationCreateInput> = {}) =>
++  ({
++    villa_id: "villa-sec06",
++    start_date: "2027-06-02",
++    end_date: "2027-06-05",
++    name: "Test",
++    phone: "+905551112233",
++    ...over,
++  }) as ReservationCreateInput;
++
++function withoutRate(code: string) {
++  const r: Record<string, number> = { ...RATES };
++  delete r[code];
++  return r;
++}
++
++beforeEach(() => {
++  vi.clearAllMocks();
++  vi.spyOn(console, "log").mockImplementation(() => {});
++  vi.spyOn(console, "warn").mockImplementation(() => {});
++  vi.spyOn(console, "error").mockImplementation(() => {});
++  findVillaCleaningConfig.mockResolvedValue({ data: { ...VILLA }, error: null });
++  getVillaPrices.mockResolvedValue(EUR_PRICES);
++  getExchangeRatesMap.mockResolvedValue({ rates: RATES, updatedAt: null });
++  getPublicSettings.mockResolvedValue({ prepayment_rate: 20 });
++  getVillaDiscounts.mockResolvedValue([]);
++});
++
++describe("F3 — eksik kur", () => {
++  it("EUR villa + EUR kuru yok → rateUnavailable, authoritative YOK", async () => {
++    getExchangeRatesMap.mockResolvedValue({ rates: withoutRate("EUR"), updatedAt: null });
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.rateUnavailable).toBe(true);
++    expect(v.authoritative).toBeNull();
++    expect(v.poolHeating).toBeNull();
++    expect(v.recomputeFailed).toBe(false);
++  });
++
++  it("kur tablosu tamamen okunamadı ({}) + dövizli villa → rateUnavailable", async () => {
++    getExchangeRatesMap.mockResolvedValue({ rates: {}, updatedAt: null });
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.rateUnavailable).toBe(true);
++  });
++
++  it("kur 0 / NaN (geçersiz) → rateUnavailable (resolveRate ile aynı ölçüt)", async () => {
++    getExchangeRatesMap.mockResolvedValue({ rates: { ...RATES, EUR: 0 }, updatedAt: null });
++    expect((await verifyPublicReservationPrice(payload())).rateUnavailable).toBe(true);
++    getExchangeRatesMap.mockResolvedValue({ rates: { ...RATES, EUR: Number.NaN }, updatedAt: null });
++    expect((await verifyPublicReservationPrice(payload())).rateUnavailable).toBe(true);
++  });
++
++  it("TRY villa, EUR kuru yok → ETKİLENMEZ (kur gerekmiyor)", async () => {
++    getVillaPrices.mockResolvedValue(TRY_PRICES);
++    getExchangeRatesMap.mockResolvedValue({ rates: withoutRate("EUR"), updatedAt: null });
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.rateUnavailable).toBe(false);
++    expect(v.authoritative?.total_price_try).toBe(27000);
++  });
++
++  it("tahsil edilen dövizli temizlik (GBP) kuru yok → rateUnavailable", async () => {
++    getVillaPrices.mockResolvedValue(TRY_PRICES);
++    findVillaCleaningConfig.mockResolvedValue({
++      data: { ...VILLA, cleaning_fee: 100, cleaning_currency: "GBP", cleaning_limit: 5 },
++      error: null,
++    });
++    getExchangeRatesMap.mockResolvedValue({ rates: withoutRate("GBP"), updatedAt: null });
++    expect((await verifyPublicReservationPrice(payload())).rateUnavailable).toBe(true);
++  });
++
++  it("dövizli temizlik tahsil EDİLMİYORSA (limit üstü) kur aranmaz", async () => {
++    getVillaPrices.mockResolvedValue(TRY_PRICES);
++    findVillaCleaningConfig.mockResolvedValue({
++      data: { ...VILLA, cleaning_fee: 100, cleaning_currency: "GBP", cleaning_limit: 2 },
++      error: null,
++    });
++    getExchangeRatesMap.mockResolvedValue({ rates: withoutRate("GBP"), updatedAt: null });
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.rateUnavailable).toBe(false);
++    expect(v.authoritative?.cleaning_fee_try).toBe(0);
++  });
++
++  it("seçili dövizli havuz ısıtma (EUR) kuru yok → rateUnavailable; seçilmemişse etkilenmez", async () => {
++    getVillaPrices.mockResolvedValue(TRY_PRICES);
++    findVillaCleaningConfig.mockResolvedValue({
++      data: { ...VILLA, pool_heating_fee: 50, pool_heating_currency: "EUR" },
++      error: null,
++    });
++    getExchangeRatesMap.mockResolvedValue({ rates: withoutRate("EUR"), updatedAt: null });
++    expect(
++      (await verifyPublicReservationPrice(payload({ pool_heating_selected: true }))).rateUnavailable
++    ).toBe(true);
++    expect(
++      (await verifyPublicReservationPrice(payload({ pool_heating_selected: false }))).rateUnavailable
++    ).toBe(false);
++  });
++
++  it("fixed özel fiyat farklı dövizde (USD) ve USD kuru yok → rateUnavailable", async () => {
++    getVillaDiscounts.mockResolvedValue([
++      { start_date: "2027-06-01", end_date: "2027-06-30", discount_type: "fixed", discount_value: 250, currency: "USD" },
++    ]);
++    getExchangeRatesMap.mockResolvedValue({ rates: withoutRate("USD"), updatedAt: null });
++    expect((await verifyPublicReservationPrice(payload())).rateUnavailable).toBe(true);
++  });
++
++  it("percent indirim ek kur gerektirmez", async () => {
++    getVillaPrices.mockResolvedValue(TRY_PRICES);
++    getVillaDiscounts.mockResolvedValue([
++      { start_date: "2027-06-01", end_date: "2027-06-30", discount_type: "percent", discount_value: 10, currency: null },
++    ]);
++    getExchangeRatesMap.mockResolvedValue({ rates: {}, updatedAt: null });
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.rateUnavailable).toBe(false);
++    expect(v.authoritative?.total_price_try).toBe(24300);
++  });
++});
++
++describe("F4 — hasar depozitosu", () => {
++  it("client'ın sahte damage_deposit'i yok sayılır; villa.deposit kullanılır", async () => {
++    const v = await verifyPublicReservationPrice(payload({ damage_deposit: 0 }));
++    expect(v.authoritative?.damage_deposit).toBe(5000);
++  });
++
++  it("villa.deposit null/boş → 0 (client formülü Number(x) || 0 ile aynı)", async () => {
++    findVillaCleaningConfig.mockResolvedValue({ data: { ...VILLA, deposit: null }, error: null });
++    expect((await verifyPublicReservationPrice(payload({ damage_deposit: 99999 }))).authoritative?.damage_deposit).toBe(0);
++  });
++});
++
++describe("F5 — fail-closed", () => {
++  it("villa ayarları okunamadı (DB hata) → recomputeFailed, authoritative YOK", async () => {
++    findVillaCleaningConfig.mockResolvedValue({ data: null, error: { message: "db down" } });
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.recomputeFailed).toBe(true);
++    expect(v.authoritative).toBeNull();
++    expect(v.priceUnavailable).toBe(false);
++  });
++
++  it("villa satırı yok → recomputeFailed", async () => {
++    findVillaCleaningConfig.mockResolvedValue({ data: null, error: null });
++    expect((await verifyPublicReservationPrice(payload())).recomputeFailed).toBe(true);
++  });
++
++  it("settings okunamadı + villa override yok → recomputeFailed (sessiz %20 yok)", async () => {
++    getPublicSettings.mockResolvedValue(null);
++    expect((await verifyPublicReservationPrice(payload())).recomputeFailed).toBe(true);
++  });
++
++  it("settings okunamadı AMA villa override var → hesap AYNEN (settings gerekmiyor)", async () => {
++    getPublicSettings.mockResolvedValue(null);
++    findVillaCleaningConfig.mockResolvedValue({ data: { ...VILLA, custom_prepayment_rate: 30 }, error: null });
++    getVillaPrices.mockResolvedValue(TRY_PRICES);
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.recomputeFailed).toBe(false);
++    expect(v.authoritative?.prepayment_amount).toBe(8100);
++  });
++
++  it("recompute beklenmeyen hata → recomputeFailed", async () => {
++    getVillaPrices.mockRejectedValue(new Error("boom"));
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.recomputeFailed).toBe(true);
++    expect(v.authoritative).toBeNull();
++  });
++
++  it("villa_id eksik → recomputeFailed", async () => {
++    expect((await verifyPublicReservationPrice(payload({ villa_id: "" }))).recomputeFailed).toBe(true);
++  });
++
++  it("başarılı hesapta bayraklar false ve authoritative dolu", async () => {
++    const v = await verifyPublicReservationPrice(payload());
++    expect(v.recomputeFailed).toBe(false);
++    expect(v.rateUnavailable).toBe(false);
++    expect(v.priceUnavailable).toBe(false);
++    expect(v.authoritative?.total_price_try).toBe(21060);
++  });
++});
+diff --git a/tests/unit/reservation-service/sec06-public-reservations-route.test.ts b/tests/unit/reservation-service/sec06-public-reservations-route.test.ts
+new file mode 100644
+index 0000000..ff9fe00
+--- /dev/null
++++ b/tests/unit/reservation-service/sec06-public-reservations-route.test.ts
+@@ -0,0 +1,283 @@
++import { describe, it, expect, vi, beforeEach } from "vitest";
++
++/* ===============================================================
++   🛡️ SEC-06 — POST /api/public/reservations UÇTAN UCA (route seviyesi)
++   ===============================================================
++   Gerçek route + gerçek price-verify + gerçek fiyat motoru çalışır;
++   yalnız DB erişimi (fiyat/kur/settings/indirim/villa okuma), rate-limit,
++   orphan-gap kontrolü ve INSERT (createReservation) mock'lanır.
++   `createReservation`'a giden `body`, DB'ye yazılacak değerlerin
++   kendisidir (payload-create yalnız alan kopyalar).
++   =============================================================== */
++
++const findVillaCleaningConfig = vi.fn();
++const getVillaPrices = vi.fn();
++const getExchangeRatesMap = vi.fn();
++const getPublicSettings = vi.fn();
++const getVillaDiscounts = vi.fn();
++const createReservation = vi.fn();
++const verifyStay = vi.fn();
++
++vi.mock("@/lib/db/reservation.repository", () => ({
++  reservationRepository: {
++    findVillaCleaningConfig: (...a: unknown[]) => findVillaCleaningConfig(...a),
++  },
++}));
++vi.mock("@/app/services/villa-price.service", () => ({
++  getVillaPrices: (...a: unknown[]) => getVillaPrices(...a),
++}));
++vi.mock("@/app/services/exchange-rate.service", () => ({
++  getExchangeRatesMap: (...a: unknown[]) => getExchangeRatesMap(...a),
++}));
++vi.mock("@/app/services/settings.service", () => ({
++  getPublicSettings: (...a: unknown[]) => getPublicSettings(...a),
++}));
++vi.mock("@/app/services/villa-discount.service", () => ({
++  getVillaDiscounts: (...a: unknown[]) => getVillaDiscounts(...a),
++}));
++vi.mock("@/app/services/reservation.service", () => ({
++  createReservation: (...a: unknown[]) => createReservation(...a),
++}));
++vi.mock("@/lib/db/reservation.repository.server", () => ({
++  reservationServerRepository: { insert: vi.fn() },
++}));
++vi.mock("@/app/services/reservation/_helpers/stay-verify", () => ({
++  verifyPublicReservationStayRules: (...a: unknown[]) => verifyStay(...a),
++}));
++vi.mock("@/lib/rate-limit", () => ({
++  applyRateLimit: async () => null,
++}));
++
++import { POST } from "@/app/api/public/reservations/route";
++import baseline from "./__fixtures__/sec06-price-baseline.json";
++import { SEC06_SCENARIOS, SEC06_RATES, SEC06_BASE_VILLA } from "./_sec06-price-scenarios";
++
++type Json = Record<string, unknown>;
++const BASELINE = baseline as Record<string, { authoritative: Json | null }>;
++
++const FUTURE_START = "2027-06-02";
++const FUTURE_END = "2027-06-05";
++const EUR_PRICES = [{ start_date: "2027-06-01", end_date: "2027-06-30", price: 200, currency: "EUR" }];
++
++function body(over: Json = {}): Json {
++  return {
++    villa_id: "villa-sec06",
++    start_date: FUTURE_START,
++    end_date: FUTURE_END,
++    name: "SEC06 Test",
++    phone: "+905551112233",
++    phone2: "+905551112244",
++    email: "t@example.test",
++    guests: 2,
++    total_price: 1,
++    total_price_try: 1,
++    prepayment_amount: 1,
++    remaining_payment: 0,
++    paid_amount: 0,
++    damage_deposit: 5000,
++    payment_preference: "prepayment",
++    ...over,
++  };
++}
++
++async function post(b: Json) {
++  const res = await POST(
++    new Request("http://localhost/api/public/reservations", {
++      method: "POST",
++      headers: { "content-type": "application/json" },
++      body: JSON.stringify(b),
++    })
++  );
++  return { status: res.status, json: (await res.json()) as Json };
++}
++
++const inserted = () => createReservation.mock.calls[0]?.[0] as Json | undefined;
++
++beforeEach(() => {
++  vi.clearAllMocks();
++  vi.spyOn(console, "log").mockImplementation(() => {});
++  vi.spyOn(console, "warn").mockImplementation(() => {});
++  vi.spyOn(console, "error").mockImplementation(() => {});
++  findVillaCleaningConfig.mockResolvedValue({
++    data: { ...SEC06_BASE_VILLA, deposit: 5000 },
++    error: null,
++  });
++  getVillaPrices.mockResolvedValue(EUR_PRICES);
++  getExchangeRatesMap.mockResolvedValue({ rates: SEC06_RATES, updatedAt: null });
++  getPublicSettings.mockResolvedValue({ prepayment_rate: 20 });
++  getVillaDiscounts.mockResolvedValue([]);
++  verifyStay.mockResolvedValue(undefined);
++  createReservation.mockResolvedValue({ id: "r1", reservation_no: "TY-1" });
++});
++
++describe("normal akış — fiyat sonucu değişmedi", () => {
++  it("YYYY-MM-DD rezervasyon → 200; DB'ye giden tutarlar baseline ile BİREBİR", async () => {
++    const s = SEC06_SCENARIOS.find((x) => x.name.startsWith("25 "))!;
++    findVillaCleaningConfig.mockResolvedValue({
++      data: { ...SEC06_BASE_VILLA, ...s.villa, deposit: 5000 },
++      error: null,
++    });
++    getVillaPrices.mockResolvedValue(s.prices);
++    getVillaDiscounts.mockResolvedValue(s.discounts);
++
++    const r = await post(body({ start_date: s.start, end_date: s.end, pool_heating_selected: true }));
++    expect(r.status).toBe(200);
++    expect(r.json).toEqual({ ok: true, reservation: { id: "r1", reservation_no: "TY-1" } });
++
++    const row = inserted()!;
++    for (const [k, val] of Object.entries(BASELINE[s.name].authoritative!)) {
++      expect(row[k]).toEqual(val);
++    }
++    expect(row.custom_price).toBe(false);
++    expect(row.custom_price_note).toBeNull();
++    expect(row.start_date).toBe(s.start);
++    expect(row.end_date).toBe(s.end);
++  });
++
++  it("dürüst client (paid_amount 0, deposit = villa.deposit) → değerler aynen", async () => {
++    await post(body());
++    expect(inserted()!.paid_amount).toBe(0);
++    expect(inserted()!.damage_deposit).toBe(5000);
++    expect(inserted()!.payment_preference).toBe("prepayment");
++    expect(inserted()!.guests).toBe(2);
++  });
++});
++
++describe("F1 — tarih", () => {
++  const BAD: Array<[string, string]> = [
++    ["20270918", "20270922"],
++    ["2027-09-23 00:00", "2027-09-27 00:00"],
++    ["2027/09/27", "2027/09/30"],
++    ["Aug 27 2027", "Aug 31 2027"],
++    ["2027-08-23T00:00:00", "2027-08-27T00:00:00"],
++    ["2027-02-30", "2027-03-02"],
++  ];
++  for (const [s, e] of BAD) {
++    it(`geçersiz biçim "${s}" → 400, INSERT yok`, async () => {
++      const r = await post(body({ start_date: s, end_date: e }));
++      expect(r.status).toBe(400);
++      expect(r.json.ok).toBe(false);
++      expect(createReservation).not.toHaveBeenCalled();
++      expect(getVillaPrices).not.toHaveBeenCalled();
++    });
++  }
++
++  it("0 gece (giriş == çıkış) → 400 'Tarih aralığı hatalı'", async () => {
++    const r = await post(body({ start_date: "2027-09-05", end_date: "2027-09-05" }));
++    expect(r.status).toBe(400);
++    expect(r.json.error).toBe("Tarih aralığı hatalı");
++    expect(createReservation).not.toHaveBeenCalled();
++  });
++
++  it("ters aralık → 400", async () => {
++    const r = await post(body({ start_date: "2027-09-06", end_date: "2027-09-05" }));
++    expect(r.status).toBe(400);
++    expect(createReservation).not.toHaveBeenCalled();
++  });
++
++  it("tamamı geçmişte kalan konaklama → 400", async () => {
++    const r = await post(body({ start_date: "2020-06-01", end_date: "2020-06-05" }));
++    expect(r.status).toBe(400);
++    expect(createReservation).not.toHaveBeenCalled();
++  });
++
++  it("tarih eksik → 400 'Tarih zorunlu' (eski mesaj)", async () => {
++    const r = await post(body({ start_date: undefined }));
++    expect(r.status).toBe(400);
++    expect(r.json.error).toBe("Tarih zorunlu");
++  });
++});
++
++describe("F2 — paid_amount", () => {
++  it("sahte paid_amount 99999 etkisiz → 0 yazılır", async () => {
++    const r = await post(body({ paid_amount: 99999 }));
++    expect(r.status).toBe(200);
++    expect(inserted()!.paid_amount).toBe(0);
++  });
++
++  it("paid_amount hiç gönderilmese de 0", async () => {
++    const b = body();
++    delete b.paid_amount;
++    await post(b);
++    expect(inserted()!.paid_amount).toBe(0);
++  });
++});
++
++describe("F3 — eksik kur", () => {
++  it("EUR kuru yok → 400, INSERT yok", async () => {
++    getExchangeRatesMap.mockResolvedValue({ rates: { USD: 32.5, GBP: 41.2 }, updatedAt: null });
++    const r = await post(body());
++    expect(r.status).toBe(400);
++    expect(r.json.error).toBe("Seçilen tarihler için fiyat hesaplanamadı");
++    expect(createReservation).not.toHaveBeenCalled();
++  });
++});
++
++describe("F4 — damage_deposit", () => {
++  it("sahte damage_deposit 0 etkisiz → villa.deposit (5000) yazılır", async () => {
++    await post(body({ damage_deposit: 0 }));
++    expect(inserted()!.damage_deposit).toBe(5000);
++  });
++
++  it("sahte yüksek damage_deposit etkisiz", async () => {
++    await post(body({ damage_deposit: 1 }));
++    expect(inserted()!.damage_deposit).toBe(5000);
++  });
++});
++
++describe("F5 — fail-closed", () => {
++  it("villa ayarları okunamadı → 400, INSERT yok", async () => {
++    findVillaCleaningConfig.mockResolvedValue({ data: null, error: { message: "db down" } });
++    const r = await post(body());
++    expect(r.status).toBe(400);
++    expect(createReservation).not.toHaveBeenCalled();
++  });
++
++  it("recompute beklenmeyen hata → 400, INSERT yok (client tutarı ASLA yazılmaz)", async () => {
++    getVillaPrices.mockRejectedValue(new Error("boom"));
++    const r = await post(body());
++    expect(r.status).toBe(400);
++    expect(createReservation).not.toHaveBeenCalled();
++  });
++
++  it("settings okunamadı (villa override yok) → 400", async () => {
++    getPublicSettings.mockResolvedValue(null);
++    const r = await post(body());
++    expect(r.status).toBe(400);
++    expect(createReservation).not.toHaveBeenCalled();
++  });
++});
++
++describe("korunan davranışlar", () => {
++  it("fiyatı olmayan gece → mevcut 400 mesajı aynen", async () => {
++    getVillaPrices.mockResolvedValue([]);
++    const r = await post(body());
++    expect(r.status).toBe(400);
++    expect(r.json.error).toBe("Seçilen tarihler için fiyat hesaplanamadı");
++  });
++
++  it("orphan-gap ihlali → mevcut 400 aynen", async () => {
++    verifyStay.mockRejectedValue(new Error("ORPHAN"));
++    const r = await post(body());
++    expect(r.status).toBe(400);
++    expect(r.json.error).toBe("ORPHAN");
++  });
++
++  it("'Bu tarihler dolu' → mevcut 409 aynen", async () => {
++    createReservation.mockRejectedValue(new Error("Bu tarihler dolu"));
++    const r = await post(body());
++    expect(r.status).toBe(409);
++  });
++
++  it("telefon doğrulaması tarih kontrolünden ÖNCE (mevcut sıra)", async () => {
++    const r = await post(body({ phone: "", start_date: "bad" }));
++    expect(r.status).toBe(400);
++    expect(r.json.error).toBe("Geçerli bir telefon numarası gir");
++  });
++
++  it("guests / payment_preference client'tan aynen (değiştirilmedi)", async () => {
++    await post(body({ guests: 4, payment_preference: "full_payment" }));
++    expect(inserted()!.guests).toBe(4);
++    expect(inserted()!.payment_preference).toBe("full_payment");
++  });
++});

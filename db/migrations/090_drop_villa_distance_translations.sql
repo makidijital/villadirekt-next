@@ -1,0 +1,105 @@
+-- ============================================================================
+-- Migration 090 — DROP villa_distance_translations
+-- ============================================================================
+-- AMAÇ:
+--   "Villa BAŞINA mesafe çevirisi girme" özelliği tamamen kaldırıldı.
+--   Mesafe başlıkları artık YALNIZ statik i18n dictionary'sinden çözülür
+--   (`lib/distance-label.helper.ts` > getTranslatedDistanceLabel →
+--   `dictionary.distanceLabels`, 12 canonical başlık). Canonical olmayan
+--   (legacy/custom) başlıklar her locale'de AYNEN gösterilir.
+--   Bu yüzden `public.villa_distance_translations` tablosu artık
+--   koddan HİÇ okunmuyor/yazılmıyor ve kaldırılıyor.
+--
+-- ⚠️ MIGRATION GEÇMİŞİ IMMUTABLE:
+--   Tabloyu oluşturan `082_translation_tables.sql` DEĞİŞTİRİLMEDİ.
+--   Kaldırma işlemi İLERİ YÖNLÜ bu yeni migration ile yapılır.
+--
+-- KAPSAM — KESİN SINIRLAR:
+--   ❌ `public.villa_distances` tablosuna DOKUNULMAZ
+--      (DROP / DELETE / UPDATE / TRUNCATE / ALTER **YOK**).
+--      Mevcut TR canonical mesafe verileri (title + distance) AYNEN kalır.
+--   ❌ `public.trg_touch_updated_at()` ortak fonksiyonu SİLİNMEZ —
+--      082/086/088/089'daki diğer çeviri tabloları onu KULLANMAYA
+--      DEVAM EDER.
+--   ❌ Diğer çeviri tabloları (villa / villa_type / villa_feature /
+--      rule_item / price_include_item / page / faq / menu /
+--      payment_method / blog_post) DOKUNULMAZ.
+--   ❌ `replace_villa_distances` RPC'si DOKUNULMAZ.
+--   ✅ Yalnız 1 DROP TRIGGER + 1 DROP TABLE.
+--
+-- BAĞIMLILIK KONTROLÜ (deploy öncesi doğrulandı):
+--   Hiçbir tablo `public.villa_distance_translations`'a FK VERMEZ.
+--   Tek yönlü bağımlılık vardır (distance_id → villa_distances.id,
+--   ON DELETE CASCADE) ve tablo düşünce bu FK de birlikte kalkar —
+--   parent tablo (`villa_distances`) bundan ETKİLENMEZ.
+--   Bu nedenle CASCADE gerekmez; RESTRICT (default) ile düşer.
+--
+-- ⚠️ VERİ KAYBI UYARISI:
+--   Bu tabloda satır varsa DROP onları KALICI olarak siler; geri
+--   dönüşü YOKTUR. Deploy ÖNCESİ kontrol edin:
+--     SELECT count(*) FROM public.villa_distance_translations;
+--   0 değilse önce yedek alın (tablo hiç kullanılmadıysa 0 beklenir).
+--
+-- NATIVE POSTGRESQL (082/086/088/089 CANON):
+--   anon/authenticated/service_role rolleri YOK; RLS/GRANT/REVOKE YOK.
+--
+-- İDEMPOTENT: DROP TRIGGER IF EXISTS + DROP TABLE IF EXISTS.
+--   Tablo hiç oluşturulmamışsa (082 uygulanmadıysa) no-op'tur.
+--   `--single-transaction` ile güvenle uygulanır.
+--
+-- ROLLBACK (gerekirse — 082'deki tanımın BİREBİR aynısı):
+--   BEGIN;
+--     CREATE TABLE IF NOT EXISTS public.villa_distance_translations (
+--       id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+--       distance_id  uuid NOT NULL REFERENCES public.villa_distances (id) ON DELETE CASCADE,
+--       locale       text NOT NULL,
+--       title        text,
+--       distance     text,
+--       created_at   timestamptz NOT NULL DEFAULT now(),
+--       updated_at   timestamptz NOT NULL DEFAULT now(),
+--       CONSTRAINT villa_distance_translations_locale_check CHECK (locale IN ('tr', 'en', 'de')),
+--       CONSTRAINT villa_distance_translations_distance_id_locale_key UNIQUE (distance_id, locale)
+--     );
+--     CREATE TRIGGER villa_distance_translations_touch_updated_at
+--       BEFORE UPDATE ON public.villa_distance_translations
+--       FOR EACH ROW EXECUTE FUNCTION public.trg_touch_updated_at();
+--   COMMIT;
+--   (Satır verisi geri gelmez.)
+-- ============================================================================
+
+BEGIN;
+
+-- ----------------------------------------------------------------------------
+-- 1) Trigger — tablo ile birlikte zaten düşerdi; explicit DROP idempotanlık
+--    ve okunabilirlik içindir (082/086/088/089 desenindeki aynı isimlendirme).
+-- ----------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS villa_distance_translations_touch_updated_at
+  ON public.villa_distance_translations;
+
+-- ----------------------------------------------------------------------------
+-- 2) Tablo. CASCADE KULLANILMADI — bu tabloya bağımlı hiçbir nesne yok;
+--    CASCADE yazmak ileride beklenmedik bir bağımlılığı sessizce silebilirdi.
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS public.villa_distance_translations;
+
+COMMIT;
+
+-- ============================================================================
+-- DOĞRULAMA (deploy sonrası ELLE kontrol)
+-- ============================================================================
+--   -- Tablo gitti mi? (0 dönmeli)
+--   SELECT count(*) FROM information_schema.tables
+--    WHERE table_schema = 'public' AND table_name = 'villa_distance_translations';
+--
+--   -- ⚠️ EN KRİTİK: mevcut mesafe verileri DEĞİŞMEDİ mi?
+--   SELECT count(*) FROM public.villa_distances;
+--   SELECT villa_id, title, distance FROM public.villa_distances ORDER BY created_at LIMIT 20;
+--
+--   -- Ortak trigger fonksiyonu DURUYOR mu? (1 dönmeli)
+--   SELECT count(*) FROM pg_proc WHERE proname = 'trg_touch_updated_at';
+--
+--   -- Diğer çeviri tabloları DURUYOR mu? (10 dönmeli)
+--   SELECT count(*) FROM information_schema.tables
+--    WHERE table_schema = 'public' AND table_name LIKE '%_translations'
+--      AND table_name <> 'villa_distance_translations';
+-- ============================================================================

@@ -1,0 +1,56 @@
+--- a/app/(admin)/maki-admin/settings/popup/page.tsx
++++ b/app/(admin)/maki-admin/settings/popup/page.tsx
+@@ -4,6 +4,7 @@
+ import { Plus, Trash2 } from "lucide-react";
+ 
+ import { useNotify } from "@/app/components/admin/notifications/NotificationProvider";
++import AdminDateInput from "@/app/components/admin/shared/AdminDateInput";
+ import SitePopupCard from "@/app/components/layout/site-popup/SitePopupCard";
+ import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
+ import {
+@@ -370,24 +371,30 @@
+             </select>
+           </FieldShell>
+           <div className="grid sm:grid-cols-2 gap-4">
++            {/* Tarih seçici: mevcut admin AdminDateInput (native picker yok).
++                Değer formatı aynı ("" | "YYYY-MM-DD"); fieldset disabled →
++                yükleme/yetki hatasında tetikleyici buton pasif. */}
+             <FieldShell label="Başlangıç tarihi (opsiyonel)" hint="Bu günün başından itibaren (TR saati).">
+-              <input
+-                type="date"
+-                className="input"
+-                value={startDate}
+-                onChange={(e) => setStartDate(e.target.value)}
+-                disabled={loading || !!loadError}
+-              />
++              <fieldset disabled={loading || !!loadError} className="min-w-0">
++                <AdminDateInput
++                  mode="date"
++                  value={startDate}
++                  onChange={setStartDate}
++                  placeholder="Tarih seç"
++                  ariaLabel="Başlangıç tarihi"
++                />
++              </fieldset>
+             </FieldShell>
+             <FieldShell label="Bitiş tarihi (opsiyonel)" hint="Bu günün sonuna kadar (dahil).">
+-              <input
+-                type="date"
+-                className="input"
+-                value={endDate}
+-                min={startDate || undefined}
+-                onChange={(e) => setEndDate(e.target.value)}
+-                disabled={loading || !!loadError}
+-              />
++              <fieldset disabled={loading || !!loadError} className="min-w-0">
++                <AdminDateInput
++                  mode="date"
++                  value={endDate}
++                  onChange={setEndDate}
++                  placeholder="Tarih seç"
++                  ariaLabel="Bitiş tarihi"
++                />
++              </fieldset>
+             </FieldShell>
+           </div>
+         </SettingsSection>

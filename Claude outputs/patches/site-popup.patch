@@ -1,0 +1,1975 @@
+diff --git a/app/(admin)/maki-admin/settings/_components/SettingsNav.tsx b/app/(admin)/maki-admin/settings/_components/SettingsNav.tsx
+index 29f374a..076c826 100644
+--- a/app/(admin)/maki-admin/settings/_components/SettingsNav.tsx
++++ b/app/(admin)/maki-admin/settings/_components/SettingsNav.tsx
+@@ -12,6 +12,7 @@ import {
+   Plug,
+   Wrench,
+   Languages,
++  Megaphone,
+ } from "lucide-react";
+ 
+ /* ===============================================================
+@@ -46,6 +47,9 @@ const ITEMS: NavItem[] = [
+   /* 🛡️ PHASE 10K — settings'in yönetilebilir doğal dil metinlerinin
+      EN/DE içerikleri. Mevcut 8 bölümün sırası/yapısı DEĞİŞMEDİ. */
+   { href: "/maki-admin/settings/ceviriler", label: "Çeviriler", icon: Languages },
++  /* 🛡️ Açılış/kampanya popup'ı (migration 095) — ayrı tablo, ayrı
++     action'lar; mevcut bölümler DEĞİŞMEDİ (yalnız sona eklendi). */
++  { href: "/maki-admin/settings/popup", label: "Açılış Popup", icon: Megaphone },
+ ];
+ 
+ export default function SettingsNav() {
+diff --git a/app/(admin)/maki-admin/settings/popup/page.tsx b/app/(admin)/maki-admin/settings/popup/page.tsx
+new file mode 100644
+index 0000000..86babc1
+--- /dev/null
++++ b/app/(admin)/maki-admin/settings/popup/page.tsx
+@@ -0,0 +1,434 @@
++"use client";
++
++import { useEffect, useMemo, useState } from "react";
++import { Plus, Trash2 } from "lucide-react";
++
++import { useNotify } from "@/app/components/admin/notifications/NotificationProvider";
++import SitePopupCard from "@/app/components/layout/site-popup/SitePopupCard";
++import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
++import {
++  POPUP_DISMISS_DURATIONS,
++  POPUP_DISMISS_LABELS,
++  POPUP_IMAGE_FOLDER,
++  POPUP_IMAGE_SLUG,
++  POPUP_LIMITS,
++  isSafePopupUrl,
++  type PopupDismissDuration,
++  type PopupDisplayScope,
++} from "@/lib/site-popup";
++
++import {
++  FieldShell,
++  SaveButton,
++  SettingsSection,
++  TextAreaField,
++  TextField,
++  ToggleField,
++  UploadField,
++} from "../_components/SettingsField";
++import { loadSitePopupAction, saveSitePopupAction } from "./popup.action";
++
++/* ===============================================================
++   🛡️ /maki-admin/settings/popup — Açılış / Kampanya Popup yönetimi
++   ===============================================================
++   • Veri: `site_popup` (migration 095) — server action'lar
++     (`requirePermission("settings")`). Mevcut /api/admin/settings
++     akışına ve settings tablosuna DOKUNMAZ.
++   • Görsel: mevcut settings `UploadField` (WebP dönüşümü → mevcut
++     storage route → R2, site-assets/popup/popup.webp).
++   • Canlı önizleme: public popup'ın AYNI bileşeni (SitePopupCard).
++   =============================================================== */
++
++type ScopeOption = { value: PopupDisplayScope; label: string; hint: string };
++const SCOPES: ScopeOption[] = [
++  { value: "home", label: "Yalnız ana sayfa", hint: "TR/EN/DE ana sayfalarında açılır." },
++  { value: "all", label: "Tüm site", hint: "Ziyaretçinin girdiği ilk public sayfada açılır." },
++];
++
++export default function SettingsPopupPage() {
++  const toast = useNotify();
++
++  const [loading, setLoading] = useState(true);
++  const [saving, setSaving] = useState(false);
++  const [saved, setSaved] = useState(false);
++  const [loadError, setLoadError] = useState<string | null>(null);
++
++  const [isEnabled, setIsEnabled] = useState(false);
++  const [imagePath, setImagePath] = useState<string | null>(null);
++  const [imageBust, setImageBust] = useState<string | null>(null);
++  const [title, setTitle] = useState("");
++  const [description, setDescription] = useState("");
++  const [highlight, setHighlight] = useState("");
++  const [stats, setStats] = useState<string[]>([]);
++  const [buttonText, setButtonText] = useState("");
++  const [buttonUrl, setButtonUrl] = useState("");
++  const [showButton, setShowButton] = useState(true);
++  const [scope, setScope] = useState<PopupDisplayScope>("home");
++  const [dismiss, setDismiss] = useState<PopupDismissDuration>("session");
++  const [startDate, setStartDate] = useState("");
++  const [endDate, setEndDate] = useState("");
++  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
++
++  useEffect(() => {
++    let cancelled = false;
++    loadSitePopupAction()
++      .then((v) => {
++        if (cancelled) return;
++        if (!v) {
++          setLoadError(
++            "Popup ayarları okunamadı. Migration 095 (site_popup) uygulanmış mı?"
++          );
++          return;
++        }
++        setIsEnabled(v.isEnabled);
++        setImagePath(v.imagePath);
++        setTitle(v.title);
++        setDescription(v.description);
++        setHighlight(v.highlight);
++        setStats(v.stats);
++        setButtonText(v.buttonText);
++        setButtonUrl(v.buttonUrl);
++        setShowButton(v.showButton);
++        setScope(v.scope);
++        setDismiss(v.dismiss);
++        setStartDate(v.startDate);
++        setEndDate(v.endDate);
++        setUpdatedAt(v.updatedAt);
++      })
++      .catch(() => {
++        if (!cancelled) setLoadError("Bu bölüm için 'Ayarlar' yetkisi gerekiyor.");
++      })
++      .finally(() => {
++        if (!cancelled) setLoading(false);
++      });
++    return () => {
++      cancelled = true;
++    };
++  }, []);
++
++  const urlInvalid = buttonUrl.trim().length > 0 && !isSafePopupUrl(buttonUrl.trim());
++
++  const previewImage = useMemo(
++    () => resolveAssetUrlVersioned(imagePath, imageBust || updatedAt),
++    [imagePath, imageBust, updatedAt]
++  );
++  const cleanStats = stats.map((s) => s.trim()).filter(Boolean);
++  const previewButton =
++    showButton && buttonText.trim()
++      ? { text: buttonText.trim(), url: buttonUrl.trim() || "/", external: false }
++      : null;
++  const hasPreviewContent = !!(
++    previewImage ||
++    title.trim() ||
++    description.trim() ||
++    highlight.trim() ||
++    cleanStats.length ||
++    previewButton
++  );
++
++  function updateStat(i: number, value: string) {
++    setStats((prev) => prev.map((s, idx) => (idx === i ? value : s)));
++  }
++
++  async function handleSubmit(e: React.FormEvent) {
++    e.preventDefault();
++    if (urlInvalid) {
++      toast.error("Buton URL'i geçersiz", { id: "settings-popup" });
++      return;
++    }
++    setSaving(true);
++    setSaved(false);
++    let res: Awaited<ReturnType<typeof saveSitePopupAction>>;
++    try {
++      res = await saveSitePopupAction({
++        isEnabled,
++        imagePath,
++        title,
++        description,
++        highlight,
++        stats: cleanStats,
++        buttonText,
++        buttonUrl,
++        showButton,
++        scope,
++        dismiss,
++        startDate,
++        endDate,
++      });
++    } catch {
++      res = { ok: false, error: "Kaydedilemedi" };
++    }
++    setSaving(false);
++    if (!res.ok) {
++      toast.error(res.error || "Kaydedilemedi", { id: "settings-popup" });
++      return;
++    }
++    setUpdatedAt(res.values.updatedAt);
++    setImagePath(res.values.imagePath);
++    setStats(res.values.stats);
++    setSaved(true);
++    toast.success("Kaydedildi", { id: "settings-popup" });
++    window.setTimeout(() => setSaved(false), 1500);
++  }
++
++  return (
++    <div className="space-y-6">
++      <div>
++        <p className="eyebrow">Ayarlar</p>
++        <h1 className="font-display text-3xl md:text-4xl text-[var(--color-stone-900)] mt-2 tracking-[-0.02em]">
++          Açılış Popup
++        </h1>
++        <p className="text-sm text-[var(--color-stone-500)] mt-2 max-w-2xl">
++          Siteye giren ziyaretçiye gösterilen kampanya/duyuru penceresi. Kapalıyken
++          public sitede hiçbir şey yüklenmez.
++        </p>
++      </div>
++
++      {loadError && (
++        <div className="card-premium p-5 text-sm text-red-700 bg-red-50/60">{loadError}</div>
++      )}
++
++      <form onSubmit={handleSubmit} className="space-y-6" aria-busy={loading || saving}>
++        {/* DURUM */}
++        <SettingsSection title="Durum" description="Popup'ı açıp kapatın.">
++          <ToggleField
++            label="Popup aktif"
++            description="Kapalıyken popup hiçbir sayfada gösterilmez."
++            checked={isEnabled}
++            onChange={setIsEnabled}
++            disabled={loading || !!loadError}
++          />
++        </SettingsSection>
++
++        {/* İÇERİK */}
++        <SettingsSection
++          title="İçerik"
++          description="Tüm metinler düz metin olarak gösterilir (HTML kabul edilmez)."
++        >
++          <UploadField
++            label="Popup görseli"
++            currentUrl={imagePath}
++            onChange={(p) => {
++              setImagePath(p);
++              setImageBust(String(Date.now()));
++            }}
++            folder={POPUP_IMAGE_FOLDER}
++            slug={POPUP_IMAGE_SLUG}
++            version={updatedAt}
++            disabled={loading || !!loadError}
++            hint="Yatay, en az 1600px genişlikte görsel önerilir. WebP'ye çevrilip R2'ye yüklenir (site-assets/popup/popup.webp). Kaldırıp kaydederseniz dosya R2'den de silinir."
++          />
++          <TextField
++            label="Büyük vurgu metni"
++            value={highlight}
++            onChange={(v) => setHighlight(v.slice(0, POPUP_LIMITS.highlight))}
++            placeholder="20"
++            hint="Görselin üzerinde büyük puntoyla gösterilir (örn. yıl sayısı). Boş bırakılabilir."
++            disabled={loading || !!loadError}
++          />
++          <TextField
++            label="Başlık"
++            value={title}
++            onChange={(v) => setTitle(v.slice(0, POPUP_LIMITS.title))}
++            placeholder="2006'dan bu yana tatilinizin yanındayız."
++            disabled={loading || !!loadError}
++          />
++          <TextAreaField
++            label="Açıklama (opsiyonel)"
++            value={description}
++            onChange={(v) => setDescription(v.slice(0, POPUP_LIMITS.description))}
++            rows={3}
++            disabled={loading || !!loadError}
++          />
++          <FieldShell
++            label="Alt bilgi satırları (en fazla 4)"
++            hint="Örn. '300.000+ misafir', '4.9 misafir puanı', 'TÜRSAB 9117'."
++          >
++            <div className="space-y-2">
++              {stats.map((s, i) => (
++                <div key={i} className="flex items-center gap-2">
++                  <input
++                    className="input"
++                    value={s}
++                    maxLength={POPUP_LIMITS.stat}
++                    onChange={(e) => updateStat(i, e.target.value)}
++                    disabled={loading || !!loadError}
++                    aria-label={`Alt bilgi ${i + 1}`}
++                  />
++                  <button
++                    type="button"
++                    onClick={() => setStats((prev) => prev.filter((_, idx) => idx !== i))}
++                    className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-red-600 hover:bg-red-50"
++                    aria-label={`Alt bilgi ${i + 1} sil`}
++                  >
++                    <Trash2 size={15} />
++                  </button>
++                </div>
++              ))}
++              {stats.length < POPUP_LIMITS.statsCount && (
++                <button
++                  type="button"
++                  onClick={() => setStats((prev) => [...prev, ""])}
++                  disabled={loading || !!loadError}
++                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--color-stone-700)] hover:text-[var(--color-stone-900)] px-3 py-2 rounded-lg hover:bg-[var(--color-sand-50)]"
++                >
++                  <Plus size={14} /> Satır ekle
++                </button>
++              )}
++            </div>
++          </FieldShell>
++        </SettingsSection>
++
++        {/* BUTON */}
++        <SettingsSection title="Buton" description="Popup'ın altındaki yönlendirme butonu.">
++          <ToggleField
++            label="Butonu göster"
++            checked={showButton}
++            onChange={setShowButton}
++            disabled={loading || !!loadError}
++          />
++          <TextField
++            label="Buton metni"
++            value={buttonText}
++            onChange={(v) => setButtonText(v.slice(0, POPUP_LIMITS.buttonText))}
++            placeholder="Villaları inceleyin"
++            disabled={loading || !!loadError || !showButton}
++          />
++          <FieldShell
++            label="Buton URL'i"
++            hint="Site içi için '/' ile başlayın (örn. /kiralik-villalar). Harici bağlantılar https:// ile başlamalı ve yeni sekmede açılır."
++          >
++            <input
++              className="input"
++              value={buttonUrl}
++              onChange={(e) => setButtonUrl(e.target.value.slice(0, POPUP_LIMITS.buttonUrl))}
++              placeholder="/kiralik-villalar"
++              disabled={loading || !!loadError || !showButton}
++              aria-invalid={urlInvalid}
++            />
++            {urlInvalid && (
++              <p className="text-[12px] text-red-600 mt-1.5">
++                Yalnız &quot;/...&quot; veya &quot;https://...&quot; adresleri kabul edilir.
++              </p>
++            )}
++          </FieldShell>
++        </SettingsSection>
++
++        {/* GÖSTERİM */}
++        <SettingsSection
++          title="Gösterim"
++          description="Nerede ve ne sıklıkla gösterileceği. Tarihler boşsa yalnız aktif/pasif durumu geçerlidir."
++        >
++          <FieldShell label="Gösterim alanı">
++            <div className="grid sm:grid-cols-2 gap-2.5">
++              {SCOPES.map((o) => (
++                <label
++                  key={o.value}
++                  className={
++                    "flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition " +
++                    (scope === o.value
++                      ? "border-[var(--color-champagne-500)] bg-[var(--color-sand-50)]"
++                      : "border-[var(--color-stone-200)] hover:border-[var(--color-stone-300)]")
++                  }
++                >
++                  <input
++                    type="radio"
++                    name="popup-scope"
++                    value={o.value}
++                    checked={scope === o.value}
++                    onChange={() => setScope(o.value)}
++                    disabled={loading || !!loadError}
++                    className="mt-0.5"
++                  />
++                  <span>
++                    <span className="block text-[14px] font-medium text-[var(--color-stone-900)]">
++                      {o.label}
++                    </span>
++                    <span className="block text-[12.5px] text-[var(--color-stone-500)] mt-0.5">
++                      {o.hint}
++                    </span>
++                  </span>
++                </label>
++              ))}
++            </div>
++          </FieldShell>
++          <FieldShell
++            label="Kapatıldıktan sonra"
++            hint="İçeriği değiştirip kaydettiğinizde popup, daha önce kapatmış ziyaretçilere de yeniden gösterilir."
++          >
++            <select
++              className="input"
++              value={dismiss}
++              onChange={(e) => setDismiss(e.target.value as PopupDismissDuration)}
++              disabled={loading || !!loadError}
++            >
++              {POPUP_DISMISS_DURATIONS.map((d) => (
++                <option key={d} value={d}>
++                  {POPUP_DISMISS_LABELS[d]}
++                </option>
++              ))}
++            </select>
++          </FieldShell>
++          <div className="grid sm:grid-cols-2 gap-4">
++            <FieldShell label="Başlangıç tarihi (opsiyonel)" hint="Bu günün başından itibaren (TR saati).">
++              <input
++                type="date"
++                className="input"
++                value={startDate}
++                onChange={(e) => setStartDate(e.target.value)}
++                disabled={loading || !!loadError}
++              />
++            </FieldShell>
++            <FieldShell label="Bitiş tarihi (opsiyonel)" hint="Bu günün sonuna kadar (dahil).">
++              <input
++                type="date"
++                className="input"
++                value={endDate}
++                min={startDate || undefined}
++                onChange={(e) => setEndDate(e.target.value)}
++                disabled={loading || !!loadError}
++              />
++            </FieldShell>
++          </div>
++        </SettingsSection>
++
++        {/* ÖNİZLEME */}
++        <SettingsSection
++          title="Önizleme"
++          description="Ziyaretçinin göreceği pencere (kaydedilmemiş değişiklikler dahil)."
++        >
++          {hasPreviewContent ? (
++            <div className="rounded-3xl bg-black/60 p-4 sm:p-6">
++              <div className="max-w-[720px] mx-auto">
++                <SitePopupCard
++                  preview
++                  popup={{
++                    imageUrl: previewImage,
++                    title: title.trim() || null,
++                    description: description.trim() || null,
++                    highlight: highlight.trim() || null,
++                    stats: cleanStats,
++                    button: previewButton,
++                  }}
++                />
++              </div>
++            </div>
++          ) : (
++            <p className="text-sm text-[var(--color-stone-400)]">
++              Önizleme için görsel veya metin ekleyin.
++            </p>
++          )}
++        </SettingsSection>
++
++        <div className="flex justify-end">
++          <SaveButton
++            loading={saving}
++            saved={saved}
++            disabled={loading || !!loadError || urlInvalid}
++            label="Değişiklikleri kaydet"
++          />
++        </div>
++      </form>
++    </div>
++  );
++}
+diff --git a/app/(admin)/maki-admin/settings/popup/popup.action.ts b/app/(admin)/maki-admin/settings/popup/popup.action.ts
+new file mode 100644
+index 0000000..3794c26
+--- /dev/null
++++ b/app/(admin)/maki-admin/settings/popup/popup.action.ts
+@@ -0,0 +1,42 @@
++"use server";
++
++import { revalidateTag } from "next/cache";
++
++import { callerHasPermission, requirePermission } from "@/lib/auth/action-authz";
++import { authorizeAdminSession } from "@/lib/admin-route-auth";
++import {
++  getSitePopupForAdmin,
++  saveSitePopup,
++  type SitePopupAdminValues,
++  type SitePopupSaveResult,
++} from "@/app/services/site-popup.service";
++import { SITE_POPUP_CACHE_TAG } from "@/lib/site-popup.cache";
++
++/* ===============================================================
++   🛡️ ADMIN > AYARLAR > AÇILIŞ POPUP — server actions
++   ===============================================================
++   settings-translations.action.ts ile AYNI desen:
++     • Okuma: requirePermission("settings") — yetkisizse THROW.
++     • Yazma: authorizeAdminSession + callerHasPermission("settings")
++       İLK kontrol; yetkisiz çağrı servise/DB'ye HİÇ ulaşmaz.
++   Başarılı yazmadan sonra YALNIZ "site-popup" tag'i invalidate edilir
++   (settings/menu/villa cache'leri etkilenmez).
++   =============================================================== */
++
++export async function loadSitePopupAction(): Promise<SitePopupAdminValues | null> {
++  await requirePermission("settings");
++  return getSitePopupForAdmin();
++}
++
++export async function saveSitePopupAction(input: unknown): Promise<SitePopupSaveResult> {
++  const auth = await authorizeAdminSession();
++  if (!auth.ok) return { ok: false, error: "Yetkisiz" };
++  if (!(await callerHasPermission(auth.caller.id, "settings"))) {
++    return { ok: false, error: "Yetkisiz" };
++  }
++  const result = await saveSitePopup(input);
++  if (result.ok) {
++    revalidateTag(SITE_POPUP_CACHE_TAG, { expire: 0 });
++  }
++  return result;
++}
+diff --git a/app/(public)/layout.tsx b/app/(public)/layout.tsx
+index 45f490a..b57b0c6 100644
+--- a/app/(public)/layout.tsx
++++ b/app/(public)/layout.tsx
+@@ -20,6 +20,10 @@ import { resolvePublicHome } from "@/lib/i18n/public-home";
+ /* 🛡️ SEC-05 Phase 2 — GTM + custom head/analytics alanları root
+    layout'tan buraya taşındı (admin panelinde çalışmasın diye). */
+ import SiteTrackingScripts from "@/app/components/layout/SiteTrackingScripts";
++/* 🛡️ Açılış/kampanya popup'ı (migration 095). Kapalıysa hiç render
++   edilmez; aktifse hafif client loader karar verip modalı lazy yükler. */
++import SitePopupLoader from "@/app/components/layout/site-popup/SitePopupLoader";
++import { getCachedSitePopup } from "@/lib/site-popup.cache";
+ 
+ /* ===============================================================
+    🛡️ PUBLIC LAYOUT — MAINTENANCE MODE GATE
+@@ -78,6 +82,10 @@ export default async function PublicLayout({
+      kapalı → "/" (BYTE-IDENTICAL). */
+   const { trHomeHref } = resolvePublicHome(settings);
+ 
++  /* Popup — ayrı cache tag'i ("site-popup"); hata/tablo yok → null
++     (site etkilenmez). */
++  const sitePopup = await getCachedSitePopup().catch(() => null);
++
+   return (
+     <>
+     {/* 🛡️ SEC-05 Phase 2 — takip/özel script alanları (public-only).
+@@ -121,6 +129,8 @@ export default async function PublicLayout({
+       {/* 🍪 Çerez onay banner'ı — client-only island, SSR-safe, additive.
+          Bakım modunda render edilmez (yukarıdaki early-return). */}
+       <CookieConsent />
++
++      {sitePopup && <SitePopupLoader popup={sitePopup} />}
+     </div>
+     </>
+   );
+diff --git a/app/components/layout/site-popup/SitePopupCard.tsx b/app/components/layout/site-popup/SitePopupCard.tsx
+new file mode 100644
+index 0000000..294356a
+--- /dev/null
++++ b/app/components/layout/site-popup/SitePopupCard.tsx
+@@ -0,0 +1,152 @@
++import Link from "next/link";
++import { X } from "lucide-react";
++
++import type { PublicSitePopup } from "@/lib/site-popup";
++
++/* ===============================================================
++   🛡️ SitePopupCard — açılış/kampanya popup'ının GÖRSEL gövdesi
++   ===============================================================
++   Hem public modal (SitePopupDialog) hem admin canlı önizleme bunu
++   kullanır → iki yerde aynı tasarım, tek kaynak.
++
++   • Tüm metinler React text node'u (düz metin) — HTML render YOK.
++   • Görsel yalnız bu bileşen render edildiğinde istenir.
++   • Renk/radius/gölge: mevcut sistem (SuccessModal gölgesi,
++     rounded-3xl, .btn-primary, marka gradyanı #ED7926→#0973BA).
++   =============================================================== */
++
++export type SitePopupCardProps = {
++  popup: Pick<
++    PublicSitePopup,
++    "imageUrl" | "title" | "description" | "highlight" | "stats" | "button"
++  >;
++  titleId?: string;
++  onClose?: () => void;
++  onCta?: () => void;
++  closeLabel?: string;
++  /** Admin önizlemesinde link gezinmesin. */
++  preview?: boolean;
++};
++
++export default function SitePopupCard({
++  popup,
++  titleId,
++  onClose,
++  onCta,
++  closeLabel = "Kapat",
++  preview = false,
++}: SitePopupCardProps) {
++  const { imageUrl, title, description, highlight, stats, button } = popup;
++  const hasOverlayText = !!(highlight || title || description || stats.length);
++
++  return (
++    <div
++      className="
++        relative w-full overflow-hidden rounded-3xl bg-white
++        shadow-[0_32px_80px_-24px_rgba(27,26,23,0.30),0_12px_32px_-12px_rgba(27,26,23,0.18)]
++      "
++    >
++      {onClose && (
++        <button
++          type="button"
++          onClick={onClose}
++          aria-label={closeLabel}
++          data-popup-close
++          className="
++            absolute top-3 right-3 md:top-4 md:right-4 z-10
++            w-10 h-10 md:w-11 md:h-11 rounded-full
++            flex items-center justify-center
++            bg-black/45 text-white backdrop-blur-sm
++            hover:bg-black/65
++            transition-colors motion-reduce:transition-none
++            focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80
++          "
++        >
++          <X size={20} aria-hidden />
++        </button>
++      )}
++
++      {/* GÖRSEL + ÜZERİNDEKİ METİNLER */}
++      <div
++        className={
++          "relative w-full min-h-[300px] sm:min-h-[340px] aspect-[4/5] sm:aspect-[16/10] max-h-[62vh] sm:max-h-[66vh] " +
++          (imageUrl ? "bg-[var(--color-stone-900)]" : "bg-gradient-to-br from-[#ED7926] to-[#0973BA]")
++        }
++      >
++        {imageUrl && (
++          /* eslint-disable-next-line @next/next/no-img-element */
++          <img
++            src={imageUrl}
++            alt=""
++            decoding="async"
++            className="absolute inset-0 w-full h-full object-cover"
++          />
++        )}
++
++        {hasOverlayText && (
++          <>
++            <div
++              aria-hidden="true"
++              className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5"
++            />
++            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 md:p-9 text-white">
++              {highlight && (
++                <p className="font-display leading-[0.85] tracking-[-0.04em] text-[72px] sm:text-[96px] md:text-[120px] drop-shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
++                  {highlight}
++                </p>
++              )}
++              {title && (
++                <h2
++                  id={titleId}
++                  className="font-display text-[22px] sm:text-[28px] md:text-[34px] leading-[1.15] tracking-[-0.02em] mt-2 max-w-[620px]"
++                >
++                  {title}
++                </h2>
++              )}
++              {description && (
++                <p className="mt-2.5 text-[14px] md:text-[15.5px] leading-relaxed text-white/85 max-w-[560px] whitespace-pre-line">
++                  {description}
++                </p>
++              )}
++              {stats.length > 0 && (
++                <ul className="mt-4 md:mt-5 flex flex-wrap gap-2">
++                  {stats.map((s, i) => (
++                    <li
++                      key={`${i}-${s}`}
++                      className="px-3 py-1.5 rounded-full text-[12px] md:text-[13px] font-medium bg-white/12 border border-white/25 backdrop-blur-sm"
++                    >
++                      {s}
++                    </li>
++                  ))}
++                </ul>
++              )}
++            </div>
++          </>
++        )}
++      </div>
++
++      {/* CTA */}
++      {button && (
++        <div className="px-5 py-4 sm:px-7 md:px-9 md:py-5 flex justify-end">
++          {preview ? (
++            <span className="btn-primary w-full sm:w-auto">{button.text}</span>
++          ) : button.external ? (
++            <a
++              href={button.url}
++              target="_blank"
++              rel="noopener noreferrer"
++              onClick={onCta}
++              className="btn-primary w-full sm:w-auto"
++            >
++              {button.text}
++            </a>
++          ) : (
++            <Link href={button.url} onClick={onCta} className="btn-primary w-full sm:w-auto">
++              {button.text}
++            </Link>
++          )}
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/app/components/layout/site-popup/SitePopupDialog.tsx b/app/components/layout/site-popup/SitePopupDialog.tsx
+new file mode 100644
+index 0000000..506d741
+--- /dev/null
++++ b/app/components/layout/site-popup/SitePopupDialog.tsx
+@@ -0,0 +1,78 @@
++"use client";
++
++import { useEffect, useRef } from "react";
++
++import type { PublicSitePopup } from "@/lib/site-popup";
++
++import SitePopupCard from "./SitePopupCard";
++
++/* ===============================================================
++   🛡️ SitePopupDialog — modal kabuğu (yalnız popup açılacaksa
++   dinamik import edilir; bkz. SitePopupLoader)
++   ===============================================================
++   Mevcut SuccessModal davranış deseni: z-[1100], bg-black/60 +
++   backdrop-blur, ESC ile kapanma, backdrop tıklamasıyla kapanma,
++   body scroll kilidi (önceki overflow değeri geri yüklenir).
++   Ek olarak: açılışta odak kapatma butonuna, kapanışta önceki
++   elemana döner.
++   =============================================================== */
++
++export default function SitePopupDialog({
++  popup,
++  onClose,
++  onCta,
++  closeLabel,
++}: {
++  popup: PublicSitePopup;
++  onClose: () => void;
++  onCta: () => void;
++  closeLabel: string;
++}) {
++  const panelRef = useRef<HTMLDivElement | null>(null);
++
++  useEffect(() => {
++    const prevOverflow = document.body.style.overflow;
++    const prevFocus = document.activeElement as HTMLElement | null;
++    document.body.style.overflow = "hidden";
++    panelRef.current
++      ?.querySelector<HTMLElement>("[data-popup-close]")
++      ?.focus({ preventScroll: true });
++    const onKey = (e: KeyboardEvent) => {
++      if (e.key === "Escape") onClose();
++    };
++    window.addEventListener("keydown", onKey);
++    return () => {
++      document.body.style.overflow = prevOverflow;
++      window.removeEventListener("keydown", onKey);
++      prevFocus?.focus?.({ preventScroll: true });
++    };
++  }, [onClose]);
++
++  const titleId = popup.title ? "site-popup-title" : undefined;
++
++  return (
++    <div
++      role="dialog"
++      aria-modal="true"
++      aria-labelledby={titleId}
++      aria-label={titleId ? undefined : closeLabel}
++      className="fixed inset-0 z-[1100] flex items-center justify-center p-4 sm:p-6"
++      onClick={onClose}
++    >
++      <div aria-hidden="true" className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
++      <div
++        ref={panelRef}
++        className="relative w-full max-w-[920px] max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain rounded-3xl"
++        onClick={(e) => e.stopPropagation()}
++      >
++        <SitePopupCard
++          popup={popup}
++          titleId={titleId}
++          onClose={onClose}
++          onCta={onCta}
++          closeLabel={closeLabel}
++        />
++      </div>
++    </div>
++  );
++}
+diff --git a/app/components/layout/site-popup/SitePopupLoader.tsx b/app/components/layout/site-popup/SitePopupLoader.tsx
+new file mode 100644
+index 0000000..386b87b
+--- /dev/null
++++ b/app/components/layout/site-popup/SitePopupLoader.tsx
+@@ -0,0 +1,110 @@
++"use client";
++
++import { useCallback, useEffect, useState } from "react";
++import dynamic from "next/dynamic";
++import { usePathname } from "next/navigation";
++
++import {
++  isPopupHomePath,
++  isWithinPopupWindow,
++  popupDismissMs,
++  type PublicSitePopup,
++} from "@/lib/site-popup";
++
++/* ===============================================================
++   🛡️ SitePopupLoader — açılış popup'ının hafif karar katmanı
++   ===============================================================
++   Public layout bunu YALNIZ server tarafında popup aktif/içerikli ve
++   süresi dolmamışsa render eder (aksi halde hiç JS/görsel yok).
++   Burada, client'ta:
++     1) kapsam (yalnız ana sayfa / tüm site),
++     2) tarih penceresi (ISR/cache gecikmesinden bağımsız doğru an),
++     3) kapatma kaydı (süre + içerik sürümü)
++   kontrol edilir. Hepsi geçerse modal kodu (SitePopupDialog) dinamik
++   import edilir ve görsel ancak o zaman istenir.
++
++   KAPATMA KAYDI: { v: <içerik sürümü>, until: <ms> }
++     • session → sessionStorage (sekme/ziyaret boyunca)
++     • 1h/1d/7d/30d → localStorage (süre dolana kadar)
++   Admin içeriği değiştirirse sürüm (updated_at) değişir → kayıt
++   geçersiz sayılır, popup yeniden gösterilir. Storage erişilemezse
++   (gizli mod vb.) popup yalnız bu sayfa görünümünde gösterilir.
++   =============================================================== */
++
++const STORAGE_KEY = "ty_site_popup_dismissed";
++const OPEN_DELAY_MS = 700;
++
++const SitePopupDialog = dynamic(() => import("./SitePopupDialog"), { ssr: false });
++
++const CLOSE_LABELS: Record<string, string> = { tr: "Kapat", en: "Close", de: "Schließen" };
++
++function localeOf(pathname: string): "tr" | "en" | "de" {
++  if (pathname === "/en" || pathname.startsWith("/en/")) return "en";
++  if (pathname === "/de" || pathname.startsWith("/de/")) return "de";
++  return "tr";
++}
++
++function readDismissed(version: string): boolean {
++  for (const store of ["sessionStorage", "localStorage"] as const) {
++    try {
++      const raw = window[store].getItem(STORAGE_KEY);
++      if (!raw) continue;
++      const rec = JSON.parse(raw) as { v?: unknown; until?: unknown };
++      if (rec?.v !== version) continue;
++      if (store === "sessionStorage") return true;
++      if (typeof rec.until === "number" && rec.until > Date.now()) return true;
++    } catch {
++      /* storage kapalı / bozuk kayıt → gösterilebilir */
++    }
++  }
++  return false;
++}
++
++function writeDismissed(popup: PublicSitePopup) {
++  const ms = popupDismissMs(popup.dismiss);
++  try {
++    if (ms === null) {
++      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ v: popup.version }));
++    } else {
++      window.localStorage.setItem(
++        STORAGE_KEY,
++        JSON.stringify({ v: popup.version, until: Date.now() + ms })
++      );
++    }
++  } catch {
++    /* storage yok → yalnız bu görünümde kapanır */
++  }
++}
++
++export default function SitePopupLoader({ popup }: { popup: PublicSitePopup }) {
++  const pathname = usePathname() || "/";
++  const [open, setOpen] = useState(false);
++  const [closedHere, setClosedHere] = useState(false);
++
++  const inScope = popup.scope === "all" || isPopupHomePath(pathname);
++
++  useEffect(() => {
++    if (closedHere || open || !inScope) return;
++    if (!isWithinPopupWindow(Date.now(), popup.startsAt, popup.endsAt)) return;
++    if (readDismissed(popup.version)) return;
++    const t = window.setTimeout(() => setOpen(true), OPEN_DELAY_MS);
++    return () => window.clearTimeout(t);
++  }, [inScope, popup, closedHere, open]);
++
++  const close = useCallback(() => {
++    writeDismissed(popup);
++    setClosedHere(true);
++    setOpen(false);
++  }, [popup]);
++
++  if (!open || !inScope) return null;
++
++  return (
++    <SitePopupDialog
++      popup={popup}
++      onClose={close}
++      onCta={close}
++      closeLabel={CLOSE_LABELS[localeOf(pathname)]}
++    />
++  );
++}
+diff --git a/app/services/site-popup.service.ts b/app/services/site-popup.service.ts
+new file mode 100644
+index 0000000..3a83b1b
+--- /dev/null
++++ b/app/services/site-popup.service.ts
+@@ -0,0 +1,212 @@
++import "server-only";
++
++import { sitePopupRepository, type SitePopupWritable } from "@/lib/db/site-popup.repository.server";
++import { removeServer } from "@/lib/storage/server";
++import { SITE_ASSETS_BUCKET_NAME, resolveAssetUrlVersioned } from "@/lib/storage.helpers";
++import {
++  POPUP_IMAGE_FOLDER,
++  POPUP_LIMITS,
++  cleanPopupText,
++  isPopupDismissDuration,
++  isPopupDisplayScope,
++  isSafePopupUrl,
++  normalizePopupStats,
++  popupDateToIso,
++  popupIsoToDate,
++  toPublicSitePopup,
++  type PopupDismissDuration,
++  type PopupDisplayScope,
++  type PublicSitePopup,
++  type SitePopupRow,
++} from "@/lib/site-popup";
++
++/* ===============================================================
++   🛡️ SITE POPUP SERVICE (server-only)
++   ===============================================================
++   • Admin okuma/yazma — çağıran server action'lar yetkiyi
++     (`requirePermission("settings")`) ÖNCE doğrular.
++   • Yazma: payload alan alan, isimle kurulur; metinler düz metne
++     indirgenir, URL/enum/tarih doğrulanır (DB CHECK'leri ikinci kilit).
++   • Görsel: mevcut settings `UploadField` deseni — site-assets bucket,
++     `popup/<slug>.webp`. Görsel kaldırılırsa R2 nesnesi mevcut
++     server remove yolu (`removeServer`) ile silinir (best-effort).
++   • Public: `getPublicSitePopup` yalnız render için gereken DAR
++     projeksiyonu döner (bkz. lib/site-popup.ts > toPublicSitePopup).
++   =============================================================== */
++
++export type SitePopupAdminValues = {
++  isEnabled: boolean;
++  imagePath: string | null;
++  title: string;
++  description: string;
++  highlight: string;
++  stats: string[];
++  buttonText: string;
++  buttonUrl: string;
++  showButton: boolean;
++  scope: PopupDisplayScope;
++  dismiss: PopupDismissDuration;
++  startDate: string;
++  endDate: string;
++  updatedAt: string | null;
++};
++
++export type SitePopupSaveResult =
++  | { ok: true; values: SitePopupAdminValues }
++  | { ok: false; error: string };
++
++const IMAGE_PATH_RE = new RegExp(`^${POPUP_IMAGE_FOLDER}/[a-z0-9-]{1,64}\\.webp$`);
++
++export const SITE_POPUP_DEFAULTS: SitePopupAdminValues = {
++  isEnabled: false,
++  imagePath: null,
++  title: "",
++  description: "",
++  highlight: "",
++  stats: [],
++  buttonText: "",
++  buttonUrl: "",
++  showButton: true,
++  scope: "home",
++  dismiss: "session",
++  startDate: "",
++  endDate: "",
++  updatedAt: null,
++};
++
++function toAdminValues(row: SitePopupRow | null): SitePopupAdminValues {
++  if (!row) return { ...SITE_POPUP_DEFAULTS };
++  return {
++    isEnabled: row.is_enabled === true,
++    imagePath: row.image_path || null,
++    title: row.title || "",
++    description: row.description || "",
++    highlight: row.highlight_text || "",
++    stats: normalizePopupStats(row.stats),
++    buttonText: row.button_text || "",
++    buttonUrl: row.button_url || "",
++    showButton: row.show_button !== false,
++    scope: isPopupDisplayScope(row.display_scope) ? row.display_scope : "home",
++    dismiss: isPopupDismissDuration(row.dismiss_duration) ? row.dismiss_duration : "session",
++    startDate: popupIsoToDate(row.starts_at, "start"),
++    endDate: popupIsoToDate(row.ends_at, "end"),
++    updatedAt: row.updated_at || null,
++  };
++}
++
++export async function getSitePopupForAdmin(): Promise<SitePopupAdminValues | null> {
++  const { data, error } = await sitePopupRepository.find();
++  if (error) {
++    console.error("[site-popup.admin.read] FAILED", error.message);
++    return null;
++  }
++  return toAdminValues((data as SitePopupRow | null) ?? null);
++}
++
++export async function saveSitePopup(input: unknown): Promise<SitePopupSaveResult> {
++  const v = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
++
++  const title = cleanPopupText(v.title, POPUP_LIMITS.title);
++  const description = cleanPopupText(v.description, POPUP_LIMITS.description, { multiline: true });
++  const highlight = cleanPopupText(v.highlight, POPUP_LIMITS.highlight);
++  const stats = normalizePopupStats(v.stats);
++  const buttonText = cleanPopupText(v.buttonText, POPUP_LIMITS.buttonText);
++  const buttonUrlRaw = typeof v.buttonUrl === "string" ? v.buttonUrl.trim() : "";
++  const showButton = v.showButton !== false;
++  const isEnabled = v.isEnabled === true;
++
++  const imagePath =
++    typeof v.imagePath === "string" && v.imagePath.trim() ? v.imagePath.trim() : null;
++  if (imagePath && !IMAGE_PATH_RE.test(imagePath)) {
++    return { ok: false, error: "Geçersiz görsel yolu" };
++  }
++
++  if (buttonUrlRaw && !isSafePopupUrl(buttonUrlRaw)) {
++    return {
++      ok: false,
++      error: "Buton URL'i '/' ile başlayan bir site adresi veya https:// ile başlayan bir bağlantı olmalı",
++    };
++  }
++  if (showButton && buttonText && !buttonUrlRaw) {
++    return { ok: false, error: "Buton gösterilecekse buton URL'i zorunlu" };
++  }
++
++  const scope = isPopupDisplayScope(v.scope) ? v.scope : null;
++  const dismiss = isPopupDismissDuration(v.dismiss) ? v.dismiss : null;
++  if (!scope || !dismiss) return { ok: false, error: "Geçersiz gösterim ayarı" };
++
++  const startDate = typeof v.startDate === "string" ? v.startDate.trim() : "";
++  const endDate = typeof v.endDate === "string" ? v.endDate.trim() : "";
++  const startsAt = startDate ? popupDateToIso(startDate, "start") : null;
++  const endsAt = endDate ? popupDateToIso(endDate, "end") : null;
++  if ((startDate && !startsAt) || (endDate && !endsAt)) {
++    return { ok: false, error: "Geçersiz tarih" };
++  }
++  if (startsAt && endsAt && Date.parse(startsAt) >= Date.parse(endsAt)) {
++    return { ok: false, error: "Bitiş tarihi başlangıç tarihinden önce olamaz" };
++  }
++
++  if (isEnabled && !imagePath && !title && !highlight && !description) {
++    return { ok: false, error: "Popup'ı açmak için en az bir görsel veya başlık ekleyin" };
++  }
++
++  /* Önceki görsel — kaldırıldıysa R2 nesnesi silinecek. */
++  const prev = await sitePopupRepository.find();
++  if (prev.error) {
++    console.error("[site-popup.save] READ_FAILED", prev.error.message);
++    return { ok: false, error: "Kaydedilemedi" };
++  }
++  const prevImage = (prev.data as SitePopupRow | null)?.image_path || null;
++
++  const payload: SitePopupWritable = {
++    is_enabled: isEnabled,
++    image_path: imagePath,
++    title,
++    description,
++    highlight_text: highlight,
++    stats,
++    button_text: buttonText,
++    button_url: buttonUrlRaw || null,
++    show_button: showButton,
++    display_scope: scope,
++    dismiss_duration: dismiss,
++    starts_at: startsAt,
++    ends_at: endsAt,
++    updated_at: new Date().toISOString(),
++  };
++
++  const { data, error } = await sitePopupRepository.update(payload);
++  if (error || !data) {
++    console.error("[site-popup.save] FAILED", error?.message || "row missing (migration 095?)");
++    return { ok: false, error: "Kaydedilemedi" };
++  }
++
++  if (prevImage && prevImage !== imagePath && IMAGE_PATH_RE.test(prevImage)) {
++    try {
++      const res = await removeServer(SITE_ASSETS_BUCKET_NAME, [prevImage]);
++      if (!res.ok) console.warn("[site-popup.save] STORAGE_ORPHAN", { path: prevImage });
++    } catch (e) {
++      console.warn("[site-popup.save] STORAGE_ORPHAN", {
++        path: prevImage,
++        error: e instanceof Error ? e.message : String(e),
++      });
++    }
++  }
++
++  return { ok: true, values: toAdminValues(data as SitePopupRow) };
++}
++
++/** Public projeksiyon (cache'li sarmalayıcı: lib/site-popup.cache.ts). */
++export async function getPublicSitePopup(): Promise<PublicSitePopup | null> {
++  const { data, error } = await sitePopupRepository.find();
++  if (error) {
++    /* Tablo henüz yoksa (migration 095 uygulanmadı) veya DB hatası →
++       popup gösterilmez; site etkilenmez. */
++    console.error("[site-popup.public.read] FAILED", error.message);
++    return null;
++  }
++  return toPublicSitePopup(
++    (data as SitePopupRow | null) ?? null,
++    (path, version) => resolveAssetUrlVersioned(path, version)
++  );
++}
+diff --git a/db/migrations/095_site_popup.sql b/db/migrations/095_site_popup.sql
+new file mode 100644
+index 0000000..21a596e
+--- /dev/null
++++ b/db/migrations/095_site_popup.sql
+@@ -0,0 +1,78 @@
++-- ===============================================================
++-- 095 — site_popup (AÇILIŞ / KAMPANYA POPUP'I — tek satır ayar)
++-- ===============================================================
++-- AMAÇ:
++--   Public sitede açılışta gösterilebilen kampanya popup'ının içeriği
++--   ve davranışı admin panelinden (Ayarlar > Açılış Popup) yönetilir.
++--
++-- NEDEN `settings` TABLOSU DEĞİL:
++--   Public taraf settings'i `get_public_settings()` SECURITY DEFINER
++--   RPC'sinin kolon beyaz listesi üzerinden okur (migration 041/081).
++--   Popup alanlarını settings'e eklemek bu RPC'nin TAMAMEN yeniden
++--   tanımlanmasını gerektirirdi; 083/084/085 de aynı gerekçeyle RPC'ye
++--   dokunmadı. Ayrı, tek satırlık tablo:
++--     • settings / RPC / mevcut public payload'ı HİÇ ETKİLEMEZ,
++--     • popup'ın kendi cache tag'i ("site-popup") ile invalidate edilir.
++--
++-- SINGLETON: id = 1 (CHECK). Uygulama yalnız bu satırı okur/günceller.
++-- VARSAYILAN: is_enabled = false → migration uygulandığında public
++--   sitede HİÇBİR görünür değişiklik olmaz (popup kapalı).
++--
++-- GÜVENLİK: Metin alanları düz metin olarak saklanır/render edilir
++--   (HTML kabul edilmez — uygulama katmanında temizlenir). Uzunluk ve
++--   enum kısıtları hem uygulama hem DB seviyesinde (çift kilit).
++--
++-- İDEMPOTENT: CREATE TABLE IF NOT EXISTS + INSERT … ON CONFLICT DO NOTHING.
++-- GERİ ALINABİLİR: DROP TABLE public.site_popup;
++-- BAĞIMLILIK: yok (yeni tablo; mevcut hiçbir tabloya FK/trigger yok).
++-- ===============================================================
++
++BEGIN;
++
++CREATE TABLE IF NOT EXISTS public.site_popup (
++  id               smallint    PRIMARY KEY DEFAULT 1,
++  is_enabled       boolean     NOT NULL DEFAULT false,
++  image_path       text,
++  title            text,
++  description      text,
++  highlight_text   text,
++  stats            jsonb       NOT NULL DEFAULT '[]'::jsonb,
++  button_text      text,
++  button_url       text,
++  show_button      boolean     NOT NULL DEFAULT true,
++  display_scope    text        NOT NULL DEFAULT 'home',
++  dismiss_duration text        NOT NULL DEFAULT 'session',
++  starts_at        timestamptz,
++  ends_at          timestamptz,
++  updated_at       timestamptz NOT NULL DEFAULT now(),
++
++  CONSTRAINT site_popup_singleton        CHECK (id = 1),
++  CONSTRAINT site_popup_display_scope    CHECK (display_scope IN ('home', 'all')),
++  CONSTRAINT site_popup_dismiss_duration CHECK (dismiss_duration IN ('session', '1h', '1d', '7d', '30d')),
++  CONSTRAINT site_popup_stats_is_array   CHECK (jsonb_typeof(stats) = 'array' AND jsonb_array_length(stats) <= 4),
++  CONSTRAINT site_popup_date_order       CHECK (starts_at IS NULL OR ends_at IS NULL OR starts_at < ends_at),
++  CONSTRAINT site_popup_title_len        CHECK (title IS NULL OR char_length(title) <= 200),
++  CONSTRAINT site_popup_description_len  CHECK (description IS NULL OR char_length(description) <= 600),
++  CONSTRAINT site_popup_highlight_len    CHECK (highlight_text IS NULL OR char_length(highlight_text) <= 24),
++  CONSTRAINT site_popup_button_text_len  CHECK (button_text IS NULL OR char_length(button_text) <= 60),
++  CONSTRAINT site_popup_button_url_len   CHECK (button_url IS NULL OR char_length(button_url) <= 500),
++  CONSTRAINT site_popup_image_path_len   CHECK (image_path IS NULL OR char_length(image_path) <= 500)
++);
++
++COMMENT ON TABLE public.site_popup IS
++  'Açılış/kampanya popup ayarı (tek satır, id=1). Admin: Ayarlar > Açılış Popup. Varsayılan kapalı.';
++COMMENT ON COLUMN public.site_popup.image_path IS
++  'site-assets bucket-relative path (örn. popup/popup.webp) — resolveAssetUrl ile URL''e çevrilir.';
++COMMENT ON COLUMN public.site_popup.stats IS
++  'Alt bilgi satırları: en fazla 4 düz metin (örn. ["300.000+ misafir","4.9 misafir puanı","TÜRSAB 9117"]).';
++COMMENT ON COLUMN public.site_popup.dismiss_duration IS
++  'Kapatıldıktan sonra tekrar gösterme süresi: session (aynı ziyaret boyunca) | 1h | 1d | 7d | 30d.';
++
++INSERT INTO public.site_popup (id) VALUES (1)
++ON CONFLICT (id) DO NOTHING;
++
++COMMIT;
++
++-- DOĞRULAMA:
++--   SELECT id, is_enabled, display_scope, dismiss_duration FROM public.site_popup;
++--   → 1 | false | home | session
+diff --git a/lib/db/site-popup.repository.server.ts b/lib/db/site-popup.repository.server.ts
+new file mode 100644
+index 0000000..af54b37
+--- /dev/null
++++ b/lib/db/site-popup.repository.server.ts
+@@ -0,0 +1,52 @@
++import "server-only";
++
++import { dbAdminNative as dbAdmin } from "@/lib/db/native";
++import type { SitePopupRow } from "@/lib/site-popup";
++
++/* ===============================================================
++   🛡️ SITE POPUP REPOSITORY (server-only) — migration 095
++   ===============================================================
++   Tek satırlık `site_popup` tablosu (id = 1). Tablo adı ve satır
++   kimliği SABİT; çağırandan gelmez. `update` yalnız servis
++   katmanının isimle kurduğu alan listesini alır (keyfi obje
++   passthrough YOK — bkz. site-popup.service.ts).
++   =============================================================== */
++
++const TABLE = "site_popup";
++const SINGLETON_ID = 1;
++
++export type SitePopupWritable = Pick<
++  SitePopupRow,
++  | "is_enabled"
++  | "image_path"
++  | "title"
++  | "description"
++  | "highlight_text"
++  | "button_text"
++  | "button_url"
++  | "show_button"
++  | "display_scope"
++  | "dismiss_duration"
++  | "starts_at"
++  | "ends_at"
++  | "updated_at"
++> & { stats: string[] };
++
++export const sitePopupRepository = {
++  async find() {
++    return dbAdmin
++      .from<SitePopupRow>(TABLE)
++      .select("*")
++      .eq("id", SINGLETON_ID)
++      .maybeSingle();
++  },
++
++  async update(values: SitePopupWritable) {
++    return dbAdmin
++      .from<SitePopupRow>(TABLE)
++      .update(values as unknown as Record<string, unknown>)
++      .eq("id", SINGLETON_ID)
++      .select("*")
++      .maybeSingle();
++  },
++};
+diff --git a/lib/site-popup.cache.ts b/lib/site-popup.cache.ts
+new file mode 100644
+index 0000000..7cbd8ff
+--- /dev/null
++++ b/lib/site-popup.cache.ts
+@@ -0,0 +1,23 @@
++import "server-only";
++
++import { unstable_cache } from "next/cache";
++
++import { getPublicSitePopup } from "@/app/services/site-popup.service";
++
++/* ===============================================================
++   🛡️ SITE POPUP — public cache (tag: "site-popup")
++   ===============================================================
++   Public layout her render'da bunu çağırır; DB'ye en fazla saatte
++   bir gidilir. Admin kaydı `revalidateTag("site-popup")` ile anında
++   invalidate eder (bkz. popup.action.ts). Diğer cache'lerden
++   (settings/menu/…) BAĞIMSIZ — popup değişikliği onları temizlemez.
++   Tarih penceresi client'ta da kontrol edildiği için cache'in en
++   fazla 1 saatlik gecikmesi başlangıç/bitiş anını kaydırmaz.
++   =============================================================== */
++export const SITE_POPUP_CACHE_TAG = "site-popup";
++
++export const getCachedSitePopup = unstable_cache(
++  async () => getPublicSitePopup(),
++  ["site-popup:public"],
++  { tags: [SITE_POPUP_CACHE_TAG], revalidate: 3600 }
++);
+diff --git a/lib/site-popup.ts b/lib/site-popup.ts
+new file mode 100644
+index 0000000..73e083a
+--- /dev/null
++++ b/lib/site-popup.ts
+@@ -0,0 +1,242 @@
++/* ===============================================================
++   🛡️ SITE POPUP — ortak tipler + SAF doğrulama/karar yardımcıları
++   ===============================================================
++   Açılış/kampanya popup'ı (migration 095 `site_popup`). Bu dosya
++   SAF'tır (DB/fetch/side-effect YOK) → hem server (service, layout)
++   hem client (popup loader) tarafından kullanılabilir.
++
++   GÜVENLİK KURALLARI (tek kaynak):
++     • Metinler düz metindir: HTML etiketleri ve kontrol karakterleri
++       kaydetmeden önce temizlenir; render React text node'u ile
++       (dangerouslySetInnerHTML YOK).
++     • Buton URL'i yalnız site-içi "/yol" veya http(s) mutlak URL
++       olabilir; `javascript:`, `data:`, `//host` vb. REDDEDİLİR.
++   =============================================================== */
++
++export const POPUP_DISMISS_DURATIONS = ["session", "1h", "1d", "7d", "30d"] as const;
++export type PopupDismissDuration = (typeof POPUP_DISMISS_DURATIONS)[number];
++
++export const POPUP_DISPLAY_SCOPES = ["home", "all"] as const;
++export type PopupDisplayScope = (typeof POPUP_DISPLAY_SCOPES)[number];
++
++export const POPUP_DISMISS_LABELS: Record<PopupDismissDuration, string> = {
++  session: "Her ziyarette bir kez (tarayıcı oturumu)",
++  "1h": "1 saat sonra tekrar göster",
++  "1d": "1 gün sonra tekrar göster",
++  "7d": "7 gün sonra tekrar göster",
++  "30d": "30 gün sonra tekrar göster",
++};
++
++export const POPUP_LIMITS = {
++  title: 200,
++  description: 600,
++  highlight: 24,
++  stat: 60,
++  statsCount: 4,
++  buttonText: 60,
++  buttonUrl: 500,
++} as const;
++
++/** Görsel storage anahtarı (site-assets bucket). Tek sabit dosya;
++ *  public URL `?v=<updated_at>` ile cache-bust edilir. */
++export const POPUP_IMAGE_FOLDER = "popup";
++export const POPUP_IMAGE_SLUG = "popup";
++export const POPUP_IMAGE_PATH = `${POPUP_IMAGE_FOLDER}/${POPUP_IMAGE_SLUG}.webp`;
++
++/** DB satırı (migration 095). */
++export type SitePopupRow = {
++  id: number;
++  is_enabled: boolean;
++  image_path: string | null;
++  title: string | null;
++  description: string | null;
++  highlight_text: string | null;
++  stats: unknown;
++  button_text: string | null;
++  button_url: string | null;
++  show_button: boolean;
++  display_scope: string;
++  dismiss_duration: string;
++  starts_at: string | null;
++  ends_at: string | null;
++  updated_at: string;
++};
++
++/** Public client'a giden DAR projeksiyon — yalnız render için gereken
++ *  alanlar. Admin/iç alanlar (id, ham path) YOK. */
++export type PublicSitePopup = {
++  version: string;
++  imageUrl: string | null;
++  title: string | null;
++  description: string | null;
++  highlight: string | null;
++  stats: string[];
++  button: { text: string; url: string; external: boolean } | null;
++  scope: PopupDisplayScope;
++  dismiss: PopupDismissDuration;
++  startsAt: string | null;
++  endsAt: string | null;
++};
++
++/** Düz metin temizliği: HTML etiketleri + kontrol karakterleri atılır,
++ *  baş/son boşluk kırpılır, uzunluk sınırlanır. Boş → null. */
++export function cleanPopupText(
++  value: unknown,
++  max: number,
++  { multiline = false }: { multiline?: boolean } = {}
++): string | null {
++  if (typeof value !== "string") return null;
++  let s = value.replace(/<[^>]*>/g, "");
++  // Kontrol karakterleri (multiline'da \n korunur).
++  s = multiline
++    ? s.replace(/\r\n?/g, "\n").replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, "")
++    : s.replace(/[\u0000-\u001F\u007F]/g, " ");
++  s = multiline ? s.replace(/\n{3,}/g, "\n\n").trim() : s.replace(/\s+/g, " ").trim();
++  if (!s) return null;
++  return s.slice(0, max);
++}
++
++/** Buton URL'i güvenli mi? İzinli: "/yol" (site-içi) veya http(s)://… */
++export function isSafePopupUrl(value: unknown): value is string {
++  if (typeof value !== "string") return false;
++  const url = value.trim();
++  if (!url || url.length > POPUP_LIMITS.buttonUrl) return false;
++  if (/[\u0000-\u001F\u007F\s\\]/.test(url)) return false;
++  if (url.startsWith("/")) return !url.startsWith("//");
++  try {
++    const parsed = new URL(url);
++    return (parsed.protocol === "https:" || parsed.protocol === "http:") && !!parsed.hostname;
++  } catch {
++    return false;
++  }
++}
++
++export function isPopupDismissDuration(v: unknown): v is PopupDismissDuration {
++  return typeof v === "string" && (POPUP_DISMISS_DURATIONS as readonly string[]).includes(v);
++}
++
++export function isPopupDisplayScope(v: unknown): v is PopupDisplayScope {
++  return typeof v === "string" && (POPUP_DISPLAY_SCOPES as readonly string[]).includes(v);
++}
++
++/** Kapatıldıktan sonra kaç ms gizli kalır. session → null (sessionStorage). */
++export function popupDismissMs(d: PopupDismissDuration): number | null {
++  switch (d) {
++    case "1h":
++      return 60 * 60 * 1000;
++    case "1d":
++      return 24 * 60 * 60 * 1000;
++    case "7d":
++      return 7 * 24 * 60 * 60 * 1000;
++    case "30d":
++      return 30 * 24 * 60 * 60 * 1000;
++    default:
++      return null;
++  }
++}
++
++/** Tarih penceresi içinde mi? (sınırlar boşsa açık uç). */
++export function isWithinPopupWindow(
++  nowMs: number,
++  startsAt: string | null,
++  endsAt: string | null
++): boolean {
++  const s = startsAt ? Date.parse(startsAt) : NaN;
++  const e = endsAt ? Date.parse(endsAt) : NaN;
++  if (Number.isFinite(s) && nowMs < s) return false;
++  if (Number.isFinite(e) && nowMs >= e) return false;
++  return true;
++}
++
++/** Ana sayfa yolu mu? TR "/" (+ varsayılan-dil modunda "/tr") ve
++ *  EN/DE ana sayfaları. */
++export function isPopupHomePath(pathname: string | null | undefined): boolean {
++  const p = (pathname || "").replace(/\/+$/, "") || "/";
++  return p === "/" || p === "/tr" || p === "/en" || p === "/de";
++}
++
++/** Admin tarih input'u ("YYYY-MM-DD", Europe/Istanbul günü) →
++ *  timestamptz ISO. start → günün başı, end → ertesi günün başı
++ *  (bitiş günü DAHİL). Geçersiz → null. */
++export function popupDateToIso(
++  value: unknown,
++  edge: "start" | "end"
++): string | null {
++  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
++  const base = Date.parse(`${value}T00:00:00+03:00`);
++  if (!Number.isFinite(base)) return null;
++  // Round-trip: takvimde olmayan günleri reddet (2027-02-30).
++  const check = new Date(base + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
++  if (check !== value) return null;
++  const ms = edge === "start" ? base : base + 24 * 60 * 60 * 1000;
++  return new Date(ms).toISOString();
++}
++
++/** timestamptz → admin tarih input'u ("YYYY-MM-DD", Europe/Istanbul). */
++export function popupIsoToDate(
++  iso: string | null | undefined,
++  edge: "start" | "end"
++): string {
++  if (!iso) return "";
++  const ms = Date.parse(iso);
++  if (!Number.isFinite(ms)) return "";
++  const shifted = ms + 3 * 60 * 60 * 1000 - (edge === "end" ? 1 : 0);
++  return new Date(shifted).toISOString().slice(0, 10);
++}
++
++/** Stats jsonb → temiz string dizisi (en fazla 4). */
++export function normalizePopupStats(value: unknown): string[] {
++  if (!Array.isArray(value)) return [];
++  const out: string[] = [];
++  for (const v of value) {
++    const t = cleanPopupText(v, POPUP_LIMITS.stat);
++    if (t) out.push(t);
++    if (out.length >= POPUP_LIMITS.statsCount) break;
++  }
++  return out;
++}
++
++/** DB satırı → public projeksiyon. Popup gösterilemeyecekse null:
++ *  kapalı, hiç içerik yok veya bitiş tarihi geçmiş. (Başlangıç henüz
++ *  gelmediyse payload döner; client pencereyi kendisi kontrol eder —
++ *  ISR/cache'li sayfalarda da doğru anda açılabilsin diye.) */
++export function toPublicSitePopup(
++  row: SitePopupRow | null | undefined,
++  resolveImageUrl: (path: string, version: string) => string | null,
++  nowMs: number = Date.now()
++): PublicSitePopup | null {
++  if (!row || row.is_enabled !== true) return null;
++  if (row.ends_at && Number.isFinite(Date.parse(row.ends_at)) && nowMs >= Date.parse(row.ends_at)) {
++    return null;
++  }
++  const version = String(row.updated_at || "");
++  const imageUrl = row.image_path ? resolveImageUrl(row.image_path, version) : null;
++  const title = cleanPopupText(row.title, POPUP_LIMITS.title);
++  const description = cleanPopupText(row.description, POPUP_LIMITS.description, { multiline: true });
++  const highlight = cleanPopupText(row.highlight_text, POPUP_LIMITS.highlight);
++  const stats = normalizePopupStats(row.stats);
++  const buttonText = cleanPopupText(row.button_text, POPUP_LIMITS.buttonText);
++  const buttonUrl = (row.button_url || "").trim();
++  const button =
++    row.show_button !== false && buttonText && isSafePopupUrl(buttonUrl)
++      ? { text: buttonText, url: buttonUrl, external: !buttonUrl.startsWith("/") }
++      : null;
++
++  if (!imageUrl && !title && !description && !highlight && stats.length === 0 && !button) {
++    return null;
++  }
++
++  return {
++    version,
++    imageUrl,
++    title,
++    description,
++    highlight,
++    stats,
++    button,
++    scope: isPopupDisplayScope(row.display_scope) ? row.display_scope : "home",
++    dismiss: isPopupDismissDuration(row.dismiss_duration) ? row.dismiss_duration : "session",
++    startsAt: row.starts_at,
++    endsAt: row.ends_at,
++  };
++}
+diff --git a/tests/unit/site-popup.test.tsx b/tests/unit/site-popup.test.tsx
+new file mode 100644
+index 0000000..8e27ea4
+--- /dev/null
++++ b/tests/unit/site-popup.test.tsx
+@@ -0,0 +1,429 @@
++/* ===============================================================
++   🛡️ SITE POPUP — saf yardımcılar + servis doğrulaması + yetki +
++   public loader davranışı (migration 095)
++   =============================================================== */
++import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
++import { render, screen, fireEvent, act } from "@testing-library/react";
++
++import {
++  cleanPopupText,
++  isSafePopupUrl,
++  isWithinPopupWindow,
++  isPopupHomePath,
++  popupDateToIso,
++  popupIsoToDate,
++  popupDismissMs,
++  toPublicSitePopup,
++  type PublicSitePopup,
++  type SitePopupRow,
++} from "@/lib/site-popup";
++
++/* ---------------- mocks (servis + action + loader) ---------------- */
++const repoFind = vi.fn();
++const repoUpdate = vi.fn();
++const removeServer = vi.fn();
++const authorizeAdminSession = vi.fn();
++const callerHasPermission = vi.fn();
++const requirePermission = vi.fn();
++const revalidateTag = vi.fn();
++let pathname = "/";
++
++vi.mock("@/lib/db/site-popup.repository.server", () => ({
++  sitePopupRepository: {
++    find: (...a: unknown[]) => repoFind(...a),
++    update: (...a: unknown[]) => repoUpdate(...a),
++  },
++}));
++vi.mock("@/lib/storage/server", () => ({ removeServer: (...a: unknown[]) => removeServer(...a) }));
++vi.mock("@/lib/admin-route-auth", () => ({
++  authorizeAdminSession: (...a: unknown[]) => authorizeAdminSession(...a),
++}));
++vi.mock("@/lib/auth/action-authz", () => ({
++  callerHasPermission: (...a: unknown[]) => callerHasPermission(...a),
++  requirePermission: (...a: unknown[]) => requirePermission(...a),
++}));
++vi.mock("next/cache", () => ({
++  revalidateTag: (...a: unknown[]) => revalidateTag(...a),
++  unstable_cache: (fn: unknown) => fn,
++}));
++vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
++vi.mock("next/dynamic", async () => {
++  const mod = await import("@/app/components/layout/site-popup/SitePopupDialog");
++  return { default: () => mod.default };
++});
++
++import { saveSitePopup, getPublicSitePopup } from "@/app/services/site-popup.service";
++import { saveSitePopupAction, loadSitePopupAction } from "@/app/(admin)/maki-admin/settings/popup/popup.action";
++import SitePopupLoader from "@/app/components/layout/site-popup/SitePopupLoader";
++
++const NOW = Date.parse("2026-09-26T12:00:00Z");
++
++function row(over: Partial<SitePopupRow> = {}): SitePopupRow {
++  return {
++    id: 1,
++    is_enabled: true,
++    image_path: "popup/popup.webp",
++    title: "2006'dan bu yana tatilinizin yanındayız.",
++    description: null,
++    highlight_text: "20",
++    stats: ["300.000+ misafir", "4.9 misafir puanı", "TÜRSAB 9117"],
++    button_text: "Villaları inceleyin",
++    button_url: "/kiralik-villalar",
++    show_button: true,
++    display_scope: "home",
++    dismiss_duration: "session",
++    starts_at: null,
++    ends_at: null,
++    updated_at: "2026-09-26T10:00:00.000Z",
++    ...over,
++  };
++}
++const resolve = (p: string, v: string) => `https://cdn.test/${p}?v=${v}`;
++
++/* ================================================================ */
++describe("saf yardımcılar", () => {
++  it("cleanPopupText: HTML etiketi ve kontrol karakteri temizlenir, uzunluk kırpılır", () => {
++    expect(cleanPopupText("<script>alert(1)</script>Merhaba <b>dünya</b>", 100)).toBe("alert(1)Merhaba dünya");
++    expect(cleanPopupText("  a\u0000b\tc  ", 100)).toBe("a b c");
++    expect(cleanPopupText("x".repeat(50), 10)).toBe("x".repeat(10));
++    expect(cleanPopupText("   ", 10)).toBeNull();
++    expect(cleanPopupText(123, 10)).toBeNull();
++    expect(cleanPopupText("satır1\r\n\r\n\r\nsatır2", 100, { multiline: true })).toBe("satır1\n\nsatır2");
++  });
++
++  it("isSafePopupUrl: yalnız '/yol' ve http(s)", () => {
++    for (const ok of ["/kiralik-villalar", "/", "/p/kampanya?x=1#a", "https://tatilinyeri.com/x", "http://example.com"]) {
++      expect(isSafePopupUrl(ok)).toBe(true);
++    }
++    for (const bad of [
++      "javascript:alert(1)",
++      "JavaScript:alert(1)",
++      " javascript:alert(1)",
++      "java\nscript:alert(1)",
++      "data:text/html,<script>",
++      "vbscript:msgbox",
++      "//evil.com",
++      "/\\evil.com",
++      "ftp://x.com",
++      "kiralik-villalar",
++      "",
++      "https://",
++    ]) {
++      expect(isSafePopupUrl(bad)).toBe(false);
++    }
++  });
++
++  it("tarih dönüşümü: TR günü; bitiş günü dahil", () => {
++    expect(popupDateToIso("2026-10-01", "start")).toBe("2026-09-30T21:00:00.000Z");
++    expect(popupDateToIso("2026-10-01", "end")).toBe("2026-10-01T21:00:00.000Z");
++    expect(popupDateToIso("2027-02-30", "start")).toBeNull();
++    expect(popupDateToIso("01.10.2026", "start")).toBeNull();
++    expect(popupIsoToDate("2026-09-30T21:00:00.000Z", "start")).toBe("2026-10-01");
++    expect(popupIsoToDate("2026-10-01T21:00:00.000Z", "end")).toBe("2026-10-01");
++  });
++
++  it("tarih penceresi", () => {
++    expect(isWithinPopupWindow(NOW, null, null)).toBe(true);
++    expect(isWithinPopupWindow(NOW, "2026-09-27T00:00:00Z", null)).toBe(false);
++    expect(isWithinPopupWindow(NOW, null, "2026-09-26T11:00:00Z")).toBe(false);
++    expect(isWithinPopupWindow(NOW, "2026-09-01T00:00:00Z", "2026-10-01T00:00:00Z")).toBe(true);
++  });
++
++  it("ana sayfa yolları ve süreler", () => {
++    for (const p of ["/", "/tr", "/en", "/de", "/en/"]) expect(isPopupHomePath(p)).toBe(true);
++    for (const p of ["/kiralik-villalar", "/en/blog", "/p/x"]) expect(isPopupHomePath(p)).toBe(false);
++    expect(popupDismissMs("session")).toBeNull();
++    expect(popupDismissMs("1d")).toBe(86_400_000);
++    expect(popupDismissMs("30d")).toBe(30 * 86_400_000);
++  });
++});
++
++describe("toPublicSitePopup (public projeksiyon)", () => {
++  it("aktif + içerik → yalnız dar alanlar döner", () => {
++    const p = toPublicSitePopup(row(), resolve, NOW)!;
++    expect(p).toEqual({
++      version: "2026-09-26T10:00:00.000Z",
++      imageUrl: "https://cdn.test/popup/popup.webp?v=2026-09-26T10:00:00.000Z",
++      title: "2006'dan bu yana tatilinizin yanındayız.",
++      description: null,
++      highlight: "20",
++      stats: ["300.000+ misafir", "4.9 misafir puanı", "TÜRSAB 9117"],
++      button: { text: "Villaları inceleyin", url: "/kiralik-villalar", external: false },
++      scope: "home",
++      dismiss: "session",
++      startsAt: null,
++      endsAt: null,
++    });
++    expect(Object.keys(p)).not.toContain("id");
++    expect(Object.keys(p)).not.toContain("image_path");
++  });
++
++  it("kapalı / içeriksiz / süresi dolmuş → null (hiç render yok)", () => {
++    expect(toPublicSitePopup(row({ is_enabled: false }), resolve, NOW)).toBeNull();
++    expect(toPublicSitePopup(null, resolve, NOW)).toBeNull();
++    expect(
++      toPublicSitePopup(
++        row({ image_path: null, title: null, highlight_text: null, stats: [], button_text: null }),
++        resolve,
++        NOW
++      )
++    ).toBeNull();
++    expect(toPublicSitePopup(row({ ends_at: "2026-09-26T11:59:59Z" }), resolve, NOW)).toBeNull();
++  });
++
++  it("başlangıcı gelecekte → payload döner (client pencereyi kendisi kontrol eder)", () => {
++    const p = toPublicSitePopup(row({ starts_at: "2026-10-01T00:00:00Z" }), resolve, NOW);
++    expect(p?.startsAt).toBe("2026-10-01T00:00:00Z");
++  });
++
++  it("tehlikeli URL veya gizli buton → buton yok; HTML'li metin düz metne iner", () => {
++    expect(toPublicSitePopup(row({ button_url: "javascript:alert(1)" }), resolve, NOW)?.button).toBeNull();
++    expect(toPublicSitePopup(row({ show_button: false }), resolve, NOW)?.button).toBeNull();
++    const ext = toPublicSitePopup(row({ button_url: "https://example.com/k" }), resolve, NOW);
++    expect(ext?.button?.external).toBe(true);
++    const x = toPublicSitePopup(row({ title: "<img src=x onerror=alert(1)>Kampanya" }), resolve, NOW);
++    expect(x?.title).toBe("Kampanya");
++  });
++});
++
++/* ================================================================ */
++describe("saveSitePopup (servis doğrulaması)", () => {
++  const base = {
++    isEnabled: true,
++    imagePath: "popup/popup.webp",
++    title: "Başlık",
++    description: "",
++    highlight: "20",
++    stats: ["a", "b"],
++    buttonText: "Villaları inceleyin",
++    buttonUrl: "/kiralik-villalar",
++    showButton: true,
++    scope: "home",
++    dismiss: "1d",
++    startDate: "",
++    endDate: "",
++  };
++
++  beforeEach(() => {
++    vi.clearAllMocks();
++    vi.spyOn(console, "error").mockImplementation(() => {});
++    vi.spyOn(console, "warn").mockImplementation(() => {});
++    repoFind.mockResolvedValue({ data: row(), error: null });
++    repoUpdate.mockImplementation(async (values: Record<string, unknown>) => ({
++      data: { ...row(), ...values },
++      error: null,
++    }));
++    removeServer.mockResolvedValue({ ok: true });
++  });
++
++  it("geçerli giriş → yalnız isimli alanlar yazılır (id/keyfi alan YOK)", async () => {
++    const res = await saveSitePopup({ ...base, id: 99, evil: "x", title: "<b>Başlık</b>" });
++    expect(res.ok).toBe(true);
++    const written = repoUpdate.mock.calls[0][0] as Record<string, unknown>;
++    expect(Object.keys(written).sort()).toEqual(
++      [
++        "button_text", "button_url", "description", "dismiss_duration", "display_scope",
++        "ends_at", "highlight_text", "image_path", "is_enabled", "show_button", "starts_at",
++        "stats", "title", "updated_at",
++      ].sort()
++    );
++    expect(written.title).toBe("Başlık");
++    expect(written.description).toBeNull();
++    expect(written.dismiss_duration).toBe("1d");
++  });
++
++  it("javascript: URL / geçersiz enum / tarih sırası / geçersiz görsel yolu → RED, DB'ye yazılmaz", async () => {
++    for (const bad of [
++      { buttonUrl: "javascript:alert(1)" },
++      { buttonUrl: "//evil.com" },
++      { scope: "everywhere" },
++      { dismiss: "forever" },
++      { startDate: "2026-10-10", endDate: "2026-10-01" },
++      { startDate: "10.10.2026" },
++      { imagePath: "../villas/x.webp" },
++      { imagePath: "https://evil.com/x.png" },
++      { buttonUrl: "" },
++    ]) {
++      const res = await saveSitePopup({ ...base, ...bad });
++      expect(res.ok, JSON.stringify(bad)).toBe(false);
++    }
++    expect(repoUpdate).not.toHaveBeenCalled();
++  });
++
++  it("aktif ama içeriksiz → RED", async () => {
++    const res = await saveSitePopup({ ...base, imagePath: null, title: "", highlight: "", description: "" });
++    expect(res.ok).toBe(false);
++  });
++
++  it("görsel kaldırılınca eski dosya R2'den silinir; aynı yol korunursa silinmez", async () => {
++    await saveSitePopup({ ...base, imagePath: null });
++    expect(removeServer).toHaveBeenCalledWith("tatilinyeri-site-assets", ["popup/popup.webp"]);
++    removeServer.mockClear();
++    await saveSitePopup(base);
++    expect(removeServer).not.toHaveBeenCalled();
++  });
++
++  it("tarih kaydı TR gününe göre saklanır ve forma aynı gün olarak döner", async () => {
++    const res = await saveSitePopup({ ...base, startDate: "2026-10-01", endDate: "2026-10-31" });
++    const written = repoUpdate.mock.calls[0][0] as Record<string, unknown>;
++    expect(written.starts_at).toBe("2026-09-30T21:00:00.000Z");
++    expect(written.ends_at).toBe("2026-10-31T21:00:00.000Z");
++    expect(res.ok && res.values.startDate).toBe("2026-10-01");
++    expect(res.ok && res.values.endDate).toBe("2026-10-31");
++  });
++
++  it("public okuma hatası (tablo yok vb.) → null, site etkilenmez", async () => {
++    repoFind.mockResolvedValueOnce({ data: null, error: { message: 'relation "site_popup" does not exist' } });
++    expect(await getPublicSitePopup()).toBeNull();
++  });
++});
++
++describe("server action yetkisi", () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++    repoFind.mockResolvedValue({ data: row(), error: null });
++    repoUpdate.mockResolvedValue({ data: row(), error: null });
++  });
++
++  it("oturum yok → servis/DB çağrılmaz", async () => {
++    authorizeAdminSession.mockResolvedValue({ ok: false, status: 401 });
++    const res = await saveSitePopupAction({});
++    expect(res).toEqual({ ok: false, error: "Yetkisiz" });
++    expect(repoUpdate).not.toHaveBeenCalled();
++    expect(revalidateTag).not.toHaveBeenCalled();
++  });
++
++  it("'settings' izni yok → servis/DB çağrılmaz", async () => {
++    authorizeAdminSession.mockResolvedValue({ ok: true, caller: { id: "a1" } });
++    callerHasPermission.mockResolvedValue(false);
++    const res = await saveSitePopupAction({});
++    expect(res.ok).toBe(false);
++    expect(callerHasPermission).toHaveBeenCalledWith("a1", "settings");
++    expect(repoUpdate).not.toHaveBeenCalled();
++  });
++
++  it("yetkili + geçerli kayıt → yalnız 'site-popup' tag'i invalidate edilir", async () => {
++    authorizeAdminSession.mockResolvedValue({ ok: true, caller: { id: "a1" } });
++    callerHasPermission.mockResolvedValue(true);
++    const res = await saveSitePopupAction({
++      isEnabled: false, imagePath: null, title: "", description: "", highlight: "",
++      stats: [], buttonText: "", buttonUrl: "", showButton: true, scope: "home",
++      dismiss: "session", startDate: "", endDate: "",
++    });
++    expect(res.ok).toBe(true);
++    expect(revalidateTag).toHaveBeenCalledTimes(1);
++    expect(revalidateTag).toHaveBeenCalledWith("site-popup", { expire: 0 });
++  });
++
++  it("okuma action'ı requirePermission('settings') ister", async () => {
++    requirePermission.mockRejectedValueOnce(new Error("Yetkisiz"));
++    await expect(loadSitePopupAction()).rejects.toThrow();
++    expect(requirePermission).toHaveBeenCalledWith("settings");
++  });
++});
++
++/* ================================================================ */
++describe("SitePopupLoader (public davranış)", () => {
++  const popup: PublicSitePopup = toPublicSitePopup(row({ dismiss_duration: "1d" }), resolve, NOW)!;
++
++  beforeEach(() => {
++    vi.useFakeTimers();
++    vi.setSystemTime(NOW);
++    window.localStorage.clear();
++    window.sessionStorage.clear();
++    document.body.style.overflow = "";
++    pathname = "/";
++  });
++  afterEach(() => {
++    vi.useRealTimers();
++  });
++
++  const openNow = async () => {
++    await act(async () => {
++      vi.advanceTimersByTime(1000);
++    });
++  };
++
++  it("ana sayfada açılır; ESC ile kapanır; scroll kilidi açılıp geri alınır", async () => {
++    render(<SitePopupLoader popup={popup} />);
++    expect(screen.queryByRole("dialog")).toBeNull();
++    await openNow();
++    expect(screen.getByRole("dialog")).toBeTruthy();
++    expect(document.body.style.overflow).toBe("hidden");
++    expect(screen.getByText("20")).toBeTruthy();
++    expect(screen.getByText("TÜRSAB 9117")).toBeTruthy();
++    expect(screen.getByRole("link", { name: "Villaları inceleyin" }).getAttribute("href")).toBe("/kiralik-villalar");
++    fireEvent.keyDown(window, { key: "Escape" });
++    expect(screen.queryByRole("dialog")).toBeNull();
++    expect(document.body.style.overflow).toBe("");
++    const rec = JSON.parse(window.localStorage.getItem("ty_site_popup_dismissed")!);
++    expect(rec.v).toBe(popup.version);
++    expect(rec.until).toBe(NOW + 1000 + 86_400_000);
++  });
++
++  it("kapatma kaydı süresi içinde tekrar açılmaz; süre dolunca açılır", async () => {
++    window.localStorage.setItem(
++      "ty_site_popup_dismissed",
++      JSON.stringify({ v: popup.version, until: NOW + 60_000 })
++    );
++    const { unmount } = render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    expect(screen.queryByRole("dialog")).toBeNull();
++    unmount();
++    vi.setSystemTime(NOW + 120_000);
++    render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    expect(screen.getByRole("dialog")).toBeTruthy();
++  });
++
++  it("içerik sürümü değişince eski kapatma kaydı geçersiz", async () => {
++    window.localStorage.setItem(
++      "ty_site_popup_dismissed",
++      JSON.stringify({ v: "eski-surum", until: NOW + 999_999 })
++    );
++    render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    expect(screen.getByRole("dialog")).toBeTruthy();
++  });
++
++  it("'session' → sessionStorage; aynı oturumda tekrar açılmaz", async () => {
++    const sess = { ...popup, dismiss: "session" as const };
++    const { unmount } = render(<SitePopupLoader popup={sess} />);
++    await openNow();
++    fireEvent.click(screen.getByRole("button", { name: "Kapat" }));
++    expect(window.sessionStorage.getItem("ty_site_popup_dismissed")).toContain(sess.version);
++    unmount();
++    render(<SitePopupLoader popup={sess} />);
++    await openNow();
++    expect(screen.queryByRole("dialog")).toBeNull();
++  });
++
++  it("kapsam 'home' iken diğer sayfalarda açılmaz; 'all' iken açılır", async () => {
++    pathname = "/kiralik-villalar";
++    const { unmount } = render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    expect(screen.queryByRole("dialog")).toBeNull();
++    unmount();
++    render(<SitePopupLoader popup={{ ...popup, scope: "all" }} />);
++    await openNow();
++    expect(screen.getByRole("dialog")).toBeTruthy();
++  });
++
++  it("tarih penceresi dışında açılmaz", async () => {
++    render(<SitePopupLoader popup={{ ...popup, startsAt: "2026-10-01T00:00:00Z" }} />);
++    await openNow();
++    expect(screen.queryByRole("dialog")).toBeNull();
++  });
++
++  it("backdrop tıklaması kapatır, kart içi tıklama kapatmaz; EN'de 'Close' etiketi", async () => {
++    pathname = "/en";
++    render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    const dialog = screen.getByRole("dialog");
++    fireEvent.click(screen.getByText("20"));
++    expect(screen.getByRole("dialog")).toBeTruthy();
++    expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();
++    fireEvent.click(dialog);
++    expect(screen.queryByRole("dialog")).toBeNull();
++  });
++});

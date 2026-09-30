@@ -1,0 +1,1764 @@
+diff --git a/app/(admin)/layout.tsx b/app/(admin)/layout.tsx
+index 86d5d59..13c7f26 100644
+--- a/app/(admin)/layout.tsx
++++ b/app/(admin)/layout.tsx
+@@ -1,6 +1,8 @@
+ import type { Metadata } from "next";
+ 
+-import { getAdminIconUrl } from "@/lib/admin-branding";
++import { ADMIN_BRANDING_PATHS, getAdminIconUrl } from "@/lib/admin-branding";
++import { getSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
++import { AdminBrandingVersionProvider } from "@/app/components/admin/AdminBrandingVersion";
+ 
+ /* ===============================================================
+    🛡️ ADMIN-WIDE CACHE BYPASS — force-dynamic (server layout)
+@@ -51,16 +53,39 @@ export const dynamic = "force-dynamic";
+    PUBLIC ROUTE GROUP `(public)` root metadata'sını AYNEN kullanır —
+    bu override route-group izole, public'e SIZMAZ.
+ =============================================================== */
+-export const metadata: Metadata = {
+-  title: { absolute: "MAKİ Dijital — Yönetim Paneli" },
+-  icons: { icon: getAdminIconUrl() },
+-  robots: { index: false, follow: false },
+-};
++/* 🛡️ Admin logo/icon `?ts=<R2 ETag>` — sabit path'e overwrite edilen
++   branding görselleri değişince URL de değişir (DB kaydı yok; versiyon
++   R2 nesnesinden okunur, 1 saat cache + upload'da anında invalidation).
++   Versiyon alınamazsa URL'ler BUGÜNKÜ gibi versiyonsuz. */
++async function getAdminBrandingVersions() {
++  const v = await getSiteAssetVersions([
++    ADMIN_BRANDING_PATHS["admin-logo"],
++    ADMIN_BRANDING_PATHS["admin-icon"],
++  ]);
++  return {
++    logo: v[ADMIN_BRANDING_PATHS["admin-logo"]],
++    icon: v[ADMIN_BRANDING_PATHS["admin-icon"]],
++  };
++}
++
++export async function generateMetadata(): Promise<Metadata> {
++  const { icon } = await getAdminBrandingVersions();
++  return {
++    title: { absolute: "MAKİ Dijital — Yönetim Paneli" },
++    icons: { icon: getAdminIconUrl(icon) },
++    robots: { index: false, follow: false },
++  };
++}
+ 
+-export default function AdminGroupLayout({
++export default async function AdminGroupLayout({
+   children,
+ }: {
+   children: React.ReactNode;
+ }) {
+-  return <>{children}</>;
++  const versions = await getAdminBrandingVersions();
++  return (
++    <AdminBrandingVersionProvider versions={versions}>
++      {children}
++    </AdminBrandingVersionProvider>
++  );
+ }
+diff --git a/app/(admin)/maki-admin/blog/BlogPostForm.tsx b/app/(admin)/maki-admin/blog/BlogPostForm.tsx
+index 7bb81e7..c8ff77c 100644
+--- a/app/(admin)/maki-admin/blog/BlogPostForm.tsx
++++ b/app/(admin)/maki-admin/blog/BlogPostForm.tsx
+@@ -10,6 +10,7 @@ import { useNotify } from "@/app/components/admin/notifications/NotificationProv
+ import RichTextEditor from "@/app/components/admin/villa-form/RichTextEditor";
+ import { convertImageToWebP } from "@/lib/image.helpers";
+ import { resolveAssetUrl } from "@/lib/storage.helpers";
++import { useSiteAssetVersions } from "@/lib/storage/use-site-asset-versions";
+ import { STORAGE_BUCKETS } from "@/lib/storage";
+ 
+ /* ===============================================================
+@@ -67,6 +68,9 @@ export default function BlogPostForm({
+   const [coverPath, setCoverPath] = useState<string | null>(
+     initial?.cover_image ?? null
+   );
++  /* 🛡️ Önizleme `?v=<R2 ETag>` — `blog/<slug>.webp` overwrite sonrası
++     yeni kapak sayfa yenilemeden görünsün. */
++  const assetVersions = useSiteAssetVersions([coverPath]);
+   const [category, setCategory] = useState(initial?.category ?? "");
+   const [author, setAuthor] = useState(initial?.author ?? "");
+   const [seoTitle, setSeoTitle] = useState(initial?.seo_title ?? "");
+@@ -109,6 +113,7 @@ export default function BlogPostForm({
+         return;
+       }
+       setCoverPath(path);
++      await assetVersions.refresh(path);
+       toast.success("Kapak yüklendi", { id: "blog-cover" });
+     } catch {
+       toast.error("Kapak yüklenemedi", { id: "blog-cover" });
+@@ -171,7 +176,9 @@ export default function BlogPostForm({
+     }
+   };
+ 
+-  const coverUrl = coverPath ? resolveAssetUrl(coverPath) : null;
++  const coverUrl = coverPath
++    ? assetVersions.versioned(resolveAssetUrl(coverPath), coverPath)
++    : null;
+   const labelCls =
+     "text-[12px] tracking-[0.08em] uppercase font-semibold text-[var(--color-stone-500)] block";
+ 
+diff --git a/app/(admin)/maki-admin/layout.tsx b/app/(admin)/maki-admin/layout.tsx
+index 2a41164..1123c86 100644
+--- a/app/(admin)/maki-admin/layout.tsx
++++ b/app/(admin)/maki-admin/layout.tsx
+@@ -8,6 +8,7 @@ import {
+   getAdminLogoUrl,
+   getAdminIconUrl,
+ } from "@/lib/admin-branding";
++import { useAdminBrandingVersions } from "@/app/components/admin/AdminBrandingVersion";
+ import { adminFontVariables } from "./admin-fonts";
+ import {
+   LayoutDashboard,
+@@ -585,6 +586,8 @@ export default function AdminLayout({
+ ---------------------------------------------- */
+ function AdminBrandMark() {
+   const [imgFailed, setImgFailed] = useState(false);
++  /* 🛡️ R2 versiyonu (server layout'tan) → logo değişince URL değişir. */
++  const { logo: logoVersion } = useAdminBrandingVersions();
+   if (imgFailed) {
+     return <span className="admin-brand-mark">M</span>;
+   }
+@@ -599,7 +602,7 @@ function AdminBrandMark() {
+     >
+       {/* eslint-disable-next-line @next/next/no-img-element */}
+       <img
+-        src={getAdminLogoUrl()}
++        src={getAdminLogoUrl(logoVersion)}
+         alt="Admin"
+         onError={() => setImgFailed(true)}
+         style={{
+@@ -635,9 +638,11 @@ function AdminBrandMark() {
+    hydration mismatch yok.
+ ---------------------------------------------- */
+ function useAdminFavicon(): void {
++  /* 🛡️ R2 versiyonu (server layout'tan) → icon değişince URL değişir. */
++  const { icon: iconVersion } = useAdminBrandingVersions();
+   useEffect(() => {
+     if (typeof document === "undefined") return;
+-    const url = getAdminIconUrl();
++    const url = getAdminIconUrl(iconVersion);
+     if (!url) return;
+ 
+     type Saved = {
+@@ -696,7 +701,7 @@ function useAdminFavicon(): void {
+         }
+       });
+     };
+-  }, []);
++  }, [iconVersion]);
+ }
+ 
+ function AdminShell({
+diff --git a/app/(admin)/maki-admin/locations/page.tsx b/app/(admin)/maki-admin/locations/page.tsx
+index d5c28bc..64702dd 100644
+--- a/app/(admin)/maki-admin/locations/page.tsx
++++ b/app/(admin)/maki-admin/locations/page.tsx
+@@ -29,6 +29,7 @@ import {
+   buildLocationCoverPath,
+   SITE_ASSETS_BUCKET_NAME,
+ } from "@/lib/storage.helpers";
++import { useSiteAssetVersions } from "@/lib/storage/use-site-asset-versions";
+ import { convertImageToWebP } from "@/lib/image.helpers";
+ /* 🛡️ PHASE 10I — BÖLGE ADLARI ÇEVRİLMEZ.
+    Kalkan / Kaş / Fethiye / Çavdır gibi bölge adları ÖZEL İSİMDİR;
+@@ -46,6 +47,11 @@ export default function LocationsPage() {
+   const confirm = useConfirm();
+   const [name, setName] = useState("");
+   const [locations, setLocations] = useState<any[]>([]);
++  /* 🛡️ Kapak önizlemesi `?v=<R2 ETag>` — `location-covers/<slug>.webp`
++     overwrite edildiğinde liste yeni görseli göstersin. */
++  const assetVersions = useSiteAssetVersions(
++    locations.map((l) => l?.cover_image)
++  );
+   const [loading, setLoading] = useState(false);
+   /* 🛡️ Upload-in-progress map — kategori sayfasıyla birebir paralel
+      (migration 011 cover_image upload). */
+@@ -290,6 +296,7 @@ export default function LocationsPage() {
+         return;
+       }
+       await fetchLocations();
++      await assetVersions.refresh(path);
+       toast.success("Kapak görseli güncellendi", {
+         id: `location-cover-${loc.id}`,
+       });
+@@ -389,7 +396,10 @@ export default function LocationsPage() {
+       ) : (
+         <div className="space-y-2.5">
+           {locations.map((loc) => {
+-            const coverUrl = getLocationCoverPublicUrl(loc?.cover_image);
++            const coverUrl = assetVersions.versioned(
++              getLocationCoverPublicUrl(loc?.cover_image),
++              loc?.cover_image
++            );
+             const isUploading = uploadingId === loc.id;
+             const hasSlug = !!String(loc?.slug || "").trim();
+             return (
+diff --git a/app/(admin)/maki-admin/login/page.tsx b/app/(admin)/maki-admin/login/page.tsx
+index edc5fb9..8529910 100644
+--- a/app/(admin)/maki-admin/login/page.tsx
++++ b/app/(admin)/maki-admin/login/page.tsx
+@@ -11,6 +11,7 @@ import {
+ } from "@/lib/admin-auth";
+ 
+ import { getAdminLogoUrl } from "@/lib/admin-branding";
++import { useAdminBrandingVersions } from "@/app/components/admin/AdminBrandingVersion";
+ import { adminFontVariables } from "../admin-fonts";
+ 
+ /* ===============================================================
+@@ -605,6 +606,8 @@ export default function AdminLoginPage() {
+ ---------------------------------------------- */
+ function LoginBrandMark() {
+   const [imgFailed, setImgFailed] = useState<boolean>(false);
++  /* 🛡️ Admin logo R2 versiyonu (server layout) → değişince URL değişir. */
++  const { logo: logoVersion } = useAdminBrandingVersions();
+ 
+   if (imgFailed) {
+     return (
+@@ -630,7 +633,7 @@ function LoginBrandMark() {
+     >
+       {/* eslint-disable-next-line @next/next/no-img-element */}
+       <img
+-        src={getAdminLogoUrl()}
++        src={getAdminLogoUrl(logoVersion)}
+         alt="Admin"
+         onError={() => setImgFailed(true)}
+         className="w-full h-full object-contain"
+@@ -650,6 +653,8 @@ function LoginBrandMark() {
+ ---------------------------------------------- */
+ function DesktopBrandMark() {
+   const [imgFailed, setImgFailed] = useState<boolean>(false);
++  /* 🛡️ Admin logo R2 versiyonu (server layout) → değişince URL değişir. */
++  const { logo: logoVersion } = useAdminBrandingVersions();
+ 
+   if (imgFailed) {
+     return (
+@@ -680,7 +685,7 @@ function DesktopBrandMark() {
+     >
+       {/* eslint-disable-next-line @next/next/no-img-element */}
+       <img
+-        src={getAdminLogoUrl()}
++        src={getAdminLogoUrl(logoVersion)}
+         alt="Admin"
+         onError={() => setImgFailed(true)}
+         className="w-full h-full object-contain"
+diff --git a/app/(admin)/maki-admin/pages/[id]/page.tsx b/app/(admin)/maki-admin/pages/[id]/page.tsx
+index ac92967..471e1fb 100644
+--- a/app/(admin)/maki-admin/pages/[id]/page.tsx
++++ b/app/(admin)/maki-admin/pages/[id]/page.tsx
+@@ -17,6 +17,7 @@ import {
+   buildPageCoverPath,
+   SITE_ASSETS_BUCKET_NAME,
+ } from "@/lib/storage.helpers";
++import { useSiteAssetVersions } from "@/lib/storage/use-site-asset-versions";
+ import { convertImageToWebP } from "@/lib/image.helpers";
+ /* 🛡️ PHASE 12C — SAYFA ÇEVİRİLERİ (CMS içeriği; admin ARAYÜZ dili
+    DEĞİL). `types/page.tsx` (Phase 10D Batch 3) ile BİREBİR AYNI
+@@ -128,6 +129,8 @@ export default function EditPagePage() {
+   const [coverPath, setCoverPath] = useState<string | null>(null);
+   const [coverUploading, setCoverUploading] = useState(false);
+   const coverInputRef = useRef<HTMLInputElement | null>(null);
++  /* 🛡️ Önizleme `?v=<R2 ETag>` — aynı path'e overwrite sonrası yeni görsel. */
++  const assetVersions = useSiteAssetVersions([coverPath]);
+ 
+   /* Original slug — sadece "URL değişecek" uyarısı için. */
+   const [originalSlug, setOriginalSlug] = useState("");
+@@ -245,6 +248,7 @@ export default function EditPagePage() {
+         return;
+       }
+       setCoverPath(path);
++      await assetVersions.refresh(path);
+       toast.success(pagesDict.toast.coverUploaded, { id: "page-cover" });
+     } finally {
+       setCoverUploading(false);
+@@ -358,7 +362,10 @@ export default function EditPagePage() {
+   }
+ 
+   const slugChanged = slug.trim() !== originalSlug && originalSlug.length > 0;
+-  const coverUrl = getPageCoverPublicUrl(coverPath);
++  const coverUrl = assetVersions.versioned(
++    getPageCoverPublicUrl(coverPath),
++    coverPath
++  );
+ 
+   return (
+     <div className="space-y-6 w-full">
+diff --git a/app/(admin)/maki-admin/pages/new/page.tsx b/app/(admin)/maki-admin/pages/new/page.tsx
+index b0650ba..c0e5641 100644
+--- a/app/(admin)/maki-admin/pages/new/page.tsx
++++ b/app/(admin)/maki-admin/pages/new/page.tsx
+@@ -26,6 +26,7 @@ import {
+   buildPageCoverPath,
+   SITE_ASSETS_BUCKET_NAME,
+ } from "@/lib/storage.helpers";
++import { useSiteAssetVersions } from "@/lib/storage/use-site-asset-versions";
+ import { convertImageToWebP } from "@/lib/image.helpers";
+ import { slugifyTr } from "@/lib/slug";
+ /* 🛡️ PHASE 12 — ADMIN I18N (Seçenek A: admin'de locale KAYNAĞI YOK).
+@@ -73,6 +74,12 @@ export default function NewPagePage() {
+   const [body, setBody] = useState("");
+   const [coverPath, setCoverPath] = useState<string | null>(null);
+   const [sections, setSections] = useState<PageSection[]>([]);
++  /* 🛡️ Önizleme `?v=<R2 ETag>` — kapak + bölüm görselleri aynı path'e
++     overwrite edildiğinde önizleme yeni görseli göstersin. */
++  const assetVersions = useSiteAssetVersions([
++    coverPath,
++    ...sections.map((s) => (s.type === "image" ? s.path : null)),
++  ]);
+   const [seoTitle, setSeoTitle] = useState("");
+   const [seoDescription, setSeoDescription] = useState("");
+   const [noindex, setNoindex] = useState(false);
+@@ -128,6 +135,7 @@ export default function NewPagePage() {
+         return;
+       }
+       setCoverPath(path);
++      await assetVersions.refresh(path);
+       toast.success(pagesDict.toast.coverUploaded, { id: "page-cover" });
+     } finally {
+       setCoverUploading(false);
+@@ -203,6 +211,7 @@ export default function NewPagePage() {
+         return;
+       }
+       updateSection(idx, { path } as Partial<PageSection>);
++      await assetVersions.refresh(path);
+       toast.success(pagesDict.toast.imageAdded, {
+         id: `page-section-img-${idx}`,
+       });
+@@ -416,7 +425,10 @@ export default function NewPagePage() {
+     /* eslint-enable no-console */
+   }
+ 
+-  const coverUrl = getPageCoverPublicUrl(coverPath);
++  const coverUrl = assetVersions.versioned(
++    getPageCoverPublicUrl(coverPath),
++    coverPath
++  );
+ 
+   return (
+     <div className="space-y-8 w-full">
+@@ -662,7 +674,10 @@ export default function NewPagePage() {
+                             /* eslint-disable-next-line @next/next/no-img-element */
+                             <img
+                               src={
+-                                getPageCoverPublicUrl(s.path) || undefined
++                                assetVersions.versioned(
++                                  getPageCoverPublicUrl(s.path),
++                                  s.path
++                                ) || undefined
+                               }
+                               alt=""
+                               className="absolute inset-0 w-full h-full object-cover"
+diff --git a/app/(admin)/maki-admin/settings/_components/SettingsField.tsx b/app/(admin)/maki-admin/settings/_components/SettingsField.tsx
+index 2750485..6aaa536 100644
+--- a/app/(admin)/maki-admin/settings/_components/SettingsField.tsx
++++ b/app/(admin)/maki-admin/settings/_components/SettingsField.tsx
+@@ -5,6 +5,8 @@ import { ImagePlus, Trash2 } from "lucide-react";
+ 
+ import { storageProvider } from "@/lib/storage";
+ import { convertImageToWebP } from "@/lib/image.helpers";
++import { useSiteAssetVersions } from "@/lib/storage/use-site-asset-versions";
++import { versionFor } from "@/lib/storage/site-asset-version";
+ import {
+   SITE_ASSETS_BUCKET_NAME,
+   resolveAssetUrlVersioned,
+@@ -312,6 +314,10 @@ export function UploadField({
+      bu key güncellenir; preview src'sine ?ts=<key> eklenir. Public
+      frontend / upload / storage / DB DEĞİŞMEZ. */
+   const [bustTs, setBustTs] = useState<number | null>(null);
++  /* 🛡️ Önizleme `?v=` = R2 nesnesinin güncel ETag'i (görsel değişince
++     değişir; kayıt beklenmeden). Alınamazsa `version` prop'u (mevcut
++     settings.updated_at davranışı) kullanılır. */
++  const assetVersions = useSiteAssetVersions([currentUrl]);
+ 
+   async function handleFile(file: File) {
+     if (!slug || !slug.trim()) {
+@@ -345,6 +351,8 @@ export function UploadField({
+          AYNEN çalışmaya devam eder (resolveAssetUrl HTTP(S) pass-through).
+          Storage provider değişiminde DB UPDATE gerekmez. */
+       onChange(path);
++      /* Yeni R2 versiyonu (ETag) → önizleme `?v=` değişir. */
++      await assetVersions.refresh(path);
+       /* Preview cache-bust — yeni baytları AYNI URL'de görebilmek için. */
+       setBustTs(Date.now());
+     } finally {
+@@ -355,7 +363,10 @@ export function UploadField({
+ 
+   /* Preview src — resolveAssetUrl çıktısına (varsa) ?ts=<bustTs> ekle.
+      bustTs null iken (sayfa ilk açılış) davranış AYNEN eski (ts yok). */
+-  const resolvedPreview = resolveAssetUrlVersioned(currentUrl, version);
++  const resolvedPreview = resolveAssetUrlVersioned(
++    currentUrl,
++    versionFor(assetVersions.versions, currentUrl) ?? version
++  );
+   const previewSrc = resolvedPreview
+     ? bustTs
+       ? `${resolvedPreview}${resolvedPreview.includes("?") ? "&" : "?"}ts=${bustTs}`
+diff --git a/app/(admin)/maki-admin/types/page.tsx b/app/(admin)/maki-admin/types/page.tsx
+index f769e98..c6af6a1 100644
+--- a/app/(admin)/maki-admin/types/page.tsx
++++ b/app/(admin)/maki-admin/types/page.tsx
+@@ -37,6 +37,7 @@ import {
+   buildCategoryCoverPath,
+   SITE_ASSETS_BUCKET_NAME,
+ } from "@/lib/storage.helpers";
++import { useSiteAssetVersions } from "@/lib/storage/use-site-asset-versions";
+ import { convertImageToWebP } from "@/lib/image.helpers";
+ /* 🛡️ PHASE 10D — Batch 3 — multilingual_enabled kontrolü. Batch 2'de
+    Features için kanıtlanan TopBar.tsx deseni (getPublicSettingsAction,
+@@ -50,6 +51,9 @@ export default function TypesPage() {
+   const toast = useNotify();
+   const confirm = useConfirm();
+   const [types, setTypes] = useState<any[]>([]);
++  /* 🛡️ Kapak önizlemesi `?v=<R2 ETag>` — `category-covers/<slug>.webp`
++     overwrite edildiğinde liste yeni görseli göstersin. */
++  const assetVersions = useSiteAssetVersions(types.map((t) => t?.cover_image));
+   const [name, setName] = useState("");
+   const [loading, setLoading] = useState(false);
+   /* 🛡️ Upload-in-progress map — aynı anda birden fazla kategori
+@@ -220,6 +224,7 @@ export default function TypesPage() {
+         return;
+       }
+       await load();
++      await assetVersions.refresh(path);
+       toast.success("Kapak görseli güncellendi", {
+         id: `type-cover-${t.id}`,
+       });
+@@ -306,7 +311,10 @@ export default function TypesPage() {
+      BYTE-IDENTICAL kaldı; yalnız "Çeviriler" butonu (Kaydet/Sil ile aynı
+      `!sortMode` bloğunda) ve altına koşullu panel eklendi. */
+   const renderTypeRow = (t: any, dragHandleProps?: DragHandleProps) => {
+-    const coverUrl = getCategoryCoverPublicUrl(t?.cover_image);
++    const coverUrl = assetVersions.versioned(
++      getCategoryCoverPublicUrl(t?.cover_image),
++      t?.cover_image
++    );
+     const isUploading = uploadingId === t.id;
+     const hasSlug = !!String(t?.slug || "").trim();
+     return (
+diff --git a/app/(admin)/maki-admin/webmaster/page.tsx b/app/(admin)/maki-admin/webmaster/page.tsx
+index bbd79b7..fad128a 100644
+--- a/app/(admin)/maki-admin/webmaster/page.tsx
++++ b/app/(admin)/maki-admin/webmaster/page.tsx
+@@ -1,6 +1,7 @@
+ "use client";
+ 
+ import { useEffect, useRef, useState } from "react";
++import { useRouter } from "next/navigation";
+ import {
+   Image as ImageIcon,
+   UploadCloud,
+@@ -59,6 +60,10 @@ const INITIAL_CARD_STATE = (): CardState => ({
+ });
+ 
+ export default function WebmasterPage() {
++  /* 🛡️ Upload sonrası server admin layout'u yeni R2 versiyonuyla yeniden
++     render olsun → sidebar logosu / favicon sayfa yenilemeden güncellenir
++     (client state korunur). */
++  const router = useRouter();
+   const toast = useNotify();
+   const [cards, setCards] = useState<Record<CardKey, CardState>>({
+     "admin-logo": INITIAL_CARD_STATE(),
+@@ -119,6 +124,7 @@ export default function WebmasterPage() {
+           error: null,
+         },
+       }));
++      router.refresh();
+     } catch (err) {
+       const msg =
+         err instanceof Error ? err.message : "Yükleme başarısız";
+diff --git a/app/(public)/de/p/[slug]/page.tsx b/app/(public)/de/p/[slug]/page.tsx
+index c3836ef..add49e2 100644
+--- a/app/(public)/de/p/[slug]/page.tsx
++++ b/app/(public)/de/p/[slug]/page.tsx
+@@ -7,6 +7,7 @@ import { getPageBySlug } from "@/app/services/page.service";
+ import { resolvePageContent } from "@/lib/i18n/get-page-translation.server";
+ import CmsPageBody from "@/app/components/cms/CmsPageBody";
+ import { buildCmsPageMetadata } from "@/app/components/cms/cms-page-metadata";
++import { getCmsPageAssetVersions } from "@/app/components/cms/cms-asset-versions.server";
+ 
+ /* ===============================================================
+    🛡️ /de/p/[slug] — CMS SAYFASI (DE) — PHASE 12D
+@@ -50,6 +51,8 @@ export default async function DeCmsPage({ params }: Props) {
+   if (!page) notFound();
+ 
+   const resolved = await resolvePageContent(page, "de");
++  /* 🛡️ Görsel `?v=` versiyonları (R2 ETag; path aynı). */
++  const assetVersions = await getCmsPageAssetVersions(page, resolved.sections);
+ 
+   return (
+     <CmsPageBody
+@@ -63,6 +66,7 @@ export default async function DeCmsPage({ params }: Props) {
+          yoksa `resolveTranslatedSections` canonical TR bölümlerine
+          düşer. EK SORGU YOK: aynı `resolvePageContent` çağrısı. */
+       resolvedSections={resolved.sections}
++      assetVersions={assetVersions}
+     />
+   );
+ }
+diff --git a/app/(public)/en/p/[slug]/page.tsx b/app/(public)/en/p/[slug]/page.tsx
+index 9cce191..f90101e 100644
+--- a/app/(public)/en/p/[slug]/page.tsx
++++ b/app/(public)/en/p/[slug]/page.tsx
+@@ -7,6 +7,7 @@ import { getPageBySlug } from "@/app/services/page.service";
+ import { resolvePageContent } from "@/lib/i18n/get-page-translation.server";
+ import CmsPageBody from "@/app/components/cms/CmsPageBody";
+ import { buildCmsPageMetadata } from "@/app/components/cms/cms-page-metadata";
++import { getCmsPageAssetVersions } from "@/app/components/cms/cms-asset-versions.server";
+ 
+ /* ===============================================================
+    🛡️ /en/p/[slug] — CMS SAYFASI (EN) — PHASE 12D
+@@ -50,6 +51,8 @@ export default async function EnCmsPage({ params }: Props) {
+   if (!page) notFound();
+ 
+   const resolved = await resolvePageContent(page, "en");
++  /* 🛡️ Görsel `?v=` versiyonları (R2 ETag; path aynı). */
++  const assetVersions = await getCmsPageAssetVersions(page, resolved.sections);
+ 
+   return (
+     <CmsPageBody
+@@ -63,6 +66,7 @@ export default async function EnCmsPage({ params }: Props) {
+          yoksa `resolveTranslatedSections` canonical TR bölümlerine
+          düşer. EK SORGU YOK: aynı `resolvePageContent` çağrısı. */
+       resolvedSections={resolved.sections}
++      assetVersions={assetVersions}
+     />
+   );
+ }
+diff --git a/app/api/admin/blog/[id]/route.ts b/app/api/admin/blog/[id]/route.ts
+index 29089bd..f8ad8c5 100644
+--- a/app/api/admin/blog/[id]/route.ts
++++ b/app/api/admin/blog/[id]/route.ts
+@@ -176,6 +176,10 @@ export async function PATCH(
+      Full Route Cache'i temizlenir (kart başlık/özet/kapak taze gelir).
+      Detay force-dynamic → zaten taze. Cache mimarisi korunur. */
+   revalidatePath("/blog");
++  /* 🛡️ EN/DE blog listeleri de ISR — yalnız TR tazeleniyordu; kapak
++     (ve `?v=` versiyonu) EN/DE listede de hemen güncel olsun. */
++  revalidatePath("/en/blog");
++  revalidatePath("/de/blog");
+ 
+   return NextResponse.json({ ok: true });
+ }
+@@ -234,6 +238,10 @@ export async function DELETE(
+      Route Cache'i temizlenir; silinen yazı listeden hemen kalkar.
+      Cache mimarisi korunur. */
+   revalidatePath("/blog");
++  /* 🛡️ EN/DE blog listeleri de ISR — yalnız TR tazeleniyordu; kapak
++     (ve `?v=` versiyonu) EN/DE listede de hemen güncel olsun. */
++  revalidatePath("/en/blog");
++  revalidatePath("/de/blog");
+ 
+   return NextResponse.json({ ok: true });
+ }
+diff --git a/app/api/admin/blog/route.ts b/app/api/admin/blog/route.ts
+index b5f5696..1352766 100644
+--- a/app/api/admin/blog/route.ts
++++ b/app/api/admin/blog/route.ts
+@@ -151,6 +151,10 @@ export async function POST(req: Request): Promise<NextResponse> {
+      Full Route Cache'i temizlenir; sonraki ziyaretçi yeni listeyi hemen
+      görür. Detay (force-dynamic) etkilenmez; cache mimarisi korunur. */
+   revalidatePath("/blog");
++  /* 🛡️ EN/DE blog listeleri de ISR — yalnız TR tazeleniyordu; kapak
++     (ve `?v=` versiyonu) EN/DE listede de hemen güncel olsun. */
++  revalidatePath("/en/blog");
++  revalidatePath("/de/blog");
+ 
+   return NextResponse.json({ ok: true, id: data?.id });
+ }
+diff --git a/app/api/admin/storage/remove/route.ts b/app/api/admin/storage/remove/route.ts
+index b4ba2a2..541c12a 100644
+--- a/app/api/admin/storage/remove/route.ts
++++ b/app/api/admin/storage/remove/route.ts
+@@ -8,6 +8,7 @@ import {
+ import { storagePermissionFor } from "@/lib/auth/admin-permission-map";
+ import { s3StorageProvider } from "@/lib/storage/s3-storage.provider";
+ import { STORAGE_BUCKETS } from "@/lib/storage/storage.constants";
++import { invalidateSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
+ 
+ /* ===============================================================
+    🛡️ FAZ C / ADIM 1 — POST /api/admin/storage/remove (ALTYAPI)
+@@ -100,6 +101,9 @@ export async function POST(req: Request): Promise<Response> {
+ 
+   /* 4) S3 REMOVE (R2) */
+   const result = await s3StorageProvider.remove(bucket, paths);
++  /* 🛡️ Görsel URL versiyonu — silinen path'lerin versiyon cache'i
++     geçersiz (aynı path'e yeniden yüklemede eski `?v=` kalmasın). */
++  invalidateSiteAssetVersions(bucket, paths);
+   if (!result.ok) {
+     console.warn("[api.admin.storage.remove] PARTIAL_FAIL", {
+       bucket,
+diff --git a/app/api/admin/storage/upload/route.ts b/app/api/admin/storage/upload/route.ts
+index a9b2314..a3f7293 100644
+--- a/app/api/admin/storage/upload/route.ts
++++ b/app/api/admin/storage/upload/route.ts
+@@ -8,6 +8,7 @@ import {
+ import { storagePermissionFor } from "@/lib/auth/admin-permission-map";
+ import { s3StorageProvider } from "@/lib/storage/s3-storage.provider";
+ import { STORAGE_BUCKETS } from "@/lib/storage/storage.constants";
++import { invalidateSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
+ 
+ /* ===============================================================
+    🛡️ FAZ C / ADIM 1 — POST /api/admin/storage/upload (ALTYAPI)
+@@ -147,5 +148,10 @@ export async function POST(req: Request): Promise<Response> {
+     );
+   }
+ 
++  /* 🛡️ Görsel URL versiyonu (`?v=`): aynı path'e overwrite edildi →
++     bu path'in versiyon cache'i geçersiz; sonraki render yeni ETag'i
++     okur. Yanıt formatı DEĞİŞMEDİ. */
++  invalidateSiteAssetVersions(bucket, [path]);
++
+   return NextResponse.json({ ok: true });
+ }
+diff --git a/app/components/admin/AdminBrandingVersion.tsx b/app/components/admin/AdminBrandingVersion.tsx
+new file mode 100644
+index 0000000..7c3a194
+--- /dev/null
++++ b/app/components/admin/AdminBrandingVersion.tsx
+@@ -0,0 +1,39 @@
++"use client";
++
++import { createContext, useContext, type ReactNode } from "react";
++
++/* ===============================================================
++   🛡️ ADMIN BRANDING GÖRSEL VERSİYONU (admin logo / admin icon)
++   ===============================================================
++   `branding/admin-logo.webp` ve `branding/admin-icon.webp` sabit
++   path'e overwrite edilir ve DB kaydı yoktur. Versiyon (R2 ETag)
++   `app/(admin)/layout.tsx` (server) tarafından okunur ve buradan
++   client admin layout'una / login sayfasına iletilir →
++   `getAdminLogoUrl(version)` / `getAdminIconUrl(version)`.
++   Versiyon yoksa `undefined` → URL BUGÜNKÜ gibi (hydration-safe,
++   server ve client aynı değeri görür).
++   =============================================================== */
++export type AdminBrandingVersions = {
++  logo?: string;
++  icon?: string;
++};
++
++const AdminBrandingVersionContext = createContext<AdminBrandingVersions>({});
++
++export function AdminBrandingVersionProvider({
++  versions,
++  children,
++}: {
++  versions: AdminBrandingVersions;
++  children: ReactNode;
++}) {
++  return (
++    <AdminBrandingVersionContext.Provider value={versions}>
++      {children}
++    </AdminBrandingVersionContext.Provider>
++  );
++}
++
++export function useAdminBrandingVersions(): AdminBrandingVersions {
++  return useContext(AdminBrandingVersionContext);
++}
+diff --git a/app/components/blog/BlogDetailPageBody.tsx b/app/components/blog/BlogDetailPageBody.tsx
+index 1b6cd69..3ffff8a 100644
+--- a/app/components/blog/BlogDetailPageBody.tsx
++++ b/app/components/blog/BlogDetailPageBody.tsx
+@@ -4,6 +4,8 @@ import Image from "next/image";
+ import { getBlogPostBySlug } from "@/app/services/blog.service";
+ import { sanitizeHtml, stripHtml } from "@/lib/html-sanitize";
+ import { resolveAssetUrl } from "@/lib/storage.helpers";
++import { versionedAssetUrl } from "@/lib/storage/site-asset-version";
++import { getSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
+ import PageHero from "@/app/components/ui/PageHero";
+ import {
+   JsonLd,
+@@ -49,7 +51,12 @@ export default async function BlogDetailPageBody({
+   const excerpt = resolved.excerpt;
+   const body = resolved.body;
+ 
+-  const cover = resolveAssetUrl(post.cover_image);
++  /* 🛡️ Kapak `?v=<R2 ETag>` (path aynı; versiyon yoksa URL aynen). */
++  const cover = versionedAssetUrl(
++    resolveAssetUrl(post.cover_image),
++    await getSiteAssetVersions([post.cover_image]),
++    post.cover_image
++  );
+ 
+   const articleLd = buildArticle({
+     slug: post.slug,
+diff --git a/app/components/blog/BlogIndexPageBody.tsx b/app/components/blog/BlogIndexPageBody.tsx
+index b45554d..badf878 100644
+--- a/app/components/blog/BlogIndexPageBody.tsx
++++ b/app/components/blog/BlogIndexPageBody.tsx
+@@ -4,6 +4,8 @@ import { CalendarDays, ArrowUpRight } from "lucide-react";
+ 
+ import { getBlogPosts } from "@/app/services/blog.service";
+ import { resolveAssetUrl } from "@/lib/storage.helpers";
++import { versionedAssetUrl } from "@/lib/storage/site-asset-version";
++import { getSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
+ import PageHero from "@/app/components/ui/PageHero";
+ 
+ /* 🛡️ PUBLIC ÇOKLU DİL — statik metinler MEVCUT public dictionary'den
+@@ -52,6 +54,11 @@ export default async function BlogIndexPageBody({
+ 
+   const posts = await getBlogPosts();
+   const translated = await resolveBlogListContent(posts, locale);
++  /* 🛡️ Kapak `?v=<R2 ETag>` versiyonları — `blog/<slug>.webp` aynı
++     path'e overwrite edildiği için URL görsel değişince değişmeli. */
++  const coverVersions = await getSiteAssetVersions(
++    posts.map((p) => p.cover_image)
++  );
+ 
+   return (
+     <>
+@@ -74,7 +81,11 @@ export default async function BlogIndexPageBody({
+         ) : (
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+             {posts.map((post) => {
+-              const cover = resolveAssetUrl(post.cover_image);
++              const cover = versionedAssetUrl(
++                resolveAssetUrl(post.cover_image),
++                coverVersions,
++                post.cover_image
++              );
+               const content = translated.get(post.id);
+               const title = content?.title || post.title;
+               const excerpt = content?.excerpt ?? post.excerpt;
+diff --git a/app/components/blog/blog-metadata.ts b/app/components/blog/blog-metadata.ts
+index 135f690..aff166c 100644
+--- a/app/components/blog/blog-metadata.ts
++++ b/app/components/blog/blog-metadata.ts
+@@ -5,6 +5,8 @@ import type { Metadata } from "next";
+ import { getBlogPostBySlug } from "@/app/services/blog.service";
+ import { stripHtml } from "@/lib/html-sanitize";
+ import { resolveAssetUrl } from "@/lib/storage.helpers";
++import { versionedAssetUrl } from "@/lib/storage/site-asset-version";
++import { getSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
+ import { getCachedSettings } from "@/lib/cache.helpers";
+ import {
+   DEFAULT_LOCALE,
+@@ -83,7 +85,14 @@ export async function buildBlogDetailMetadata(
+     resolved.seoDescription?.trim() ||
+     (resolved.excerpt?.trim() ? resolved.excerpt.trim() : "") ||
+     (resolved.body ? excerptFrom(stripHtml(resolved.body), 160) : "");
+-  const cover = resolveAssetUrl(post.og_image || post.cover_image) || undefined;
++  /* 🛡️ OG/Twitter görseli `?v=<R2 ETag>` ile (path aynı). */
++  const ogPath = post.og_image || post.cover_image;
++  const cover =
++    versionedAssetUrl(
++      resolveAssetUrl(ogPath),
++      await getSiteAssetVersions([ogPath]),
++      ogPath
++    ) || undefined;
+ 
+   const settings = await getCachedSettings().catch(() => null);
+   const multilingualEnabled = isMultilingualEnabled(settings);
+diff --git a/app/components/cms/CmsPageBody.tsx b/app/components/cms/CmsPageBody.tsx
+index 768fe79..9edc897 100644
+--- a/app/components/cms/CmsPageBody.tsx
++++ b/app/components/cms/CmsPageBody.tsx
+@@ -2,6 +2,7 @@ import Image from "next/image";
+ import Link from "next/link";
+ 
+ import { getPageCoverPublicUrl } from "@/lib/storage.helpers";
++import { versionedAssetUrl, versionFor } from "@/lib/storage/site-asset-version";
+ import { parsePageSections } from "@/lib/page-sections";
+ import PageSectionRenderer from "@/app/components/cms/PageSectionRenderer";
+ import PageHero from "@/app/components/ui/PageHero";
+@@ -142,6 +143,10 @@ type Props = {
+    *  Verilmezse canonical `page.sections` kullanılır → bu prop'u
+    *  geçmeyen mevcut çağıranların davranışı BİREBİR korunur. */
+   resolvedSections?: unknown;
++  /** 🛡️ Görsel URL versiyonları (`{ [path]: R2 ETag }`) — kapak ve
++   *  bölüm görsellerine `?v=` eklenir; R2 path'i DEĞİŞMEZ. Verilmezse
++   *  URL'ler BUGÜNKÜ gibi versiyonsuz (geriye uyumlu). */
++  assetVersions?: Readonly<Record<string, string>>;
+ };
+ 
+ export default function CmsPageBody({
+@@ -152,6 +157,7 @@ export default function CmsPageBody({
+   resolvedExcerpt,
+   body,
+   resolvedSections,
++  assetVersions,
+ }: Props) {
+   /* 🛡️ PHASE 12E — statik arayüz metinleri. `locale` prop'u zaten
+      mevcut (Phase 12D); yeni bir locale kaynağı EKLENMEDİ. */
+@@ -162,8 +168,11 @@ export default function CmsPageBody({
+      body/content drift fix'i o helper'ın içine TAŞINDI. */
+   const excerpt = (resolvedExcerpt ?? "").trim();
+ 
+-  const coverUrl = getPageCoverPublicUrl(
+-    (page as { cover_image?: string | null }).cover_image
++  const coverPath = (page as { cover_image?: string | null }).cover_image;
++  const coverUrl = versionedAssetUrl(
++    getPageCoverPublicUrl(coverPath),
++    assetVersions,
++    coverPath
+   );
+ 
+   /* HERO KARARI:
+@@ -314,7 +323,13 @@ export default function CmsPageBody({
+           {/* Sections varsa render, yoksa body fallback */}
+           {hasSections ? (
+             sections.map((s, idx) => (
+-              <PageSectionRenderer key={idx} section={s} />
++              <PageSectionRenderer
++                key={idx}
++                section={s}
++                version={
++                  s.type === "image" ? versionFor(assetVersions, s.path) : undefined
++                }
++              />
+             ))
+           ) : hasBody ? (
+             <div className="space-y-5">
+diff --git a/app/components/cms/PageSectionRenderer.tsx b/app/components/cms/PageSectionRenderer.tsx
+index 16e38e0..b0359fd 100644
+--- a/app/components/cms/PageSectionRenderer.tsx
++++ b/app/components/cms/PageSectionRenderer.tsx
+@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
+ 
+ import type { PageSection } from "@/lib/page-sections";
+ import { getPageCoverPublicUrl } from "@/lib/storage.helpers";
++import { withVersionParam } from "@/lib/storage/site-asset-version";
+ 
+ /* ===============================================================
+    🛡️ PAGE SECTION RENDERER — type→component map
+@@ -43,8 +44,18 @@ function RichTextSection({ content }: { content: string }) {
+ }
+ 
+ /* ---------- Image: full-width, rounded, lazy ---------- */
+-function ImageSectionView({ path, alt }: { path: string; alt?: string }) {
+-  const url = getPageCoverPublicUrl(path);
++function ImageSectionView({
++  path,
++  alt,
++  version,
++}: {
++  path: string;
++  alt?: string;
++  /** 🛡️ R2 ETag versiyonu → `?v=` (path aynı; yoksa URL aynen). */
++  version?: string;
++}) {
++  const base = getPageCoverPublicUrl(path);
++  const url = base && version ? withVersionParam(base, version) : base;
+   if (!url) return null;
+   return (
+     <figure className="my-6 md:my-10">
+@@ -95,8 +106,8 @@ const SECTION_RENDERERS = {
+   richtext: (s: Extract<PageSection, { type: "richtext" }>) => (
+     <RichTextSection content={s.content} />
+   ),
+-  image: (s: Extract<PageSection, { type: "image" }>) => (
+-    <ImageSectionView path={s.path} alt={s.alt} />
++  image: (s: Extract<PageSection, { type: "image" }>, version?: string) => (
++    <ImageSectionView path={s.path} alt={s.alt} version={version} />
+   ),
+   quote: (s: Extract<PageSection, { type: "quote" }>) => (
+     <QuoteSectionView text={s.text} author={s.author} />
+@@ -105,15 +116,19 @@ const SECTION_RENDERERS = {
+ 
+ export default function PageSectionRenderer({
+   section,
++  version,
+ }: {
+   section: PageSection;
++  /** 🛡️ Görsel bölümü için R2 versiyonu (opsiyonel). */
++  version?: string;
+ }) {
+   /* Type assertion gerekiyor çünkü map lookup TS narrow yapmıyor;
+      section.type discriminator union'a göre lookup zaten doğru
+      renderer'ı seçer. Bilinmeyen type düşmüş zaten parsePageSections'da. */
+   const renderer = SECTION_RENDERERS[section.type] as (
+-    s: PageSection
++    s: PageSection,
++    version?: string
+   ) => ReactElement;
+   if (!renderer) return null;
+-  return renderer(section);
++  return renderer(section, version);
+ }
+diff --git a/app/components/cms/cms-asset-versions.server.ts b/app/components/cms/cms-asset-versions.server.ts
+new file mode 100644
+index 0000000..1f6eb4c
+--- /dev/null
++++ b/app/components/cms/cms-asset-versions.server.ts
+@@ -0,0 +1,24 @@
++import "server-only";
++
++import { parsePageSections } from "@/lib/page-sections";
++import { getSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
++
++/* ===============================================================
++   🛡️ CMS SAYFA GÖRSEL VERSİYONLARI (TR/EN/DE `/p/[slug]` ortak)
++   ===============================================================
++   Kapak (`pages.cover_image`) + görsel bölümleri (`sections[].path`,
++   locale-aware çözülmüş bölümler verilmişse onlar) için R2 ETag
++   versiyonları → `CmsPageBody assetVersions`. Bölüm parse'ı
++   CmsPageBody ile AYNI (`parsePageSections`). Hata/eksik → `{}`
++   (URL'ler bugünkü gibi versiyonsuz).
++   =============================================================== */
++export async function getCmsPageAssetVersions(
++  page: { cover_image?: string | null; sections?: unknown },
++  resolvedSections?: unknown
++): Promise<Record<string, string>> {
++  const sections = parsePageSections(
++    resolvedSections !== undefined ? resolvedSections : page.sections
++  );
++  const imagePaths = sections.flatMap((s) => (s.type === "image" ? [s.path] : []));
++  return getSiteAssetVersions([page.cover_image, ...imagePaths]);
++}
+diff --git a/app/components/cms/cms-page-metadata.ts b/app/components/cms/cms-page-metadata.ts
+index 6d76c84..7a492e4 100644
+--- a/app/components/cms/cms-page-metadata.ts
++++ b/app/components/cms/cms-page-metadata.ts
+@@ -4,6 +4,8 @@ import type { Metadata } from "next";
+ 
+ import { getPageBySlug } from "@/app/services/page.service";
+ import { getPageCoverPublicUrl } from "@/lib/storage.helpers";
++import { versionedAssetUrl } from "@/lib/storage/site-asset-version";
++import { getSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
+ import { getCachedSettings } from "@/lib/cache.helpers";
+ import {
+   DEFAULT_LOCALE,
+@@ -67,8 +69,13 @@ export async function buildCmsPageMetadata(
+       ? resolved.excerpt
+       : undefined);
+ 
+-  const cover = getPageCoverPublicUrl(
+-    (page as { cover_image?: string | null }).cover_image
++  /* 🛡️ OG/Twitter görseli de `?v=<R2 ETag>` ile (sosyal ağ
++     önizleme cache'i eski kapağı göstermesin); path aynı. */
++  const coverPath = (page as { cover_image?: string | null }).cover_image;
++  const cover = versionedAssetUrl(
++    getPageCoverPublicUrl(coverPath),
++    await getSiteAssetVersions([coverPath]),
++    coverPath
+   );
+   const robots = page.noindex
+     ? { index: false, follow: false }
+diff --git a/app/lib/mail/client.ts b/app/lib/mail/client.ts
+index 19b24ad..f84b946 100644
+--- a/app/lib/mail/client.ts
++++ b/app/lib/mail/client.ts
+@@ -10,7 +10,7 @@
+ 
+ import type { Settings } from "@/app/services/settings.types";
+ import { settingsServerRepository } from "@/lib/db/settings.repository.server";
+-import { resolveAssetUrl } from "@/lib/storage.helpers";
++import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
+ 
+ export type ResendPayload = {
+   from: string;
+@@ -114,7 +114,11 @@ export async function getMailConfig(): Promise<{
+   /* 🔥 site_logo'yu Storage public URL'e resolve et (FULL URL veya
+      relative path için tek code path; Header/Footer/PDF voucher
+      ile AYNI helper). Yoksa null. */
+-  const brandLogoUrl = resolveAssetUrl(settings?.site_logo) || null;
++  /* 🛡️ `?v=settings.updated_at` — Header/Footer ile AYNI versiyon;
++     logo sabit path'e overwrite edildiğinde mail istemcisi/proxy
++     cache'i eski logoyu göstermesin. */
++  const brandLogoUrl =
++    resolveAssetUrlVersioned(settings?.site_logo, settings?.updated_at) || null;
+ 
+   return {
+     apiKey,
+diff --git a/app/lib/voucher/data.ts b/app/lib/voucher/data.ts
+index fc8b023..0e4aa88 100644
+--- a/app/lib/voucher/data.ts
++++ b/app/lib/voucher/data.ts
+@@ -3,7 +3,7 @@ import "server-only";
+ import { voucherRepository } from "@/lib/db/voucher.repository.server";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { getSettings } from "@/app/services/settings.service";
+-import { resolveAssetUrl } from "@/lib/storage.helpers";
++import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
+ 
+ /* 🛡️ PHASE 3 (migration 040): voucher reservation snapshot'ı tam PII
+    içerir (name/phone/email/identity/address/price). 040 admin-only RLS
+@@ -198,7 +198,10 @@ export async function buildVoucherData(
+   let brandLogoUrl: string | null = null;
+   try {
+     const settings = await getSettings();
+-    brandLogoUrl = resolveAssetUrl(settings?.site_logo) || null;
++    /* 🛡️ `?v=settings.updated_at` — Header/Footer ile AYNI versiyon. */
++    brandLogoUrl =
++      resolveAssetUrlVersioned(settings?.site_logo, settings?.updated_at) ||
++      null;
+   } catch {
+     brandLogoUrl = null;
+   }
+diff --git a/app/p/[slug]/page.tsx b/app/p/[slug]/page.tsx
+index 6625246..3e7ce6c 100644
+--- a/app/p/[slug]/page.tsx
++++ b/app/p/[slug]/page.tsx
+@@ -5,6 +5,7 @@ import { getPageBySlug } from "@/app/services/page.service";
+ import { resolvePageContent } from "@/lib/i18n/get-page-translation.server";
+ import CmsPageBody from "@/app/components/cms/CmsPageBody";
+ import { buildCmsPageMetadata } from "@/app/components/cms/cms-page-metadata";
++import { getCmsPageAssetVersions } from "@/app/components/cms/cms-asset-versions.server";
+ 
+ /* ===============================================================
+    🛡️ /p/[slug] — PREMIUM EDITORIAL CMS PAGE (TR)
+@@ -69,6 +70,8 @@ export default async function CmsPage({ params }: Props) {
+   }
+ 
+   const resolved = await resolvePageContent(page, "tr");
++  /* 🛡️ Görsel `?v=` versiyonları (R2 ETag; path aynı). */
++  const assetVersions = await getCmsPageAssetVersions(page, resolved.sections);
+ 
+   return (
+     <CmsPageBody
+@@ -82,6 +85,7 @@ export default async function CmsPage({ params }: Props) {
+          yoksa `resolveTranslatedSections` canonical TR bölümlerine
+          düşer. EK SORGU YOK: aynı `resolvePageContent` çağrısı. */
+       resolvedSections={resolved.sections}
++      assetVersions={assetVersions}
+     />
+   );
+ }
+diff --git a/app/services/site-asset-version.action.ts b/app/services/site-asset-version.action.ts
+new file mode 100644
+index 0000000..b7641ad
+--- /dev/null
++++ b/app/services/site-asset-version.action.ts
+@@ -0,0 +1,29 @@
++"use server";
++
++import { requireAdminAction } from "@/lib/auth/action-authz";
++import { getSiteAssetVersions } from "@/lib/storage/site-asset-version.server";
++
++/* ===============================================================
++   🛡️ ADMIN ÖNİZLEME — site-assets görsel versiyonları (salt okuma)
++   ===============================================================
++   Admin client sayfaları (tip/bölge/sayfa/blog kapakları, ayar
++   upload alanları) önizleme URL'sine `?v=<R2 ETag>` ekler; upload
++   sonrası aynı path'in yeni versiyonunu buradan alır → önizleme
++   sayfa yenilenmeden yeni görseli gösterir. Mevcut API'ler ve yanıt
++   formatları DEĞİŞMEDİ (ayrı, yalnız okuyan action).
++   Güvenlik: aktif admin oturumu şart (R2 HEAD amplifikasyonu yok);
++   en fazla 200 path; yalnız relative site-assets path'leri.
++   =============================================================== */
++
++const MAX_PATHS = 200;
++
++export async function getSiteAssetVersionsAction(
++  paths: string[]
++): Promise<Record<string, string>> {
++  await requireAdminAction();
++  if (!Array.isArray(paths)) return {};
++  const clean = paths
++    .filter((p): p is string => typeof p === "string")
++    .slice(0, MAX_PATHS);
++  return getSiteAssetVersions(clean);
++}
+diff --git a/lib/storage.helpers.ts b/lib/storage.helpers.ts
+index f27ac4f..8f6b88f 100644
+--- a/lib/storage.helpers.ts
++++ b/lib/storage.helpers.ts
+@@ -1,4 +1,5 @@
+ import { storageProvider, STORAGE_BUCKETS } from "@/lib/storage";
++import { withVersionParam } from "@/lib/storage/site-asset-version";
+ 
+ /* ===============================================================
+    🛡️ STORAGE HELPERS — R2 storage public URL üretici
+@@ -217,10 +218,10 @@ export function resolveAssetUrlVersioned(
+   if (cacheKey === undefined || cacheKey === null || cacheKey === "") {
+     return url;
+   }
+-  const sep = url.includes("?") ? "&" : "?";
+-  return `${url}${sep}v=${encodeURIComponent(String(cacheKey))}`;
++  return withVersionParam(url, cacheKey);
+ }
+ 
++
+ /* ===============================================================
+    🛡️ appendAssetVersion — hazır URL'e cache-bust `?v=` ekler.
+    ===============================================================
+@@ -249,8 +250,7 @@ export function appendAssetVersion(
+   if (cacheKey === undefined || cacheKey === null || cacheKey === "") {
+     return url;
+   }
+-  const sep = url.includes("?") ? "&" : "?";
+-  return `${url}${sep}v=${encodeURIComponent(String(cacheKey))}`;
++  return withVersionParam(url, cacheKey);
+ }
+ 
+ /* ===============================================================
+diff --git a/lib/storage/s3-storage.provider.ts b/lib/storage/s3-storage.provider.ts
+index e6ecfe3..ef2b8d0 100644
+--- a/lib/storage/s3-storage.provider.ts
++++ b/lib/storage/s3-storage.provider.ts
+@@ -4,6 +4,7 @@ import {
+   S3Client,
+   PutObjectCommand,
+   DeleteObjectsCommand,
++  HeadObjectCommand,
+ } from "@aws-sdk/client-s3";
+ 
+ import type { StorageProvider } from "./storage.provider";
+@@ -210,3 +211,31 @@ export const s3StorageProvider: StorageProvider = {
+     return resolveCdnPublicUrl(bucket, path);
+   },
+ };
++
++/* ===============================================================
++   🛡️ HEAD — nesnenin güncel ETag'i (salt okuma, server-only)
++   ===============================================================
++   Görsel URL versiyonlaması için (lib/storage/site-asset-version
++   .server.ts). Nesne İÇERİĞİ değişince ETag değişir, değişmezse
++   aynı kalır → `?v=` yalnız görsel değişince değişir.
++     - Nesne yok (404/NotFound) → null
++     - Diğer hatalar (ağ, env eksik) → THROW (çağıran cache'lemesin)
++   Upload/remove davranışına DOKUNMAZ.
++   =============================================================== */
++export async function headObjectEtag(
++  bucket: string,
++  key: string
++): Promise<string | null> {
++  try {
++    const res = await getClient().send(
++      new HeadObjectCommand({ Bucket: bucket, Key: key })
++    );
++    return res.ETag ?? null;
++  } catch (err) {
++    const e = err as { name?: string; $metadata?: { httpStatusCode?: number } };
++    if (e?.name === "NotFound" || e?.$metadata?.httpStatusCode === 404) {
++      return null;
++    }
++    throw err;
++  }
++}
+diff --git a/lib/storage/server.ts b/lib/storage/server.ts
+index 2a779a0..8eec6a7 100644
+--- a/lib/storage/server.ts
++++ b/lib/storage/server.ts
+@@ -1,6 +1,7 @@
+ import "server-only";
+ 
+ import { s3StorageProvider } from "./s3-storage.provider";
++import { invalidateSiteAssetVersions } from "./site-asset-version.server";
+ import type { StorageRemoveResult } from "./storage.types";
+ 
+ /* ===============================================================
+@@ -23,5 +24,9 @@ export async function removeServer(
+   bucket: string,
+   paths: string[]
+ ): Promise<StorageRemoveResult> {
+-  return s3StorageProvider.remove(bucket, paths);
++  const result = await s3StorageProvider.remove(bucket, paths);
++  /* 🛡️ Görsel URL versiyonu — silinen site-assets path'lerinin versiyon
++     cache'i geçersiz (sonuç/dönüş tipi DEĞİŞMEDİ). */
++  invalidateSiteAssetVersions(bucket, paths);
++  return result;
+ }
+diff --git a/lib/storage/site-asset-version.server.ts b/lib/storage/site-asset-version.server.ts
+new file mode 100644
+index 0000000..716e6f2
+--- /dev/null
++++ b/lib/storage/site-asset-version.server.ts
+@@ -0,0 +1,114 @@
++import "server-only";
++import { revalidateTag, unstable_cache } from "next/cache";
++
++import { STORAGE_BUCKETS } from "./storage.constants";
++import { headObjectEtag } from "./s3-storage.provider";
++import {
++  normalizeSiteAssetPath,
++  siteAssetVersionTag,
++} from "./site-asset-version";
++
++export {
++  normalizeSiteAssetPath,
++  siteAssetVersionTag,
++  versionFor,
++} from "./site-asset-version";
++
++/* ===============================================================
++   🛡️ SITE-ASSETS GÖRSEL VERSİYONU (server-only)
++   ===============================================================
++   SORUN: Villa dışı görseller (blog/sayfa kapakları, admin
++   branding…) R2'de SABİT path'e overwrite edilir → public URL
++   değişmez → tarayıcı, Next Image Optimizer (`/_next/image`, 4 saat)
++   ve CDN eski baytı URL'ye göre sunmaya devam eder.
++
++   ÇÖZÜM: R2 path/dosya adı AYNEN kalır; URL'ye `?v=<versiyon>`
++   eklenir. Versiyon = R2 nesnesinin ETag'i (içerik hash'i):
++     • görsel değişince değişir, değişmezse AYNI kalır
++     • render başına üretilmez, DB/migration gerektirmez
++     • DB'de `updated_at` olmayan tablolar için de güvenilir
++
++   CACHE: path başına `unstable_cache` (1 saat) + path'e özel tag.
++   `/api/admin/storage/{upload,remove}` ve `removeServer` başarıdan
++   sonra `siteAssetVersionTag(path)`'i invalidate eder → yeni
++   versiyon ANINDA görünür; tag'i kullanan ISR sayfaları da tazelenir.
++
++   GÜVENLİ FALLBACK: path relative değilse (legacy tam URL), nesne
++   yoksa ya da R2'ye ulaşılamazsa `null` döner → çağıran versiyonsuz
++   (bugünkü) URL'yi kullanır. Hatalar cache'lenmez.
++   =============================================================== */
++
++const SITE_ASSETS_BUCKET = STORAGE_BUCKETS.SITE_ASSETS;
++const VERSION_TTL_SECONDS = 3600;
++
++/** ETag → kısa, URL-güvenli versiyon (içerik hash'inin ilk 12 hanesi). */
++function toVersion(etag: string | null): string | null {
++  if (!etag) return null;
++  const v = etag.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12);
++  return v || null;
++}
++
++async function readVersion(path: string): Promise<string | null> {
++  return unstable_cache(
++    async () => toVersion(await headObjectEtag(SITE_ASSETS_BUCKET, path)),
++    ["site-asset-version", path],
++    {
++      tags: ["site-asset-version", siteAssetVersionTag(path)],
++      revalidate: VERSION_TTL_SECONDS,
++    }
++  )();
++}
++
++/** Tek görselin versiyonu (yoksa null). */
++export async function getSiteAssetVersion(
++  value: string | null | undefined
++): Promise<string | null> {
++  const path = normalizeSiteAssetPath(value);
++  if (!path) return null;
++  try {
++    return await readVersion(path);
++  } catch {
++    return null;
++  }
++}
++
++/** Birden çok görselin versiyonları: `{ [path]: versiyon }`.
++ *  Versiyonu bulunamayan path'ler map'e YAZILMAZ. */
++export async function getSiteAssetVersions(
++  values: ReadonlyArray<string | null | undefined>
++): Promise<Record<string, string>> {
++  const paths = Array.from(
++    new Set(
++      values
++        .map((v) => normalizeSiteAssetPath(v))
++        .filter((p): p is string => p !== null)
++    )
++  );
++  const entries = await Promise.all(
++    paths.map(async (p) => [p, await getSiteAssetVersion(p)] as const)
++  );
++  const out: Record<string, string> = {};
++  for (const [p, v] of entries) if (v) out[p] = v;
++  return out;
++}
++
++/** Upload/remove sonrası: bu path'lerin versiyon cache'ini ANINDA
++ *  geçersiz kılar (yalnız site-assets bucket'ı). Asla throw etmez —
++ *  upload/remove sonucu ve yanıt formatı ETKİLENMEZ; invalidation
++ *  başarısız olursa versiyon en geç VERSION_TTL_SECONDS içinde
++ *  kendiliğinden tazelenir. */
++export function invalidateSiteAssetVersions(
++  bucket: string,
++  values: ReadonlyArray<string | null | undefined>
++): void {
++  if (bucket !== SITE_ASSETS_BUCKET) return;
++  for (const value of values) {
++    const path = normalizeSiteAssetPath(value);
++    if (!path) continue;
++    try {
++      revalidateTag(siteAssetVersionTag(path), { expire: 0 });
++    } catch {
++      /* request scope dışı (script/test) → TTL fallback */
++    }
++  }
++}
+diff --git a/lib/storage/site-asset-version.ts b/lib/storage/site-asset-version.ts
+new file mode 100644
+index 0000000..f770811
+--- /dev/null
++++ b/lib/storage/site-asset-version.ts
+@@ -0,0 +1,74 @@
++/* ===============================================================
++   🛡️ SITE-ASSETS GÖRSEL VERSİYONU — saf yardımcılar (client-safe)
++   ===============================================================
++   Server tarafı (R2 HEAD + cache): `site-asset-version.server.ts`.
++   Bu dosya yalnız path normalize / tag / map okuma içerir; hem
++   server component'lerde hem admin client sayfalarında kullanılır.
++   =============================================================== */
++
++const MAX_PATH_LENGTH = 200;
++
++/** Bucket-relative path'i normalize eder; versiyonlanamıyorsa null. */
++export function normalizeSiteAssetPath(
++  value: string | null | undefined
++): string | null {
++  if (typeof value !== "string") return null;
++  const p = value.trim().replace(/^\/+/, "");
++  if (!p || p.length > MAX_PATH_LENGTH) return null;
++  /* Legacy tam URL, query/hash veya dizin atlama → versiyonlanmaz. */
++  if (/^[a-z][a-z0-9+.-]*:/i.test(p) || /[?#\\]/.test(p) || p.includes("..")) {
++    return null;
++  }
++  return p;
++}
++
++/** Path'e özel invalidation tag'i (upload/remove sonrası). */
++export function siteAssetVersionTag(path: string): string {
++  return `site-asset-version:${path}`;
++}
++
++/** Versiyon map'inden bir değerin versiyonu (path normalize edilerek). */
++export function versionFor(
++  versions: Readonly<Record<string, string>> | null | undefined,
++  value: string | null | undefined
++): string | undefined {
++  const path = normalizeSiteAssetPath(value);
++  return path && versions ? versions[path] : undefined;
++}
++
++/* ===============================================================
++   🛡️ withVersionParam — `v` query parametresini TEK kez yazar
++   ===============================================================
++   Mevcut davranış (query yoksa `?v=`, varsa `&v=`, değer
++   encodeURIComponent) BİREBİR korunur. Tek fark: URL'de zaten bir
++   `v` parametresi varsa (örn. DB'de `?v=` ile saklanmış legacy tam
++   URL) ikinci bir `v` EKLENMEZ, mevcut olanın yerine yazılır →
++   `image.webp?v=1&v=2` oluşamaz. Diğer query parametreleri ve
++   `#hash` sırası/değeri aynen kalır.
++   =============================================================== */
++export function withVersionParam(url: string, cacheKey: string | number): string {
++  const encoded = `v=${encodeURIComponent(String(cacheKey))}`;
++  const hashAt = url.indexOf("#");
++  const hash = hashAt === -1 ? "" : url.slice(hashAt);
++  const base = hashAt === -1 ? url : url.slice(0, hashAt);
++  const queryAt = base.indexOf("?");
++  if (queryAt === -1) return `${base}?${encoded}${hash}`;
++  const path = base.slice(0, queryAt);
++  const params = base
++    .slice(queryAt + 1)
++    .split("&")
++    .filter((p) => p.length > 0 && !/^v(=|$)/.test(p));
++  params.push(encoded);
++  return `${path}?${params.join("&")}${hash}`;
++}
++
++/** URL'ye (map'te varsa) path'in versiyonunu ekler; yoksa URL AYNEN. */
++export function versionedAssetUrl(
++  url: string | null | undefined,
++  versions: Readonly<Record<string, string>> | null | undefined,
++  value: string | null | undefined
++): string | null {
++  if (!url) return null;
++  const v = versionFor(versions, value);
++  return v ? withVersionParam(url, v) : url;
++}
+diff --git a/lib/storage/use-site-asset-versions.ts b/lib/storage/use-site-asset-versions.ts
+new file mode 100644
+index 0000000..ce6195d
+--- /dev/null
++++ b/lib/storage/use-site-asset-versions.ts
+@@ -0,0 +1,74 @@
++"use client";
++
++import { useCallback, useEffect, useState } from "react";
++
++import { getSiteAssetVersionsAction } from "@/app/services/site-asset-version.action";
++import {
++  normalizeSiteAssetPath,
++  versionedAssetUrl,
++} from "@/lib/storage/site-asset-version";
++
++/* ===============================================================
++   🛡️ useSiteAssetVersions — admin önizleme görselleri için `?v=`
++   ===============================================================
++   - Açılışta verilen path'lerin R2 versiyonlarını (ETag) bir kez
++     alır; path kümesi değişmedikçe yeniden sormaz.
++   - `refresh(path)`: upload başarısından sonra çağrılır → aynı path'in
++     YENİ versiyonu gelir → önizleme `src`'si değişir → tarayıcı yeni
++     görseli çeker (sayfa yenilemeden).
++   - `versioned(url, path)`: URL'ye (varsa) versiyonu ekler; versiyon
++     yoksa URL AYNEN döner (bugünkü davranış).
++   Versiyon alınamazsa (ağ/oturum hatası) upload sonrası önizleme yine
++   de tazelensin diye yalnız O upload için yerel bir işaret kullanılır.
++   =============================================================== */
++export function useSiteAssetVersions(
++  values: ReadonlyArray<string | null | undefined>
++) {
++  const [versions, setVersions] = useState<Record<string, string>>({});
++
++  const key = Array.from(
++    new Set(
++      values
++        .map((v) => normalizeSiteAssetPath(v))
++        .filter((p): p is string => p !== null)
++    )
++  )
++    .sort()
++    .join("\n");
++
++  useEffect(() => {
++    if (!key) return;
++    let alive = true;
++    getSiteAssetVersionsAction(key.split("\n"))
++      .then((v) => {
++        if (alive) setVersions((prev) => ({ ...prev, ...v }));
++      })
++      .catch(() => {});
++    return () => {
++      alive = false;
++    };
++  }, [key]);
++
++  const refresh = useCallback(async (value: string | null | undefined) => {
++    const path = normalizeSiteAssetPath(value);
++    if (!path) return;
++    let next: string | undefined;
++    try {
++      next = (await getSiteAssetVersionsAction([path]))[path];
++    } catch {
++      next = undefined;
++    }
++    setVersions((prev) => ({
++      ...prev,
++      [path]: next ?? `u${Date.now().toString(36)}`,
++    }));
++  }, []);
++
++  const versioned = useCallback(
++    (url: string | null | undefined, value: string | null | undefined) =>
++      versionedAssetUrl(url, versions, value),
++    [versions]
++  );
++
++  return { versions, refresh, versioned };
++}
+diff --git a/tests/unit/settings-upload-field-version.test.tsx b/tests/unit/settings-upload-field-version.test.tsx
+new file mode 100644
+index 0000000..60ef21d
+--- /dev/null
++++ b/tests/unit/settings-upload-field-version.test.tsx
+@@ -0,0 +1,81 @@
++/* ===============================================================
++   🛡️ Ayarlar UploadField önizlemesi — `?v=<R2 ETag>`
++   ===============================================================
++   - Açılışta R2 versiyonu varsa `?v=<etag>` (settings.updated_at'ten
++     öncelikli; görsel kayıt beklemeden değişmiş olabilir).
++   - Versiyon alınamazsa mevcut `version` prop'u (updated_at) — eski
++     davranış.
++   - Upload sonrası aynı path'in YENİ versiyonu → src değişir (sayfa
++     yenilemeden). Path / onChange değeri AYNI (`logo/logo.webp`).
++   =============================================================== */
++import { describe, it, expect, vi, beforeEach } from "vitest";
++import { render, fireEvent, waitFor, act } from "@testing-library/react";
++import { useState } from "react";
++
++const versionsAction = vi.fn();
++vi.mock("@/app/services/site-asset-version.action", () => ({
++  getSiteAssetVersionsAction: (...a: unknown[]) => versionsAction(...a),
++}));
++const uploadMock = vi.fn(async () => ({ ok: true }));
++vi.mock("@/lib/storage", () => ({
++  storageProvider: { upload: (...a: unknown[]) => uploadMock(...(a as [])) },
++  STORAGE_BUCKETS: { SITE_ASSETS: "tatilinyeri-site-assets", VILLA_IMAGES: "tatilinyeri-villa-images" },
++}));
++vi.mock("@/lib/storage.helpers", () => ({
++  SITE_ASSETS_BUCKET_NAME: "tatilinyeri-site-assets",
++  resolveAssetUrlVersioned: (v: string | null, k?: string | null) =>
++    v ? `https://cdn.test/${v}${k ? `?v=${k}` : ""}` : null,
++}));
++vi.mock("@/lib/image.helpers", () => ({
++  convertImageToWebP: async (f: File) => f,
++}));
++
++import { UploadField } from "@/app/(admin)/maki-admin/settings/_components/SettingsField";
++
++function Harness({ version }: { version?: string }) {
++  const [url, setUrl] = useState<string | null>("logo/logo.webp");
++  return (
++    <UploadField label="Logo" currentUrl={url} onChange={setUrl} folder="logo" slug="logo" version={version} />
++  );
++}
++
++beforeEach(() => {
++  versionsAction.mockReset();
++  uploadMock.mockClear();
++});
++
++describe("UploadField önizleme versiyonu", () => {
++  it("açılışta R2 ETag versiyonu kullanılır (updated_at'ten öncelikli)", async () => {
++    versionsAction.mockResolvedValue({ "logo/logo.webp": "etagA" });
++    const { container } = render(<Harness version="2026-01-01" />);
++    await waitFor(() =>
++      expect(container.querySelector("img")?.getAttribute("src")).toBe("https://cdn.test/logo/logo.webp?v=etagA")
++    );
++    expect(versionsAction).toHaveBeenCalledWith(["logo/logo.webp"]);
++  });
++
++  it("versiyon alınamazsa mevcut davranış: ?v=<updated_at>", async () => {
++    versionsAction.mockRejectedValue(new Error("x"));
++    const { container } = render(<Harness version="2026-01-01" />);
++    await act(async () => {});
++    expect(container.querySelector("img")?.getAttribute("src")).toBe("https://cdn.test/logo/logo.webp?v=2026-01-01");
++  });
++
++  it("upload sonrası yeni versiyon → src değişir; path aynı kalır", async () => {
++    versionsAction.mockResolvedValueOnce({ "logo/logo.webp": "etagA" });
++    const { container } = render(<Harness />);
++    await waitFor(() => expect(container.querySelector("img")?.getAttribute("src")).toContain("?v=etagA"));
++    versionsAction.mockResolvedValueOnce({ "logo/logo.webp": "etagB" });
++    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
++    await act(async () => {
++      fireEvent.change(input, { target: { files: [new File([new Uint8Array([1])], "b.webp", { type: "image/webp" })] } });
++    });
++    await waitFor(() => expect(container.querySelector("img")?.getAttribute("src")).toContain("?v=etagB"));
++    expect(uploadMock).toHaveBeenCalledWith(
++      "tatilinyeri-site-assets",
++      "logo/logo.webp",
++      expect.anything(),
++      { upsert: true, contentType: "image/webp", cacheControl: "3600" }
++    );
++  });
++});
+diff --git a/tests/unit/site-asset-version.test.tsx b/tests/unit/site-asset-version.test.tsx
+new file mode 100644
+index 0000000..a8feb05
+--- /dev/null
++++ b/tests/unit/site-asset-version.test.tsx
+@@ -0,0 +1,238 @@
++// @vitest-environment node
++/* ===============================================================
++   🛡️ SITE-ASSETS GÖRSEL URL VERSİYONLAMA (`?v=<R2 ETag>`)
++   ===============================================================
++   A) `withVersionParam` / `appendAssetVersion`: eski çıktı BİREBİR,
++      mevcut `v` parametresi TEKRARLANMAZ, diğer query/hash korunur.
++   B) Path normalize: legacy tam URL / dizin atlama versiyonlanmaz.
++   C) Server: ETag → kısa versiyon; 404 → yok; hata cache'lenmez;
++      görsel değişmezse versiyon AYNI, değişince FARKLI.
++   D) Invalidation: yalnız site-assets path tag'leri.
++   E) Upload route: başarıda invalidation, yanıt formatı AYNI.
++   F) CMS render: kapak + bölüm görseline `?v=`; versiyon yoksa aynen.
++   =============================================================== */
++import { describe, it, expect, vi, beforeEach } from "vitest";
++import { renderToStaticMarkup } from "react-dom/server";
++
++/* ---------------- C/D için mock'lar ---------------- */
++const headMock = vi.fn();
++vi.mock("@/lib/storage/s3-storage.provider", () => ({
++  headObjectEtag: (...a: unknown[]) => headMock(...a),
++  s3StorageProvider: {
++    upload: (...a: unknown[]) => uploadMock(...a),
++    remove: vi.fn(async () => ({ ok: true, failed: [], attempts: 1 })),
++  },
++}));
++const revalidateTagMock = vi.fn();
++vi.mock("next/cache", () => ({
++  /* unstable_cache: test ortamında doğrudan çalıştır (cache yok). */
++  unstable_cache: (fn: () => unknown) => fn,
++  revalidateTag: (...a: unknown[]) => revalidateTagMock(...a),
++}));
++const uploadMock = vi.fn();
++
++import {
++  normalizeSiteAssetPath,
++  versionedAssetUrl,
++  withVersionParam,
++} from "@/lib/storage/site-asset-version";
++import {
++  getSiteAssetVersion,
++  getSiteAssetVersions,
++  invalidateSiteAssetVersions,
++} from "@/lib/storage/site-asset-version.server";
++import { appendAssetVersion } from "@/lib/storage.helpers";
++
++beforeEach(() => {
++  headMock.mockReset();
++  revalidateTagMock.mockReset();
++  uploadMock.mockReset();
++});
++
++describe("A) ?v= birleştirme", () => {
++  const U = "https://cdn.example.com/blog/makihotel.webp";
++
++  it("query yok → ?v=; query var → &v= (eski davranış birebir)", () => {
++    expect(withVersionParam(U, "abc")).toBe(`${U}?v=abc`);
++    expect(withVersionParam(`${U}?w=1`, "abc")).toBe(`${U}?w=1&v=abc`);
++    expect(appendAssetVersion(U, "2026-01-01T00:00:00+00:00")).toBe(
++      `${U}?v=${encodeURIComponent("2026-01-01T00:00:00+00:00")}`
++    );
++  });
++
++  it("mevcut v parametresi TEKRARLANMAZ (image.webp?v=1&v=2 oluşmaz)", () => {
++    expect(withVersionParam(`${U}?v=1`, "2")).toBe(`${U}?v=2`);
++    expect(withVersionParam(`${U}?a=1&v=1&b=2`, "2")).toBe(`${U}?a=1&b=2&v=2`);
++    expect(appendAssetVersion(`${U}?v=old`, "new")).toBe(`${U}?v=new`);
++    expect(withVersionParam(`${U}?v=1#x`, "2")).toBe(`${U}?v=2#x`);
++    /* `vv=` / `version=` başka parametredir, silinmez */
++    expect(withVersionParam(`${U}?vv=1&version=3`, "2")).toBe(`${U}?vv=1&version=3&v=2`);
++  });
++
++  it("versiyon yoksa URL AYNEN", () => {
++    expect(appendAssetVersion(U, null)).toBe(U);
++    expect(versionedAssetUrl(U, {}, "blog/makihotel.webp")).toBe(U);
++    expect(versionedAssetUrl(U, { "blog/makihotel.webp": "e1" }, "blog/makihotel.webp")).toBe(`${U}?v=e1`);
++    expect(versionedAssetUrl(null, { a: "1" }, "a")).toBeNull();
++  });
++});
++
++describe("B) path normalize", () => {
++  it("relative site-assets path'leri kabul, diğerleri red", () => {
++    expect(normalizeSiteAssetPath("blog/x.webp")).toBe("blog/x.webp");
++    expect(normalizeSiteAssetPath("/page-covers/a.webp")).toBe("page-covers/a.webp");
++    expect(normalizeSiteAssetPath("https://legacy.host/x.webp")).toBeNull();
++    expect(normalizeSiteAssetPath("../secret")).toBeNull();
++    expect(normalizeSiteAssetPath("a.webp?v=1")).toBeNull();
++    expect(normalizeSiteAssetPath("")).toBeNull();
++    expect(normalizeSiteAssetPath(null)).toBeNull();
++  });
++});
++
++describe("C) server versiyon (R2 ETag)", () => {
++  it("ETag → 12 haneli versiyon; aynı içerik → aynı, yeni içerik → farklı", async () => {
++    headMock.mockResolvedValueOnce('"195d7893b629dd86960814953cb45ba0"');
++    const a = await getSiteAssetVersion("blog/x.webp");
++    headMock.mockResolvedValueOnce('"195d7893b629dd86960814953cb45ba0"');
++    const a2 = await getSiteAssetVersion("blog/x.webp");
++    headMock.mockResolvedValueOnce('"a564cda083d9acf37adc5dda0057ba62"');
++    const b = await getSiteAssetVersion("blog/x.webp");
++    expect(a).toBe("195d7893b629");
++    expect(a2).toBe(a);
++    expect(b).toBe("a564cda083d9");
++    expect(headMock).toHaveBeenCalledWith("tatilinyeri-site-assets", "blog/x.webp");
++  });
++
++  it("nesne yok → null; R2 hatası → null (sayfa bozulmaz)", async () => {
++    headMock.mockResolvedValueOnce(null);
++    expect(await getSiteAssetVersion("blog/yok.webp")).toBeNull();
++    headMock.mockRejectedValueOnce(new Error("network"));
++    expect(await getSiteAssetVersion("blog/x.webp")).toBeNull();
++  });
++
++  it("toplu: legacy tam URL'ler sorgulanmaz, bulunamayanlar map'e yazılmaz", async () => {
++    headMock.mockImplementation(async (_b: string, k: string) =>
++      k === "page-covers/a.webp" ? '"aaaaaaaaaaaaaaaa"' : null
++    );
++    const v = await getSiteAssetVersions([
++      "page-covers/a.webp",
++      "page-covers/yok.webp",
++      "https://legacy/x.webp",
++      null,
++      "page-covers/a.webp",
++    ]);
++    expect(v).toEqual({ "page-covers/a.webp": "aaaaaaaaaaaa" });
++    expect(headMock).toHaveBeenCalledTimes(2);
++  });
++});
++
++describe("D) invalidation", () => {
++  it("yalnız site-assets path tag'i; villa bucket'ı dokunulmaz", () => {
++    invalidateSiteAssetVersions("tatilinyeri-site-assets", ["blog/x.webp", "https://x/y"]);
++    expect(revalidateTagMock).toHaveBeenCalledTimes(1);
++    expect(revalidateTagMock).toHaveBeenCalledWith("site-asset-version:blog/x.webp", { expire: 0 });
++    invalidateSiteAssetVersions("tatilinyeri-villa-images", ["villas/a/b.webp"]);
++    expect(revalidateTagMock).toHaveBeenCalledTimes(1);
++  });
++
++  it("revalidateTag throw etse bile sessiz", () => {
++    revalidateTagMock.mockImplementation(() => {
++      throw new Error("outside request scope");
++    });
++    expect(() => invalidateSiteAssetVersions("tatilinyeri-site-assets", ["blog/x.webp"])).not.toThrow();
++  });
++});
++
++/* ---------------- E) upload route ---------------- */
++vi.mock("@/lib/admin-route-auth", () => ({
++  authorizeAdminCaller: async () => ({ ok: true, caller: { id: "a1" } }),
++}));
++vi.mock("@/lib/auth/action-authz", () => ({
++  callerHasPermission: async () => true,
++  FORBIDDEN_MESSAGE: "forbidden",
++}));
++
++describe("E) upload route", () => {
++  async function post(ok: boolean) {
++    uploadMock.mockResolvedValueOnce(ok ? { ok: true } : { ok: false, error: "x" });
++    const { POST } = await import("@/app/api/admin/storage/upload/route");
++    const fd = new FormData();
++    fd.append("file", new Blob([new Uint8Array([1, 2, 3])], { type: "image/webp" }), "a.webp");
++    fd.append("bucket", "tatilinyeri-site-assets");
++    fd.append("path", "blog/x.webp");
++    fd.append("cacheControl", "3600");
++    fd.append("upsert", "true");
++    const res = await POST(new Request("http://t/api/admin/storage/upload", { method: "POST", body: fd }));
++    return { status: res.status, json: await res.json() };
++  }
++
++  it("başarı → aynı path'in versiyonu invalidate; yanıt { ok: true } AYNI; path/cacheControl aynen", async () => {
++    const r = await post(true);
++    expect(r).toEqual({ status: 200, json: { ok: true } });
++    expect(uploadMock.mock.calls[0][0]).toBe("tatilinyeri-site-assets");
++    expect(uploadMock.mock.calls[0][1]).toBe("blog/x.webp");
++    expect(uploadMock.mock.calls[0][3]).toMatchObject({ cacheControl: "3600", upsert: true });
++    expect(revalidateTagMock).toHaveBeenCalledWith("site-asset-version:blog/x.webp", { expire: 0 });
++  });
++
++  it("hata → invalidation YOK, yanıt eskisi gibi 502", async () => {
++    const r = await post(false);
++    expect(r.status).toBe(502);
++    expect(revalidateTagMock).not.toHaveBeenCalled();
++  });
++});
++
++/* ---------------- F) CMS render ---------------- */
++vi.mock("next/image", () => ({
++  default: (props: Record<string, unknown>) => (
++    /* eslint-disable-next-line @next/next/no-img-element */
++    <img alt={String(props.alt ?? "")} src={String(props.src ?? "")} />
++  ),
++}));
++vi.mock("@/app/components/seo/StructuredData", async (orig) => ({
++  ...((await orig()) as Record<string, unknown>),
++  default: () => null,
++}));
++vi.mock("@/lib/storage.helpers", async (orig) => ({
++  ...((await orig()) as Record<string, unknown>),
++  getPageCoverPublicUrl: (v: string | null | undefined) =>
++    v ? `https://cdn.test/${v}` : null,
++}));
++
++describe("F) CMS kapak + bölüm görselleri", () => {
++  const page = {
++    title: "Yaz Rehberi",
++    cover_image: "page-covers/yaz-rehberi.webp",
++    sections: [{ type: "image", path: "page-covers/yaz-rehberi-section-0.webp", alt: "" }],
++  };
++
++  async function html(assetVersions?: Record<string, string>) {
++    const { default: CmsPageBody } = await import("@/app/components/cms/CmsPageBody");
++    return renderToStaticMarkup(
++      <CmsPageBody
++        locale="tr"
++        slug="yaz-rehberi"
++        page={page}
++        title="Yaz Rehberi"
++        resolvedExcerpt={null}
++        body={null}
++        assetVersions={assetVersions}
++      />
++    );
++  }
++
++  it("versiyonlarla: kapak ve bölüm URL'lerinde ?v=, R2 path AYNI", async () => {
++    const out = await html({
++      "page-covers/yaz-rehberi.webp": "aaaa1111bbbb",
++      "page-covers/yaz-rehberi-section-0.webp": "cccc2222dddd",
++    });
++    expect(out).toContain("/page-covers/yaz-rehberi.webp?v=aaaa1111bbbb");
++    expect(out).toContain("/page-covers/yaz-rehberi-section-0.webp?v=cccc2222dddd");
++  });
++
++  it("versiyonsuz (eski çağıran): URL'ler bugünkü gibi", async () => {
++    const out = await html();
++    expect(out).toContain("/page-covers/yaz-rehberi.webp\"");
++    expect(out).not.toContain("?v=");
++  });
++});

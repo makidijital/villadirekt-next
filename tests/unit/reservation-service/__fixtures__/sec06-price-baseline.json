@@ -1,0 +1,898 @@
+{
+  "01 TRY 4 gece": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 40000,
+      "total_price_try": 40000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 8000,
+      "remaining_payment": 32000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "02 TRY 1 gece": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 10000,
+      "total_price_try": 10000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 2000,
+      "remaining_payment": 8000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "03 TRY 30 gece iki sezon": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 326000,
+      "total_price_try": 326000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 65200,
+      "remaining_payment": 260800,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "04 sezon geçişi EUR→TRY karışık para birimi": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 39060,
+      "total_price_try": 39060,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 7812,
+      "remaining_payment": 31248,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "05 EUR villa 4 gece": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 28080,
+      "total_price_try": 28080,
+      "original_price": 800,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 5616,
+      "remaining_payment": 22464,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "06 USD villa 3 gece": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 32499.69,
+      "total_price_try": 32499.69,
+      "original_price": 999.99,
+      "original_currency": "USD",
+      "exchange_rate": 32.5,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 6500,
+      "remaining_payment": 25999.69,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "07 GBP villa 2 gece": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 14832,
+      "total_price_try": 14832,
+      "original_price": 360,
+      "original_currency": "GBP",
+      "exchange_rate": 41.2,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 2966,
+      "remaining_payment": 11866,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "08 temizlik TRY limit altı (4<7) → alınır": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 41500,
+      "total_price_try": 41500,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 1500,
+      "prepayment_amount": 8000,
+      "remaining_payment": 33500,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "09 temizlik TRY limit eşit (7) → alınmaz": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 70000,
+      "total_price_try": 70000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 14000,
+      "remaining_payment": 56000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "10 temizlik GBP limit altı, EUR villa": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 25180,
+      "total_price_try": 25180,
+      "original_price": 600,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 100,
+      "original_cleaning_currency": "GBP",
+      "cleaning_fee_try": 4120,
+      "prepayment_amount": 4212,
+      "remaining_payment": 20968,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "11 temizlik limit 0 → her zaman": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 142000,
+      "total_price_try": 142000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 2000,
+      "prepayment_amount": 28000,
+      "remaining_payment": 114000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "12 temizlik EUR, TRY villa": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 21404,
+      "total_price_try": 21404,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 40,
+      "original_cleaning_currency": "EUR",
+      "cleaning_fee_try": 1404,
+      "prepayment_amount": 4000,
+      "remaining_payment": 17404,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "13 percent %20 tüm geceler": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 32000,
+      "total_price_try": 32000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 6400,
+      "remaining_payment": 25600,
+      "discount_applied": true,
+      "discount_type": "percent",
+      "discount_value": 20,
+      "discount_currency": null,
+      "original_stay_total_try": 40000,
+      "stay_discount_amount_try": 8000
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "14 percent %10 kısmi çakışma (EUR)": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 40014,
+      "total_price_try": 40014,
+      "original_price": 1140,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 8003,
+      "remaining_payment": 32011,
+      "discount_applied": true,
+      "discount_type": "percent",
+      "discount_value": 10,
+      "discount_currency": null,
+      "original_stay_total_try": 42120,
+      "stay_discount_amount_try": 2106
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "15 fixed TRY özel fiyat, TRY villa": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 30000,
+      "total_price_try": 30000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 6000,
+      "remaining_payment": 24000,
+      "discount_applied": true,
+      "discount_type": "fixed",
+      "discount_value": 7500,
+      "discount_currency": "TRY",
+      "original_stay_total_try": 40000,
+      "stay_discount_amount_try": 10000
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "16 fixed EUR özel fiyat, EUR villa, kısmi": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 31590,
+      "total_price_try": 31590,
+      "original_price": 900,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 6318,
+      "remaining_payment": 25272,
+      "discount_applied": true,
+      "discount_type": "fixed",
+      "discount_value": 150,
+      "discount_currency": "EUR",
+      "original_stay_total_try": 42120,
+      "stay_discount_amount_try": 10530
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "17 fixed TRY özel fiyat, EUR villa (çapraz kur)": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 14999.97,
+      "total_price_try": 14999.97,
+      "original_price": 427.34999999999997,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 3000,
+      "remaining_payment": 11999.97,
+      "discount_applied": true,
+      "discount_type": "fixed",
+      "discount_value": 5000,
+      "discount_currency": "TRY",
+      "original_stay_total_try": 21060,
+      "stay_discount_amount_try": 6060.030000000001
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "18 fixed normalden YÜKSEK özel fiyat": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 45000,
+      "total_price_try": 45000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 9000,
+      "remaining_payment": 36000,
+      "discount_applied": true,
+      "discount_type": "fixed",
+      "discount_value": 15000,
+      "discount_currency": "TRY",
+      "original_stay_total_try": 30000,
+      "stay_discount_amount_try": -15000
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "19 percent %100 → konaklama 0 (meşru)": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 1000,
+      "total_price_try": 1000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 1000,
+      "prepayment_amount": 0,
+      "remaining_payment": 1000,
+      "discount_applied": true,
+      "discount_type": "percent",
+      "discount_value": 100,
+      "discount_currency": null,
+      "original_stay_total_try": 20000,
+      "stay_discount_amount_try": 20000
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "20 fixed USD özel fiyat, EUR villa (çapraz döviz)": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 16249.9,
+      "total_price_try": 16249.9,
+      "original_price": 462.96,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 3250,
+      "remaining_payment": 12999.9,
+      "discount_applied": true,
+      "discount_type": "fixed",
+      "discount_value": 250,
+      "discount_currency": "USD",
+      "original_stay_total_try": 14040,
+      "stay_discount_amount_try": -2209.8999999999996
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "21 havuz TRY seçili, ay kısıtı yok": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 42000,
+      "total_price_try": 42000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 8000,
+      "remaining_payment": 34000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": true,
+      "original_pool_heating_total": 2000,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 2000
+    }
+  },
+  "22 havuz EUR seçili, sezon içi": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 35100,
+      "total_price_try": 35100,
+      "original_price": 800,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 5616,
+      "remaining_payment": 29484,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": true,
+      "original_pool_heating_total": 200,
+      "original_pool_heating_currency": "EUR",
+      "pool_heating_total_try": 7020
+    }
+  },
+  "23 havuz seçili, sezon dışı → 0": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 40000,
+      "total_price_try": 40000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 8000,
+      "remaining_payment": 32000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": true,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "24 havuz seçilmedi, ücret tanımlı → 0": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 40000,
+      "total_price_try": 40000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 8000,
+      "remaining_payment": 32000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "25 kombine: EUR + temizlik GBP + %10 + havuz EUR": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 37114,
+      "total_price_try": 37114,
+      "original_price": 740,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 100,
+      "original_cleaning_currency": "GBP",
+      "cleaning_fee_try": 4120,
+      "prepayment_amount": 5195,
+      "remaining_payment": 31919,
+      "discount_applied": true,
+      "discount_type": "percent",
+      "discount_value": 10,
+      "discount_currency": null,
+      "original_stay_total_try": 28080,
+      "stay_discount_amount_try": 2106
+    },
+    "poolHeating": {
+      "pool_heating_selected": true,
+      "original_pool_heating_total": 200,
+      "original_pool_heating_currency": "EUR",
+      "pool_heating_total_try": 7020
+    }
+  },
+  "26 villa ön ödeme override 30": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 41500,
+      "total_price_try": 41500,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 1500,
+      "prepayment_amount": 12000,
+      "remaining_payment": 29500,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "27 villa ön ödeme override 0": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 40000,
+      "total_price_try": 40000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 0,
+      "remaining_payment": 40000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "28 villa override boş string → settings 25": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 40000,
+      "total_price_try": 40000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 10000,
+      "remaining_payment": 30000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "29 settings 35, override yok": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 28080,
+      "total_price_try": 28080,
+      "original_price": 800,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 9828,
+      "remaining_payment": 18252,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "30 settings prepayment_rate null → 20": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 40000,
+      "total_price_try": 40000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 8000,
+      "remaining_payment": 32000,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "31 eksik gece → priceUnavailable": {
+    "priceUnavailable": true,
+    "authoritative": null,
+    "poolHeating": null
+  },
+  "32 çakışan fiyat dönemleri (ilk eşleşen)": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 27000,
+      "total_price_try": 27000,
+      "original_price": 0,
+      "original_currency": "TRY",
+      "exchange_rate": 1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 5400,
+      "remaining_payment": 21600,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "33 yuvarlama: küsuratlı EUR + override 33": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 15524.550000000001,
+      "total_price_try": 15524.550000000001,
+      "original_price": 370.35,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 77.7,
+      "original_cleaning_currency": "USD",
+      "cleaning_fee_try": 2525.25,
+      "prepayment_amount": 4290,
+      "remaining_payment": 11234.550000000001,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  },
+  "34 uzun konaklama 91 gece (3 sezon)": {
+    "priceUnavailable": false,
+    "authoritative": {
+      "total_price": 827950,
+      "total_price_try": 827950,
+      "original_price": 674500,
+      "original_currency": "EUR",
+      "exchange_rate": 35.1,
+      "original_cleaning_fee": 0,
+      "original_cleaning_currency": "TRY",
+      "cleaning_fee_try": 0,
+      "prepayment_amount": 165590,
+      "remaining_payment": 662360,
+      "discount_applied": false,
+      "discount_type": null,
+      "discount_value": null,
+      "discount_currency": null,
+      "original_stay_total_try": null,
+      "stay_discount_amount_try": null
+    },
+    "poolHeating": {
+      "pool_heating_selected": false,
+      "original_pool_heating_total": 0,
+      "original_pool_heating_currency": "TRY",
+      "pool_heating_total_try": 0
+    }
+  }
+}

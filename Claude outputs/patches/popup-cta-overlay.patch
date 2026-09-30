@@ -1,0 +1,131 @@
+--- a/app/components/layout/site-popup/SitePopupCard.tsx
++++ b/app/components/layout/site-popup/SitePopupCard.tsx
+@@ -28,6 +28,16 @@
+   preview?: boolean;
+ };
+ 
++/* CTA: .btn-primary ile aynı pill ölçüsü/tipografisi; zemin kırmızı
++   (Tailwind red-600, hover red-700), beyaz metin. Görselin üzerinde. */
++const CTA_CLASS =
++  "inline-flex items-center justify-center max-w-full px-[22px] py-3 rounded-full " +
++  "text-[14px] font-semibold tracking-[0.005em] text-center text-white " +
++  "bg-red-600 hover:bg-red-700 hover:-translate-y-px " +
++  "shadow-[0_1px_2px_rgb(27_26_23/0.10),0_14px_28px_-10px_rgb(220_38_38/0.55)] " +
++  "transition motion-reduce:transition-none motion-reduce:hover:translate-y-0 " +
++  "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80";
++
+ export default function SitePopupCard({
+   popup,
+   titleId,
+@@ -84,11 +94,14 @@
+         )}
+ 
+         {hasOverlayText && (
++          <div
++            aria-hidden="true"
++            className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5"
++          />
++        )}
++
++        {(hasOverlayText || button) && (
+           <>
+-            <div
+-              aria-hidden="true"
+-              className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5"
+-            />
+             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 md:p-9 text-white">
+               {highlight && (
+                 <p className="font-display leading-[0.85] tracking-[-0.04em] text-[72px] sm:text-[96px] md:text-[120px] drop-shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+@@ -108,45 +121,59 @@
+                   {description}
+                 </p>
+               )}
+-              {stats.length > 0 && (
+-                <ul className="mt-4 md:mt-5 flex flex-wrap gap-2">
+-                  {stats.map((s, i) => (
+-                    <li
+-                      key={`${i}-${s}`}
+-                      className="px-3 py-1.5 rounded-full text-[12px] md:text-[13px] font-medium bg-white/12 border border-white/25 backdrop-blur-sm"
++              {/* Son satır: alt bilgiler (sol) + CTA (sağ alt) — görselin
++                  üzerinde. Mobilde CTA alt bilgilerin altında, sağa yaslı. */}
++              {(stats.length > 0 || button) && (
++                <div
++                  className={
++                    "sm:flex sm:items-end sm:justify-between sm:gap-6" +
++                    (hasOverlayText ? " mt-4 md:mt-5" : "")
++                  }
++                >
++                  {stats.length > 0 && (
++                    <ul className="flex flex-wrap gap-2 min-w-0 sm:flex-1">
++                      {stats.map((s, i) => (
++                        <li
++                          key={`${i}-${s}`}
++                          className="px-3 py-1.5 rounded-full text-[12px] md:text-[13px] font-medium bg-white/12 border border-white/25 backdrop-blur-sm"
++                        >
++                          {s}
++                        </li>
++                      ))}
++                    </ul>
++                  )}
++                  {button && (
++                    <div
++                      className={
++                        "flex justify-end sm:ml-auto sm:shrink-0 sm:max-w-[45%]" +
++                        (stats.length > 0 ? " mt-4 sm:mt-0" : "")
++                      }
+                     >
+-                      {s}
+-                    </li>
+-                  ))}
+-                </ul>
++                      {preview ? (
++                        <span className={CTA_CLASS}>{button.text}</span>
++                      ) : button.external ? (
++                        <a
++                          href={button.url}
++                          target="_blank"
++                          rel="noopener noreferrer"
++                          onClick={onCta}
++                          className={CTA_CLASS}
++                        >
++                          {button.text}
++                        </a>
++                      ) : (
++                        <Link href={button.url} onClick={onCta} className={CTA_CLASS}>
++                          {button.text}
++                        </Link>
++                      )}
++                    </div>
++                  )}
++                </div>
+               )}
+             </div>
+           </>
+         )}
+       </div>
+-
+-      {/* CTA */}
+-      {button && (
+-        <div className="px-5 py-4 sm:px-7 md:px-9 md:py-5 flex justify-end">
+-          {preview ? (
+-            <span className="btn-primary w-full sm:w-auto">{button.text}</span>
+-          ) : button.external ? (
+-            <a
+-              href={button.url}
+-              target="_blank"
+-              rel="noopener noreferrer"
+-              onClick={onCta}
+-              className="btn-primary w-full sm:w-auto"
+-            >
+-              {button.text}
+-            </a>
+-          ) : (
+-            <Link href={button.url} onClick={onCta} className="btn-primary w-full sm:w-auto">
+-              {button.text}
+-            </Link>
+-          )}
+-        </div>
+-      )}
+     </div>
+   );
+ }

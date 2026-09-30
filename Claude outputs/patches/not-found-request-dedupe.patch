@@ -1,0 +1,165 @@
+diff -ru '--exclude=node_modules' orig/app/not-found.tsx work/app/not-found.tsx
+--- a/app/not-found.tsx
++++ b/app/not-found.tsx
+@@ -7,7 +7,11 @@
+    (async server, DB'den veri çeker) kullanılır. Davranış BİREBİR aynı;
+    yalnızca veri-çekme sorumluluğu Footer'dan FooterWrapper'a taşındı. */
+ import FooterWrapper from "@/app/components/layout/FooterWrapper";
+-import { getCachedVillas } from "@/lib/cache.helpers";
++/* 🛡️ PERF — öneri villaları artık dar, LIMIT 3'lü, istek-içi dedupe'lu
++   (React cache) sorgudan gelir; `getCachedVillas` (tüm liste, ~3 MB,
++   cache'lenemiyordu) KULLANILMAZ. Sıra/kapak/fiyat dönüşümü aynı
++   (`mapVilla`) — bkz. villa.service.ts > getNotFoundSuggestionVillas. */
++import { getNotFoundSuggestionVillas } from "@/app/services/villa.service";
+ /* 🛡️ PUBLIC ÇOKLU DİL — görünen 404 gövdesi client island'a taşındı
+    (locale `usePathname` ile türetilir; Header/Footer ile AYNI desen).
+    Veri akışı (`getCachedVillas`) ve DOM/CSS DEĞİŞMEDİ. */
+@@ -40,10 +44,10 @@
+ };
+ 
+ export default async function NotFound() {
+-  /* Öne çıkan villalar — getCachedVillas (aktif + sort_order/created_at
+-     sıralı). İlk 3 = öne çıkan/son eklenen. Hata olursa bölüm gizlenir. */
+-  const allVillas = await getCachedVillas().catch(() => []);
+-  const featured = (allVillas || []).slice(0, 3);
++  /* Öne çıkan villalar — aktif + sort_order/created_at sıralı İLK 3
++     (eski `getCachedVillas().slice(0, 3)` ile aynı küme ve sıra).
++     Hata olursa bölüm gizlenir. */
++  const featured = await getNotFoundSuggestionVillas().catch(() => []);
+ 
+   return (
+     <div className="flex flex-col min-h-screen bg-[var(--color-ivory)]">
+diff -ru '--exclude=node_modules' orig/app/services/villa.service.ts work/app/services/villa.service.ts
+--- a/app/services/villa.service.ts
++++ b/app/services/villa.service.ts
+@@ -28,11 +28,13 @@
+    native villaAdminRepository'ye bağlanır → call-site'lar
+    (villaRepository.findByIds / villaAdminRepository.X) DEĞİŞMEZ. Anon
+    villa.repository import'u kaldırıldı. */
++import { cache } from "react";
+ import {
+   villaAdminRepository,
+   villaAdminRepository as villaRepository,
+ } from "@/lib/db/villa.repository.server";
+ import { getVillaReviewStatsBatch } from "./villa-review.service";
++import type { NotFoundSuggestionVilla } from "@/app/components/not-found/NotFoundContent";
+ import { normalizeYouTubeVideos } from "@/lib/youtube.helper";
+ import { resolveVillaImageUrl } from "@/lib/storage.helpers";
+ /* 🛡️ Kart "…'den başlayan" fiyatı — villa_prices içindeki MIN nightly
+@@ -612,6 +614,50 @@
+   });
+ }
+ 
++/* ===============================================================
++   📦 ROOT 404 ÖNERİ VİLLALARI — yalnız `app/not-found.tsx`
++   ===============================================================
++   ESKİ: `getCachedVillas()` → tüm public liste (1.417 villa, ~3 MB;
++   Next 2 MB data-cache limitini aştığı için HİÇ cache'lenmiyordu) →
++   `.slice(0, 3)`. not-found tüm public sayfalarda fallback olarak 2×
++   render olduğundan bu iş her istekte 2× koşuyordu.
++
++   YENİ: `findNotFoundSuggestions(3)` — AYNI filtre/sıra/cover-slim,
++   yalnız kart kolonları + LIMIT 3.
++
++   PARITY:
++     • Satırlar `mapVilla` ile map'lenir → images/price(?? 0)/currency
++       (|| "TRY")/location/slug/guests… dönüşümleri BİREBİR aynı helper.
++     • Çıktı yalnız `NotFoundSuggestionVilla` alanlarına daraltılır (kartın
++       okuduğu alanlar); görünen DOM değişmez, yalnız RSC payload küçülür.
++     • Review stats EKLENMEZ: NotFoundContent kartlara review geçirmiyor.
++
++   CACHE: YALNIZ React `cache()` — aynı istek içindeki 2 render tek
++   sorguyu paylaşır. İstekler arası cache YOK (unstable_cache/TTL yok) →
++   veri her istekte canlı, eski davranışla aynı tazelik.
++
++   ⚠️ getVillas / getCachedVillas / listPublic DEĞİŞMEDİ. */
++export const getNotFoundSuggestionVillas = cache(
++  async (): Promise<NotFoundSuggestionVilla[]> => {
++    const rows = await villaAdminRepository.findNotFoundSuggestions(3);
++    return (rows as unknown as Villa[]).map((row) => {
++      const dto = mapVilla(row);
++      return {
++        id: dto.id,
++        slug: dto.slug,
++        title: dto.title,
++        location: dto.location,
++        price: dto.price,
++        currency: dto.currency,
++        images: dto.images,
++        bedrooms: dto.bedrooms,
++        bathrooms: dto.bathrooms,
++        guests: dto.guests,
++      };
++    });
++  }
++);
++
+ // 📦 ADMIN LISTING — pasif villalar dahil, soft-deleted hariç.
+ // 🛡️ Sadece deleted_at IS NULL filter; is_active filter YOK
+ // (admin pasif villaları da liste'de görmeli; toggle ile yönetir).
+diff -ru '--exclude=node_modules' orig/lib/db/villa.repository.server.ts work/lib/db/villa.repository.server.ts
+--- a/lib/db/villa.repository.server.ts
++++ b/lib/db/villa.repository.server.ts
+@@ -440,6 +440,62 @@
+   },
+ 
+   /* ===============================================================
++     READ — root 404 öneri kartları (YALNIZ `app/not-found.tsx`)
++     ===============================================================
++     `listPublic` ile AYNI filtre (is_active=true + deleted_at IS NULL),
++     AYNI top-level order (sort_order ASC, created_at DESC) ve AYNI
++     cover-slim embed (villa_images is_cover desc/sort_order asc + limit1).
++     Fark yalnız: (1) kartın okuduğu SLIM kolonlar (`findActiveCuratorCards`
++     ile aynı desen), (2) villa_prices'ta yalnız `getStartingPrice`'ın
++     okuduğu price/currency, (3) top-level `LIMIT`.
++
++     NEDEN: not-found eskiden `getCachedVillas()` (1.417 villa, ~3 MB →
++     Next 2 MB data-cache limiti yüzünden HİÇ cache'lenemiyor) çekip
++     `.slice(0, 3)` yapıyordu; not-found tüm public sayfalarda fallback
++     olarak 2× render olduğu için bu sorgu her istekte 2× koşuyordu.
++
++     ⚠️ `listPublic` DEĞİŞMEDİ (/kiralik-villalar + anasayfa kullanıyor).
++     ⚠️ Hata tutumu `listPublic` ile aynı: log + [] (caller bölümü gizler).
++  =============================================================== */
++  async findNotFoundSuggestions(
++    limit: number
++  ): Promise<Record<string, unknown>[]> {
++    const { data, error } = await dbAdmin
++      .from("villa")
++      .select(
++        `
++        id, slug, title, guests, bedrooms, bathrooms,
++        location:villa_locations(name),
++        villa_images (image_url, is_cover, sort_order),
++        villa_prices (price, currency)
++      `
++      )
++      .eq("is_active", true)
++      .is("deleted_at", null)
++      .order("is_cover", {
++        referencedTable: "villa_images",
++        ascending: false,
++      })
++      .order("sort_order", {
++        referencedTable: "villa_images",
++        ascending: true,
++      })
++      .limit(1, { referencedTable: "villa_images" })
++      .order("sort_order", { ascending: true })
++      .order("created_at", { ascending: false })
++      .limit(limit);
++
++    if (error) {
++      console.error(
++        "[villa.repo.server.findNotFoundSuggestions] FAILED",
++        error.message
++      );
++      return [];
++    }
++    return (data || []) as Record<string, unknown>[];
++  },
++
++  /* ===============================================================
+      READ — public /arama results (NATIVE EMBED twin, Migration S5B)
+      ===============================================================
+      🛡️ villa_discounts embed'i EKLENDİ — kart toplamı `calculateGrandTotal`'a

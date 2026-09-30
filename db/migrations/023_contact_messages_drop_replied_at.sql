@@ -1,0 +1,36 @@
+-- ============================================================================
+-- Migration 023 — contact_messages.replied_at cleanup (Faz 42)
+-- ============================================================================
+-- AMAÇ:
+--   `replied_at` kolonu migration 015'te placeholder olarak eklenmişti.
+--   Exhaustive codebase audit (FAZ 42):
+--     - service layer  : 0 referans (markAsReplied fn yok)
+--     - admin panel    : 0 referans (sadece subtitle copy)
+--     - public form    : 0 referans
+--     - API/mail/cron  : 0 referans
+--     - filters/badges : 0 referans
+--   `is_read` + `archived_at` mevcut lifecycle'ı tek başlarına yönetir.
+--   Kolon production'da hiç okunmuyor / yazılmıyor → güvenli kaldırma.
+--
+-- TASARIM:
+--   • `DROP COLUMN IF EXISTS` → idempotent; daha önce silinmişse hata
+--     atmaz.
+--   • Index / policy / trigger bu kolona bağlı değil (migration 015
+--     `is_read` ve `created_at` üzerinde index var; `replied_at`
+--     tamamen serbest).
+--   • Mevcut row'lardaki değerler (varsa) silinir; ama kolon zaten
+--     hiç yazılmadığı için pratik veri kaybı YOK (NULL hâkim).
+--
+-- BACKWARD-COMPATIBILITY:
+--   • TypeScript `ContactMessageRow.replied_at` eş zamanlı çıkarılıyor
+--     (types/database.ts FAZ 42 patch).
+--   • Hiçbir consumer kolonu okumadığı için runtime breaking change
+--     YOK.
+--
+-- ROLLBACK (gerekirse, ayrı transaction'da):
+--   ALTER TABLE public.contact_messages
+--     ADD COLUMN IF NOT EXISTS replied_at TIMESTAMPTZ;
+-- ============================================================================
+
+ALTER TABLE public.contact_messages
+  DROP COLUMN IF EXISTS replied_at;

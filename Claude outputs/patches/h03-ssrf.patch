@@ -1,0 +1,926 @@
+diff --git a/app/api/villa-zip/[token]/route.ts b/app/api/villa-zip/[token]/route.ts
+index cbf975c..f572603 100644
+--- a/app/api/villa-zip/[token]/route.ts
++++ b/app/api/villa-zip/[token]/route.ts
+@@ -6,6 +6,9 @@ import { villaAdminRepository } from "@/lib/db/villa.repository.server";
+ import { settingsServerRepository } from "@/lib/db/settings.repository.server";
+ import { applyRateLimit } from "@/lib/rate-limit";
+ import { resolveVillaImageUrl } from "@/lib/storage.helpers";
++import { getCdnBaseForBucket } from "@/lib/storage/cdn.config";
++import { STORAGE_BUCKETS } from "@/lib/storage/storage.constants";
++import { safeGetStream } from "@/lib/security/ssrf.server";
+ 
+ /* ===============================================================
+    🛡️ GET /api/villa-zip/[token] — STREAMING ZIP DOWNLOAD
+@@ -38,6 +41,48 @@ import { resolveVillaImageUrl } from "@/lib/storage.helpers";
+ export const runtime = "nodejs";
+ export const dynamic = "force-dynamic";
+ 
++/* ===============================================================
++   🛡️ H-03 — ZIP GÖRSEL İNDİRME: HOST ALLOWLIST + SSRF GUARD
++   ===============================================================
++   `villa_images.image_url` admin girdisidir; tam URL kayıtları
++   (legacy) `resolveVillaImageUrl` tarafından AYNEN geçirilir. Eskiden
++   bu URL doğrulamasız `fetch()` ile (redirect takipli, timeout'suz)
++   çekilip ZIP'e konuyordu → iç ağ/metadata yanıtı okunabiliyordu.
++
++   Artık yalnız uygulamanın gerçekten kullandığı görsel host'larına
++   istek atılır — next.config.ts `images.remotePatterns` ile AYNI küme:
++     • NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES / _SITE_ASSETS host'ları (R2)
++     • LEGACY: https://*.supabase.co (DB'de kalmış eski tam URL'ler)
++   Üstüne `safeGetStream`: static + DNS + bağlantı-anı IP doğrulaması,
++   redirect'ler elle ve her hop'ta aynı allowlist ile.
++   Allowlist dışı / engellenen görsel ZIP'e EKLENMEZ (mevcut "skip"
++   davranışı); diğer görseller normal iner. */
++const LEGACY_ASSET_HOST_SUFFIX = ".supabase.co";
++
++function zipAllowedHosts(): Set<string> {
++  const hosts = new Set<string>();
++  for (const bucket of [STORAGE_BUCKETS.VILLA_IMAGES, STORAGE_BUCKETS.SITE_ASSETS]) {
++    const base = getCdnBaseForBucket(bucket);
++    if (!base) continue;
++    try {
++      hosts.add(new URL(base).host.toLowerCase()); // host:port (varsa)
++    } catch {
++      /* geçersiz base → allowlist'e girmez */
++    }
++  }
++  return hosts;
++}
++
++function isAllowedZipImageUrl(url: URL, cdnHosts: Set<string>): boolean {
++  if (url.protocol !== "https:" && url.protocol !== "http:") return false;
++  if (cdnHosts.has(url.host.toLowerCase())) return true;
++  return (
++    url.protocol === "https:" &&
++    url.port === "" &&
++    url.hostname.toLowerCase().endsWith(LEGACY_ASSET_HOST_SUFFIX)
++  );
++}
++
+ function slugifyForFile(input: string | null | undefined): string {
+   return (input || "")
+     .toString()
+@@ -133,6 +178,7 @@ export async function GET(
+      archiver kuyruğu sırayla drain eder (store mode); okunmayan stream'ler
+      kaynakta backpressure ile DURUR → tüm görseller aynı anda RAM'e
+      ALINMAZ. Buffer array / Promise.all(tüm görseller) YOK. */
++  const cdnHosts = zipAllowedHosts();
+   void (async () => {
+     let index = 0;
+     for (const row of imageRows) {
+@@ -146,12 +192,17 @@ export async function GET(
+       const urlStr = resolveVillaImageUrl(rawPath);
+       if (!urlStr) continue;
+       try {
+-        const res = await fetch(urlStr);
+-        if (!res.ok || !res.body) {
++        const got = await safeGetStream(urlStr, {
++          allowUrl: (u) => isAllowedZipImageUrl(u, cdnHosts),
++          maxRedirects: 3,
++          headersTimeoutMs: 15_000,
++        });
++        if (!got.ok) {
++          /* Engellenen hedefin ham adresi loglanmaz (iç ağ bilgisi). */
+           console.warn(
+-            "[villa-zip.download] image skip (fetch):",
+-            res.status,
+-            urlStr
++            "[villa-zip.download] image skip:",
++            got.reason,
++            got.status ?? ""
+           );
+           continue;
+         }
+@@ -159,9 +210,9 @@ export async function GET(
+         const extMatch = urlStr.split("?")[0].match(/\.([a-zA-Z0-9]{2,5})$/);
+         const ext = extMatch ? extMatch[1].toLowerCase() : "jpg";
+         const entryName = `${String(index).padStart(3, "0")}-${villaSlug}.${ext}`;
+-        /* Web ReadableStream → Node Readable; archiver consume edene
++        /* Node IncomingMessage (Readable); archiver consume edene
+            kadar kaynakta paused (RAM-safe). */
+-        archive.append(Readable.fromWeb(res.body as never), {
++        archive.append(got.res, {
+           name: entryName,
+         });
+       } catch (err) {
+diff --git a/lib/security/ssrf.server.ts b/lib/security/ssrf.server.ts
+index 73532f9..fa079d0 100644
+--- a/lib/security/ssrf.server.ts
++++ b/lib/security/ssrf.server.ts
+@@ -12,12 +12,18 @@
+    import build hatası verir → doğal koruma.
+ =============================================================== */
+ 
+-import { promises as dns } from "node:dns";
++import dnsCb, { promises as dns, type LookupAddress, type LookupOptions } from "node:dns";
++import http, { type IncomingMessage } from "node:http";
++import https from "node:https";
+ import {
+   validateExternalUrlStatic,
+   isPrivateOrReservedIPv4,
+   isBlockedIPv6,
++  isBlockedIpAddress,
++  isIpLiteralHost,
++  stripIpv6Brackets,
+   SAFE_REJECT_MESSAGE,
++  type SsrfReason,
+   type SsrfValidationResult,
+ } from "@/lib/security/ssrf";
+ 
+@@ -37,15 +43,17 @@ export async function validateExternalUrl(
+   if (!staticRes.ok) return staticRes;
+ 
+   const parsed = staticRes.url;
+-  const host = parsed.hostname;
+-
+-  /* Eğer host zaten IP literal ise (static'te private check geçti →
+-     public IP), DNS lookup atlamaya gerek yok. */
+-  if (
+-    /^(\d{1,3}\.){3}\d{1,3}$/.test(host) ||
+-    host.includes(":")
+-  ) {
+-    return { ok: true, url: parsed };
++  const host = stripIpv6Brackets(parsed.hostname);
++
++  /* Host IP literal ise static kontrol onu (parantezli IPv6 dahil) zaten
++     doğruladı → DNS gereksiz. ⚠️ Eskiden ":" içeren HER host burada
++     KONTROLSÜZ kabul ediliyordu ("[::1]" bypass'ı — M-01); artık
++     yalnız gerçekten parse edilebilen IP literal'ler atlanır ve
++     isBlockedIpAddress ile İKİNCİ kez kontrol edilir. */
++  if (isIpLiteralHost(host)) {
++    return isBlockedIpAddress(host)
++      ? { ok: false, error: SAFE_REJECT_MESSAGE, reason: "private-ipv6" }
++      : { ok: true, url: parsed };
+   }
+ 
+   /* DNS resolve — tüm adresleri al, herhangi biri private ise REJECT. */
+@@ -100,3 +108,151 @@ export async function assertSafeExternalUrl(rawUrl: unknown): Promise<URL> {
+   }
+   return res.url;
+ }
++
++/* ===============================================================
++   🛡️ H-03 — BAĞLANTI ANINDA IP DOĞRULAMALI (DNS-pinned) GET
++   ===============================================================
++   `validateExternalUrl` DNS'i isteğin ÖNCESİNDE çözer; asıl bağlantı
++   ayrı bir çözümleme yapar → TTL penceresinde IP değişirse (DNS
++   rebinding) iç ağa bağlanılabilir. Buradaki istek Node `http(s)`
++   ile yapılır ve soket, `lookup` kancasında DOĞRULANMIŞ IP'ye bağlanır
++   (çözümlenen adreslerden BİRİ bile engelliyse bağlantı kurulmaz).
++   IP literal host'lar lookup'a hiç girmez; onlar static guard'da
++   (parantezli IPv6 dahil) reddedilir.
++
++   Redirect: otomatik takip YOK. Her hop'ta hedef yeniden doğrulanır
++   (protokol + allowHost + static + DNS + bağlantı anı IP'si).
++   Proxy env'leri kullanılmaz (doğrudan bağlantı). */
++
++/** net/http `lookup` kancası: çözümlenen TÜM adresler güvenli olmalı. */
++export function guardedLookup(
++  hostname: string,
++  options: LookupOptions,
++  callback: (
++    err: NodeJS.ErrnoException | null,
++    address: string | LookupAddress[],
++    family?: number
++  ) => void
++): void {
++  dnsCb.lookup(hostname, { all: true, verbatim: true }, (err, addresses) => {
++    if (err) return callback(err, "", 0);
++    const list = (addresses || []) as LookupAddress[];
++    if (list.length === 0 || list.some((a) => isBlockedIpAddress(a.address))) {
++      const e = new Error(SAFE_REJECT_MESSAGE) as NodeJS.ErrnoException & {
++        ssrfReason?: SsrfReason;
++      };
++      e.code = "ESSRFBLOCKED";
++      const bad = list.find((a) => isBlockedIpAddress(a.address));
++      e.ssrfReason = !bad ? "dns-empty" : bad.family === 6 ? "dns-private-ipv6" : "dns-private-ipv4";
++      return callback(e, "", 0);
++    }
++    const wanted = options?.family === 4 || options?.family === 6 ? options.family : 0;
++    const usable = wanted ? list.filter((a) => a.family === wanted) : list;
++    if (usable.length === 0) {
++      const e = new Error("DNS: uygun adres yok") as NodeJS.ErrnoException;
++      e.code = "ENOTFOUND";
++      return callback(e, "", 0);
++    }
++    if (options?.all) return callback(null, usable);
++    return callback(null, usable[0].address, usable[0].family);
++  });
++}
++
++export type SafeGetResult =
++  | { ok: true; res: IncomingMessage; url: URL }
++  | { ok: false; reason: SsrfReason | "http-status" | "network" | "timeout"; status?: number; error: string };
++
++export type SafeGetOptions = {
++  /** Her hop'ta çağrılır — false → istek atılmaz ("host-not-allowed"). */
++  allowUrl?: (url: URL) => boolean;
++  maxRedirects?: number;
++  /** Bağlantı + yanıt başlıkları için süre sınırı (gövde akışı hariç). */
++  headersTimeoutMs?: number;
++  userAgent?: string;
++};
++
++function requestOnce(url: URL, opts: Required<Pick<SafeGetOptions, "headersTimeoutMs" | "userAgent">>) {
++  return new Promise<IncomingMessage>((resolve, reject) => {
++    const mod = url.protocol === "https:" ? https : http;
++    const req = mod.request(
++      url,
++      {
++        method: "GET",
++        agent: false, // bağlantı havuzu yok → her istek kendi lookup'ı ile
++        lookup: guardedLookup as unknown as http.RequestOptions["lookup"],
++        headers: { "User-Agent": opts.userAgent, Accept: "image/*,*/*;q=0.5" },
++      },
++      (res) => {
++        clearTimeout(timer);
++        resolve(res);
++      }
++    );
++    const timer = setTimeout(() => {
++      const e = new Error("timeout") as NodeJS.ErrnoException;
++      e.code = "ETIMEDOUT";
++      req.destroy(e);
++    }, opts.headersTimeoutMs);
++    req.on("error", (e) => {
++      clearTimeout(timer);
++      reject(e);
++    });
++    req.end();
++  });
++}
++
++/**
++ * SSRF-güvenli GET: başarılıysa gövdesi OKUNMAMIŞ yanıt akışı döner
++ * (çağıran tüketir/`destroy` eder). Hata/engel durumunda asla throw etmez.
++ */
++export async function safeGetStream(
++  rawUrl: string,
++  options: SafeGetOptions = {}
++): Promise<SafeGetResult> {
++  const maxRedirects = options.maxRedirects ?? 3;
++  const reqOpts = {
++    headersTimeoutMs: options.headersTimeoutMs ?? 15_000,
++    userAgent: options.userAgent ?? "TatilinYeri-Server/1.0",
++  };
++  let current = rawUrl;
++  for (let hop = 0; hop <= maxRedirects; hop++) {
++    const v = await validateExternalUrl(current);
++    if (!v.ok) return { ok: false, reason: v.reason, error: v.error };
++    if (options.allowUrl && !options.allowUrl(v.url)) {
++      return { ok: false, reason: "host-not-allowed", error: SAFE_REJECT_MESSAGE };
++    }
++
++    let res: IncomingMessage;
++    try {
++      res = await requestOnce(v.url, reqOpts);
++    } catch (err) {
++      const e = err as NodeJS.ErrnoException & { ssrfReason?: SsrfReason };
++      if (e?.code === "ESSRFBLOCKED") {
++        return { ok: false, reason: e.ssrfReason || "dns-private-ipv4", error: SAFE_REJECT_MESSAGE };
++      }
++      if (e?.code === "ETIMEDOUT") return { ok: false, reason: "timeout", error: "Zaman aşımı" };
++      return { ok: false, reason: "network", error: e?.message || "Ağ hatası" };
++    }
++
++    const status = res.statusCode || 0;
++    if (status >= 300 && status < 400) {
++      const loc = res.headers.location;
++      res.resume(); // gövdeyi at, soketi kapat
++      if (!loc) return { ok: false, reason: "redirect-missing-location", error: `HTTP ${status}` };
++      if (hop >= maxRedirects) {
++        return { ok: false, reason: "too-many-redirects", error: "Çok fazla yönlendirme" };
++      }
++      try {
++        current = new URL(loc, v.url).toString();
++      } catch {
++        return { ok: false, reason: "parse", error: "Yönlendirme adresi geçersiz" };
++      }
++      continue;
++    }
++    if (status < 200 || status >= 300) {
++      res.resume();
++      return { ok: false, reason: "http-status", status, error: `HTTP ${status}` };
++    }
++    return { ok: true, res, url: v.url };
++  }
++  return { ok: false, reason: "too-many-redirects", error: "Çok fazla yönlendirme" };
++}
+diff --git a/lib/security/ssrf.ts b/lib/security/ssrf.ts
+index 7adb4e1..1ea22ca 100644
+--- a/lib/security/ssrf.ts
++++ b/lib/security/ssrf.ts
+@@ -33,7 +33,8 @@ export type SsrfReason =
+   | "dns-private-ipv4"
+   | "dns-private-ipv6"
+   | "too-many-redirects"
+-  | "redirect-missing-location";
++  | "redirect-missing-location"
++  | "host-not-allowed";
+ 
+ export type SsrfValidationResult =
+   | { ok: true; url: URL }
+@@ -91,62 +92,155 @@ function parseIPv4(host: string): number | null {
+ export function isPrivateOrReservedIPv4(host: string): boolean {
+   const n = parseIPv4(host);
+   if (n === null) return false;
++  /* ⚠️ `>>> 0` ZORUNLU: JS bitwise `&` işaretli 32-bit döner; ilk okteti
++     ≥128 olan adreslerde (169.254/16, 172.16/12, 192.168/16, 224/4, …)
++     maske sonucu NEGATİF olur ve pozitif hex sabitle `===` ASLA eşleşmez.
++     Eski kodda bu yüzden 169.254.169.254 (metadata), 172.16/12 ve
++     192.168/16 hiç ENGELLENMİYORDU (H-03 incelemesinde doğrulandı). */
+   // 0.0.0.0/8 — "this" network
+-  if ((n & 0xff000000) === 0x00000000) return true;
++  if (((n & 0xff000000) >>> 0) === 0x00000000) return true;
+   // 10.0.0.0/8
+-  if ((n & 0xff000000) === 0x0a000000) return true;
++  if (((n & 0xff000000) >>> 0) === 0x0a000000) return true;
+   // 100.64.0.0/10 — CGNAT
+-  if ((n & 0xffc00000) === 0x64400000) return true;
++  if (((n & 0xffc00000) >>> 0) === 0x64400000) return true;
+   // 127.0.0.0/8 — loopback
+-  if ((n & 0xff000000) === 0x7f000000) return true;
++  if (((n & 0xff000000) >>> 0) === 0x7f000000) return true;
+   // 169.254.0.0/16 — link-local
+-  if ((n & 0xffff0000) === 0xa9fe0000) return true;
++  if (((n & 0xffff0000) >>> 0) === 0xa9fe0000) return true;
+   // 172.16.0.0/12
+-  if ((n & 0xfff00000) === 0xac100000) return true;
++  if (((n & 0xfff00000) >>> 0) === 0xac100000) return true;
+   // 192.0.0.0/24 — IETF protocol assignments
+-  if ((n & 0xffffff00) === 0xc0000000) return true;
++  if (((n & 0xffffff00) >>> 0) === 0xc0000000) return true;
+   // 192.168.0.0/16
+-  if ((n & 0xffff0000) === 0xc0a80000) return true;
++  if (((n & 0xffff0000) >>> 0) === 0xc0a80000) return true;
+   // 198.18.0.0/15 — benchmarking
+-  if ((n & 0xfffe0000) === 0xc6120000) return true;
++  if (((n & 0xfffe0000) >>> 0) === 0xc6120000) return true;
+   // 224.0.0.0/4 — multicast
+-  if ((n & 0xf0000000) === 0xe0000000) return true;
++  if (((n & 0xf0000000) >>> 0) === 0xe0000000) return true;
+   // 240.0.0.0/4 — reserved (255.255.255.255 dahil)
+-  if ((n & 0xf0000000) === 0xf0000000) return true;
++  if (((n & 0xf0000000) >>> 0) === 0xf0000000) return true;
+   return false;
+ }
+ 
+ /* ---------------------------------------------------------------
+-   IPv6 — string-level blocked range check
++   IPv6 — TAM PARSE + range check (H-03 / M-01 düzeltmesi)
+    --------------------------------------------------------------
+-   WHATWG URL.hostname IPv6 literal'i `[::1]` → `::1` (bracket
+-   strip) ve canonical lower-case verir. Buraya canonical form
+-   beklenir. */
+-function isV6Literal(host: string): boolean {
+-  if (!host.includes(":")) return false;
+-  // Geniş tolerans — sadece `0-9a-f:.` karakterleri varsa
+-  return /^[0-9a-f:.]+$/i.test(host);
++   ⚠️ ESKİ HATA (doğrulandı): WHATWG `URL.hostname` IPv6 literal'in
++   köşeli parantezini KORUR (`new URL("http://[::1]/").hostname ===
++   "[::1]"`). Eski `isV6Literal` yalnız `[0-9a-f:.]` kabul ettiği için
++   "[::1]" IPv6 sayılmıyor → bloklanmıyordu; server tarafı da ":" içeren
++   host'ta DNS'i atlayıp KABUL ediyordu. Ayrıca `[::ffff:127.0.0.1]`
++   parser tarafından `[::ffff:7f00:1]` (hex) biçimine çevrildiği için
++   eski "::ffff:a.b.c.d" regex'i de ıskalıyordu.
++
++   ŞİMDİ: parantez soyulur, adres 8 × 16-bit gruba TAM parse edilir
++   (:: kısaltması, gömülü IPv4 kuyruğu, zone-id) ve aralık kontrolü
++   sayısal yapılır. Yalnız global unicast (2000::/3) izinli; onun
++   içindeki özel/tünel/dokümantasyon blokları da reddedilir. IPv4
++   gömen biçimlerde (mapped/compat/NAT64/6to4) gömülü IPv4, IPv4
++   kurallarıyla kontrol edilir. */
++
++/** "[::1]" → "::1"; diğerleri aynen. */
++export function stripIpv6Brackets(host: string): string {
++  return host.length > 1 && host.startsWith("[") && host.endsWith("]")
++    ? host.slice(1, -1)
++    : host;
++}
++
++function parseIPv6(input: string): number[] | null {
++  let v = stripIpv6Brackets(input).toLowerCase();
++  const zone = v.indexOf("%");
++  if (zone !== -1) v = v.slice(0, zone); // fe80::1%eth0 → fe80::1
++  if (!v.includes(":") || !/^[0-9a-f:.]+$/.test(v)) return null;
++
++  let tail: number[] = [];
++  const lastColon = v.lastIndexOf(":");
++  const maybeV4 = v.slice(lastColon + 1);
++  if (maybeV4.includes(".")) {
++    const n = parseIPv4(maybeV4);
++    if (n === null) return null;
++    tail = [(n >>> 16) & 0xffff, n & 0xffff];
++    v = v.slice(0, lastColon + 1) + "0"; // yer tutucu; aşağıda kırpılır
++  }
++
++  const parts = v.split("::");
++  if (parts.length > 2) return null;
++  const toGroups = (seg: string): number[] | null => {
++    if (seg === "") return [];
++    const out: number[] = [];
++    for (const g of seg.split(":")) {
++      if (!/^[0-9a-f]{1,4}$/.test(g)) return null;
++      out.push(parseInt(g, 16));
++    }
++    return out;
++  };
++  let head = toGroups(parts[0]);
++  let rest = parts.length === 2 ? toGroups(parts[1]) : [];
++  if (!head || !rest) return null;
++  if (tail.length) {
++    // yer tutucu "0" son grubu IPv4 kuyruğuyla değiştir
++    if (parts.length === 2 && rest.length) rest = [...rest.slice(0, -1), ...tail];
++    else if (parts.length === 2) return null;
++    else head = [...head.slice(0, -1), ...tail];
++  }
++  const total = head.length + rest.length;
++  if (parts.length === 2) {
++    if (total > 7) return null;
++    return [...head, ...new Array(8 - total).fill(0), ...rest];
++  }
++  return total === 8 ? head : null;
++}
++
++function embeddedV4(g: number[], hi: number): string {
++  const a = g[hi], b = g[hi + 1];
++  return `${a >>> 8}.${a & 0xff}.${b >>> 8}.${b & 0xff}`;
+ }
+ 
+ export function isBlockedIPv6(host: string): boolean {
+-  if (!isV6Literal(host)) return false;
+-  const v = host.toLowerCase();
+-  // :: (unspecified) ve ::1 (loopback)
+-  if (v === "::" || v === "::0" || v === "::1") return true;
+-  // IPv4-mapped ::ffff:a.b.c.d → underlying IPv4 kontrol
+-  const mapped = /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(v);
+-  if (mapped) return isPrivateOrReservedIPv4(mapped[1]);
+-  // ::ffff:7f00:1 gibi hex form da olabilir — pragmatik kapsam dışı,
+-  // çoğu host bunu üretmez; URL.hostname normalize edilmiş bekleniyor.
+-  // fc00::/7 — Unique Local Address
+-  if (/^f[cd][0-9a-f]{2}:/.test(v)) return true;
+-  // fe80::/10 — link-local
+-  if (/^fe[89ab][0-9a-f]:/.test(v)) return true;
+-  // ff00::/8 — multicast
+-  if (/^ff[0-9a-f]{2}:/.test(v)) return true;
++  const g = parseIPv6(host);
++  if (!g) return false; // IPv6 literal değil → bu kontrolün kapsamı dışında
++  // ::/96 — unspecified (::), loopback (::1), eski IPv4-compatible
++  if (g.slice(0, 6).every((x) => x === 0)) return true;
++  // ::ffff:0:0/96 — IPv4-mapped → gömülü IPv4 kuralları
++  if (g.slice(0, 5).every((x) => x === 0) && g[5] === 0xffff) {
++    return isPrivateOrReservedIPv4(embeddedV4(g, 6));
++  }
++  // ::ffff:0:0:0/96 — IPv4-translated (SIIT) → reddet
++  if (g.slice(0, 4).every((x) => x === 0) && g[4] === 0xffff && g[5] === 0) return true;
++  // 64:ff9b::/96 — NAT64 well-known → gömülü IPv4 kuralları
++  if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every((x) => x === 0)) {
++    return isPrivateOrReservedIPv4(embeddedV4(g, 6));
++  }
++  // 64:ff9b:1::/48 — NAT64 local-use
++  if (g[0] === 0x64 && g[1] === 0xff9b && g[2] === 1) return true;
++  // 100::/64 — discard-only
++  if (g[0] === 0x100 && g[1] === 0 && g[2] === 0 && g[3] === 0) return true;
++  // 2000::/3 DIŞINDAKİ her şey (fc00::/7 ULA, fe80::/10 link-local,
++  // fec0::/10 site-local, ff00::/8 multicast, rezerve bloklar) → reddet
++  if ((g[0] & 0xe000) !== 0x2000) return true;
++  // 2001::/32 Teredo (tünel), 2001:db8::/32 dokümantasyon,
++  // 2001:10::/28 ORCHID, 2001:20::/28 ORCHIDv2
++  if (g[0] === 0x2001 && (g[1] === 0 || g[1] === 0xdb8)) return true;
++  if (g[0] === 0x2001 && (g[1] & 0xfff0) === 0x10) return true;
++  if (g[0] === 0x2001 && (g[1] & 0xfff0) === 0x20) return true;
++  // 2002::/16 — 6to4 → gömülü IPv4 kuralları
++  if (g[0] === 0x2002) return isPrivateOrReservedIPv4(embeddedV4(g, 1));
+   return false;
+ }
+ 
++/** IPv4 veya IPv6 (parantezli/parantezsiz) adres engelli mi? IP değilse false. */
++export function isBlockedIpAddress(address: string): boolean {
++  const a = stripIpv6Brackets(address.trim());
++  if (parseIPv4(a) !== null) return isPrivateOrReservedIPv4(a);
++  return isBlockedIPv6(a);
++}
++
++/** Host bir IP literal mı (IPv4 dotted veya IPv6, parantezli olabilir)? */
++export function isIpLiteralHost(host: string): boolean {
++  const h = stripIpv6Brackets(host);
++  return parseIPv4(h) !== null || parseIPv6(h) !== null;
++}
++
+ /* ---------------------------------------------------------------
+    Public sync validator — browser-safe.
+    Yalnız string-level kontroller (URL parse, protocol, userinfo,
+@@ -189,7 +283,10 @@ export function validateExternalUrlStatic(
+     };
+   }
+ 
+-  const host = parsed.hostname; // WHATWG URL already lower-cases & strips brackets
++  /* WHATWG URL hostname'i küçük harfe çevirir ama IPv6 köşeli parantezini
++     KORUR ("[::1]") → soyulur. Sondaki nokta ("localhost.") FQDN yazımıdır;
++     blocklist'i atlatmasın diye kontrol için kırpılır. */
++  const host = stripIpv6Brackets(parsed.hostname).replace(/\.+$/, "");
+   if (!host) {
+     return {
+       ok: false,
+diff --git a/tests/unit/ssrf-guard.test.ts b/tests/unit/ssrf-guard.test.ts
+new file mode 100644
+index 0000000..60ee455
+--- /dev/null
++++ b/tests/unit/ssrf-guard.test.ts
+@@ -0,0 +1,395 @@
++// @vitest-environment node
++/* ===============================================================
++   🛡️ H-03 / M-01 — SSRF guard testleri
++   ===============================================================
++   • Static guard: IPv4/IPv6 (parantezli dahil), loopback, private,
++     link-local, multicast, metadata, IPv4-mapped/NAT64/6to4.
++   • DNS-aware guard: private IP'ye çözülen hostname.
++   • safeGetStream: GERÇEK HTTP(S) sunucularıyla redirect, redirect
++     zinciri, farklı port, HTTP→HTTPS, bağlantı-anı DNS rebinding.
++
++   "Public" test hedefi: konteynerin eth0 adresi (os.networkInterfaces
++   ile bulunur; loopback/private değilse). DNS çözümlemesi test
++   hostname'leri için mock'lanır, geri kalanı gerçek.
++   =============================================================== */
++import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
++import http from "node:http";
++import https from "node:https";
++import os from "node:os";
++import fs from "node:fs";
++import path from "node:path";
++import { execSync } from "node:child_process";
++import type { AddressInfo } from "node:net";
++
++/* ---------------- DNS mock (yalnız test hostname'leri) ---------------- */
++type Addr = { address: string; family: 4 | 6 };
++const promiseMap = new Map<string, Addr[]>(); // validateExternalUrl (ön kontrol)
++const connectMap = new Map<string, Addr[]>(); // guardedLookup (bağlantı anı)
++
++vi.mock("node:dns", async () => {
++  const actual = await vi.importActual<typeof import("node:dns")>("node:dns");
++  const lookup = ((host: string, opts: unknown, cb: (...a: unknown[]) => void) => {
++    const hit = connectMap.get(host) ?? promiseMap.get(host);
++    if (hit) return process.nextTick(() => cb(null, hit));
++    return (actual.lookup as unknown as (...a: unknown[]) => void)(host, opts, cb);
++  }) as unknown as typeof actual.lookup;
++  const promises = {
++    ...actual.promises,
++    lookup: async (host: string, opts: unknown) => {
++      const hit = promiseMap.get(host);
++      if (hit) return hit;
++      return actual.promises.lookup(host, opts as never);
++    },
++  };
++  return { ...actual, default: { ...actual, lookup, promises }, lookup, promises };
++});
++
++import {
++  validateExternalUrlStatic,
++  isBlockedIPv6,
++  isBlockedIpAddress,
++  isPrivateOrReservedIPv4,
++} from "@/lib/security/ssrf";
++import { validateExternalUrl, safeGetStream } from "@/lib/security/ssrf.server";
++
++/* ================================================================ */
++describe("static guard — engellenen adresler", () => {
++  const BLOCKED = [
++    "http://127.0.0.1/",
++    "http://127.10.20.30:8080/x",
++    "http://localhost/",
++    "http://LOCALHOST:3000/",
++    "http://localhost./",
++    "http://app.localhost/",
++    "http://0.0.0.0/",
++    "http://0/",
++    "http://2130706433/", // 127.0.0.1 ondalık
++    "http://0x7f000001/", // 127.0.0.1 hex
++    "http://127.1/",
++    "http://10.0.0.1/",
++    "http://10.255.255.255/",
++    "http://172.16.0.1/",
++    "http://172.31.255.254/",
++    "http://192.168.1.1/",
++    "http://169.254.169.254/latest/meta-data/",
++    "http://100.100.100.200/", // CGNAT (Alibaba metadata)
++    "http://224.0.0.1/",
++    "http://255.255.255.255/",
++    "http://metadata.google.internal/computeMetadata/v1/",
++    "http://redis.internal:6379/",
++    "http://db.local/",
++    // IPv6 — köşeli parantezli (eski bypass: M-01)
++    "http://[::1]/",
++    "http://[::1]:3000/secret",
++    "http://[0:0:0:0:0:0:0:1]/",
++    "http://[::]/",
++    "http://[::ffff:127.0.0.1]/", // → [::ffff:7f00:1]
++    "http://[::ffff:7f00:1]/",
++    "http://[::ffff:a9fe:a9fe]/", // mapped 169.254.169.254
++    "http://[::ffff:10.0.0.1]/",
++    "http://[64:ff9b::7f00:1]/", // NAT64 → 127.0.0.1
++    "http://[64:ff9b::a9fe:a9fe]/", // NAT64 → metadata
++    "http://[2002:7f00:1::]/", // 6to4 → 127.0.0.1
++    "http://[2002:c0a8:101::1]/", // 6to4 → 192.168.1.1
++    "http://[fe80::1]/",
++    "http://[fe80::1%25eth0]/",
++    "http://[febf::1]/",
++    "http://[fec0::1]/",
++    "http://[fc00::1]/",
++    "http://[fd12:3456:789a::1]/",
++    "http://[fd00:ec2::254]/", // AWS IPv6 metadata
++    "http://[ff02::1]/",
++    "http://[2001:db8::1]/",
++    "http://[2001:0:4136:e378::1]/", // Teredo
++    "http://[100::1]/",
++  ];
++  it.each(BLOCKED)("%s → RED", (u) => {
++    const r = validateExternalUrlStatic(u);
++    expect(r.ok, u).toBe(false);
++  });
++
++  it("protokol / userinfo / boş host → RED", () => {
++    for (const u of ["file:///etc/passwd", "gopher://x/", "ftp://example.com/", "http://user:pw@example.com/", "javascript:alert(1)"]) {
++      expect(validateExternalUrlStatic(u).ok, u).toBe(false);
++    }
++  });
++});
++
++describe("static guard — izin verilen adresler", () => {
++  const ALLOWED = [
++    "https://example.com/a.jpg",
++    "https://cdn.tatilinyeri.example/villas/x/1.webp",
++    "https://abc.supabase.co/storage/v1/object/public/villa-images/x.jpg",
++    "http://93.184.216.34/",
++    "https://8.8.8.8:8443/x",
++    "https://[2606:4700:4700::1111]/", // global unicast (Cloudflare DNS)
++    "https://[2a00:1450:4001:82a::200e]/",
++    "http://[::ffff:8.8.8.8]/", // mapped PUBLIC IPv4
++  ];
++  it.each(ALLOWED)("%s → KABUL", (u) => {
++    expect(validateExternalUrlStatic(u).ok, u).toBe(true);
++  });
++});
++
++describe("IP yardımcıları", () => {
++  it("isBlockedIPv6: parantezli / parantezsiz aynı sonuç", () => {
++    for (const v of ["::1", "[::1]", "fe80::abcd", "[fd00::1]", "::ffff:7f00:1", "::ffff:127.0.0.1"]) {
++      expect(isBlockedIPv6(v), v).toBe(true);
++    }
++    for (const v of ["2606:4700:4700::1111", "[2a00:1450:4001:82a::200e]"]) {
++      expect(isBlockedIPv6(v), v).toBe(false);
++    }
++    // IPv6 değil → bu fonksiyonun kapsamı dışında
++    expect(isBlockedIPv6("example.com")).toBe(false);
++    expect(isBlockedIPv6("[zz::1]")).toBe(false);
++  });
++
++  it("isBlockedIpAddress: IPv4 + IPv6", () => {
++    expect(isBlockedIpAddress("127.0.0.1")).toBe(true);
++    expect(isBlockedIpAddress("172.20.0.5")).toBe(true); // Docker bridge
++    expect(isBlockedIpAddress("::1")).toBe(true);
++    expect(isBlockedIpAddress("8.8.8.8")).toBe(false);
++    expect(isBlockedIpAddress("2606:4700:4700::1111")).toBe(false);
++    expect(isPrivateOrReservedIPv4("172.32.0.1")).toBe(false); // 172.16/12 dışı
++  });
++});
++
++/* ================================================================ */
++describe("DNS-aware guard (validateExternalUrl)", () => {
++  beforeAll(() => {
++    promiseMap.set("rebind-a.test", [{ address: "127.0.0.1", family: 4 }]);
++    promiseMap.set("meta.test", [{ address: "169.254.169.254", family: 4 }]);
++    promiseMap.set("v6private.test", [{ address: "fd00::1", family: 6 }]);
++    promiseMap.set("v6loop.test", [{ address: "::1", family: 6 }]);
++    promiseMap.set("mixed.test", [
++      { address: "93.184.216.34", family: 4 },
++      { address: "10.0.0.5", family: 4 },
++    ]);
++    promiseMap.set("public.test", [{ address: "93.184.216.34", family: 4 }]);
++  });
++
++  it("private IP'ye çözülen hostname → RED (IPv4, IPv6, karışık)", async () => {
++    for (const h of ["rebind-a.test", "meta.test", "v6private.test", "v6loop.test", "mixed.test"]) {
++      const r = await validateExternalUrl(`http://${h}/x`);
++      expect(r.ok, h).toBe(false);
++    }
++  });
++
++  it("public'e çözülen hostname → KABUL", async () => {
++    expect((await validateExternalUrl("https://public.test/a.webp")).ok).toBe(true);
++  });
++
++  it("M-01: parantezli IPv6 literal artık DNS adımında da kabul edilmez", async () => {
++    for (const u of ["http://[::1]/", "http://[::ffff:7f00:1]/", "http://[fe80::1]/"]) {
++      expect((await validateExternalUrl(u)).ok, u).toBe(false);
++    }
++    expect((await validateExternalUrl("https://[2606:4700:4700::1111]/")).ok).toBe(true);
++  });
++});
++
++/* ================================================================
++   safeGetStream — GERÇEK HTTP(S) istekleri
++   ================================================================ */
++const PUBLIC_IP = Object.values(os.networkInterfaces())
++  .flat()
++  .find(
++    (a) => a && a.family === "IPv4" && !a.internal && !isBlockedIpAddress(a.address)
++  )?.address;
++
++const d = PUBLIC_IP ? describe : describe.skip;
++
++d("safeGetStream (gerçek HTTP sunucuları)", () => {
++  const servers: Array<http.Server | https.Server> = [];
++  let pA = 0; // "CDN" (izinli)
++  let pB = 0; // aynı IP, farklı port (izinsiz)
++  let pTls = 0; // HTTPS
++  let pInternal = 0; // 127.0.0.1 — iç servis (SECRET)
++  let pInternal6 = 0; // ::1 — iç servis (SECRET)
++  let internalHits = 0;
++  const TLS_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "ssrf-tls-"));
++  let prevTls: string | undefined;
++
++  const listen = (srv: http.Server | https.Server, host: string) =>
++    new Promise<number>((res, rej) => {
++      srv.once("error", rej);
++      srv.listen(0, host, () => res((srv.address() as AddressInfo).port));
++    });
++
++  beforeAll(async () => {
++    const internal = http.createServer((_q, r) => {
++      internalHits += 1;
++      r.end("SECRET");
++    });
++    servers.push(internal);
++    pInternal = await listen(internal, "127.0.0.1");
++    const internal6 = http.createServer((_q, r) => {
++      internalHits += 1;
++      r.end("SECRET6");
++    });
++    /* Ortamda IPv6 yoksa (EAFNOSUPPORT) [::1] testleri 127.0.0.1 portunu
++       hedefler — guard her iki durumda da bağlantıdan ÖNCE reddeder. */
++    pInternal6 = await listen(internal6, "::1").catch(() => 0);
++    if (pInternal6) servers.push(internal6);
++
++    const cdn = http.createServer((q, r) => {
++      const u = q.url || "/";
++      const go = (loc: string) => {
++        r.statusCode = 302;
++        r.setHeader("Location", loc);
++        r.end();
++      };
++      if (u === "/img.webp") {
++        r.setHeader("Content-Type", "image/webp");
++        return r.end("IMAGE-BYTES");
++      }
++      if (u === "/r-internal") return go(`http://127.0.0.1:${pInternal}/secret`);
++      if (u === "/r-v6") return go(`http://[::1]:${pInternal6 || pInternal}/secret`);
++      if (u === "/r-meta") return go("http://169.254.169.254/latest/meta-data/");
++      if (u === "/r-rebind") return go(`http://rebind-b.test:${pInternal}/secret`);
++      if (u === "/r-chain1") return go("/r-chain2");
++      if (u === "/r-chain2") return go(`http://cdn.public.test:${pA}/img.webp`);
++      if (u === "/r-loop") return go("/r-loop");
++      if (u === "/r-port") return go(`http://cdn.public.test:${pB}/img.webp`);
++      if (u === "/r-https") return go(`https://cdn.public.test:${pTls}/img.webp`);
++      if (u === "/r-nolocation") {
++        r.statusCode = 302;
++        return r.end();
++      }
++      r.statusCode = 404;
++      r.end("nope");
++    });
++    servers.push(cdn);
++    pA = await listen(cdn, PUBLIC_IP!);
++    const other = http.createServer((_q, r) => r.end("OTHER-PORT"));
++    servers.push(other);
++    pB = await listen(other, PUBLIC_IP!);
++
++    execSync(
++      `openssl req -x509 -newkey rsa:2048 -nodes -keyout ${TLS_DIR}/k.pem -out ${TLS_DIR}/c.pem -days 1 -subj /CN=cdn.public.test 2>/dev/null`
++    );
++    const tls = https.createServer(
++      { key: fs.readFileSync(`${TLS_DIR}/k.pem`), cert: fs.readFileSync(`${TLS_DIR}/c.pem`) },
++      (q, r) => {
++        if (q.url === "/img.webp") return r.end("TLS-IMAGE");
++        if (q.url === "/r-internal") {
++          r.statusCode = 301;
++          r.setHeader("Location", `http://127.0.0.1:${pInternal}/secret`);
++          return r.end();
++        }
++        r.statusCode = 404;
++        r.end();
++      }
++    );
++    servers.push(tls);
++    pTls = await listen(tls, PUBLIC_IP!);
++    /* Kendinden imzalı test sertifikası — yalnız bu describe süresince. */
++    prevTls = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
++    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
++
++    promiseMap.set("cdn.public.test", [{ address: PUBLIC_IP!, family: 4 }]);
++    // DNS rebinding: ön kontrolde public, bağlantı anında 127.0.0.1
++    promiseMap.set("rebind-b.test", [{ address: PUBLIC_IP!, family: 4 }]);
++    connectMap.set("rebind-b.test", [{ address: "127.0.0.1", family: 4 }]);
++  });
++
++  afterAll(() => {
++    if (prevTls === undefined) delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
++    else process.env.NODE_TLS_REJECT_UNAUTHORIZED = prevTls;
++    for (const s of servers) s.close();
++    fs.rmSync(TLS_DIR, { recursive: true, force: true });
++  });
++
++  const read = (res: http.IncomingMessage) =>
++    new Promise<string>((ok) => {
++      let b = "";
++      res.on("data", (c) => (b += c));
++      res.on("end", () => ok(b));
++    });
++  const allowA = (u: URL) => u.host === `cdn.public.test:${pA}` || u.host === `cdn.public.test:${pTls}`;
++
++  it("güvenli public host → gövde okunur", async () => {
++    const r = await safeGetStream(`http://cdn.public.test:${pA}/img.webp`, { allowUrl: allowA });
++    expect(r.ok).toBe(true);
++    if (r.ok) expect(await read(r.res)).toBe("IMAGE-BYTES");
++  });
++
++  it("iç adres doğrudan → RED, iç servise HİÇ istek gitmez", async () => {
++    const before = internalHits;
++    for (const u of [
++      `http://127.0.0.1:${pInternal}/secret`,
++      `http://localhost:${pInternal}/secret`,
++      `http://[::1]:${pInternal6 || pInternal}/secret`,
++      `http://0.0.0.0:${pInternal}/secret`,
++    ]) {
++      const r = await safeGetStream(u);
++      expect(r.ok, u).toBe(false);
++    }
++    expect(internalHits).toBe(before);
++  });
++
++  it("redirect → iç adres / [::1] / metadata → RED", async () => {
++    const before = internalHits;
++    for (const p of ["/r-internal", "/r-v6", "/r-meta"]) {
++      const r = await safeGetStream(`http://cdn.public.test:${pA}${p}`, { allowUrl: allowA });
++      expect(r.ok, p).toBe(false);
++    }
++    expect(internalHits).toBe(before);
++  });
++
++  it("redirect zinciri (göreli + mutlak, aynı izinli host) → takip edilir", async () => {
++    const r = await safeGetStream(`http://cdn.public.test:${pA}/r-chain1`, { allowUrl: allowA });
++    expect(r.ok).toBe(true);
++    if (r.ok) expect(await read(r.res)).toBe("IMAGE-BYTES");
++  });
++
++  it("redirect döngüsü → too-many-redirects; Location yok → RED", async () => {
++    const loop = await safeGetStream(`http://cdn.public.test:${pA}/r-loop`, { allowUrl: allowA, maxRedirects: 3 });
++    expect(loop.ok === false && loop.reason).toBe("too-many-redirects");
++    const noLoc = await safeGetStream(`http://cdn.public.test:${pA}/r-nolocation`, { allowUrl: allowA });
++    expect(noLoc.ok === false && noLoc.reason).toBe("redirect-missing-location");
++  });
++
++  it("farklı port: aynı host farklı porta redirect / doğrudan → allowlist RED", async () => {
++    const viaRedirect = await safeGetStream(`http://cdn.public.test:${pA}/r-port`, { allowUrl: allowA });
++    expect(viaRedirect.ok === false && viaRedirect.reason).toBe("host-not-allowed");
++    const direct = await safeGetStream(`http://cdn.public.test:${pB}/img.webp`, { allowUrl: allowA });
++    expect(direct.ok === false && direct.reason).toBe("host-not-allowed");
++    // allowlist verilmezse (genel kullanım) public port'a izin var
++    const open = await safeGetStream(`http://cdn.public.test:${pB}/img.webp`);
++    expect(open.ok).toBe(true);
++    if (open.ok) open.res.resume();
++  });
++
++  it("HTTP → HTTPS redirect → takip edilir; HTTPS → iç adres redirect → RED", async () => {
++    const up = await safeGetStream(`http://cdn.public.test:${pA}/r-https`, { allowUrl: allowA });
++    expect(up.ok).toBe(true);
++    if (up.ok) {
++      expect(up.url.protocol).toBe("https:");
++      expect(await read(up.res)).toBe("TLS-IMAGE");
++    }
++    const before = internalHits;
++    const down = await safeGetStream(`https://cdn.public.test:${pTls}/r-internal`, { allowUrl: allowA });
++    expect(down.ok).toBe(false);
++    expect(internalHits).toBe(before);
++  });
++
++  it("DNS rebinding: ön kontrolde public, bağlantı anında 127.0.0.1 → bağlantı kurulmaz", async () => {
++    const before = internalHits;
++    const direct = await safeGetStream(`http://rebind-b.test:${pInternal}/secret`);
++    expect(direct.ok === false && direct.reason).toBe("dns-private-ipv4");
++    const viaRedirect = await safeGetStream(`http://cdn.public.test:${pA}/r-rebind`);
++    expect(viaRedirect.ok).toBe(false);
++    expect(internalHits).toBe(before);
++  });
++
++  it("DNS private'a çözülüyor (ön kontrol) → RED", async () => {
++    const r = await safeGetStream(`http://rebind-a.test:${pInternal}/secret`);
++    expect(r.ok === false && r.reason).toBe("dns-private-ipv4");
++  });
++
++  it("HTTP hata durumu → http-status (gövde okunmaz)", async () => {
++    const r = await safeGetStream(`http://cdn.public.test:${pA}/missing`, { allowUrl: allowA });
++    expect(r.ok === false && r.reason).toBe("http-status");
++    expect(r.ok === false && r.status).toBe(404);
++  });
++});

@@ -1,0 +1,520 @@
+diff --git a/app/(admin)/maki-admin/villas/siralama/_components/VillaSortPanel.tsx b/app/(admin)/maki-admin/villas/siralama/_components/VillaSortPanel.tsx
+index d03550b..76fec99 100644
+--- a/app/(admin)/maki-admin/villas/siralama/_components/VillaSortPanel.tsx
++++ b/app/(admin)/maki-admin/villas/siralama/_components/VillaSortPanel.tsx
+@@ -1,13 +1,16 @@
+ "use client";
+ 
+-import { memo, useEffect, useMemo, useState } from "react";
++import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+ import Link from "next/link";
+ import { useRouter } from "next/navigation";
+ 
+ import {
+   DndContext,
++  DragOverlay,
+   closestCenter,
+   DragEndEvent,
++  type AutoScrollOptions,
++  type DragStartEvent,
+ } from "@dnd-kit/core";
+ import {
+   SortableContext,
+@@ -22,6 +25,7 @@ import { GripVertical } from "lucide-react";
+ import { adminFetch } from "@/lib/admin-fetch";
+ import { revalidateVillas } from "@/app/services/revalidate.actions";
+ import { useNotify } from "@/app/components/admin/notifications/NotificationProvider";
++import { fastNewIndex } from "./sort-new-index";
+ 
+ /* ===============================================================
+    🛡️ VillaSortPanel — admin drag-drop sıralama (MINIMAL)
+@@ -64,6 +68,74 @@ type VillaItem = {
+   [k: string]: unknown;
+ };
+ 
++/* ⚡ DRAG HIZI — yalnız bu ekran (başka admin sayfaları etkilenmez)
++   ---------------------------------------------------------------
++   • Auto-scroll: dnd-kit'in KENDİ ayarı (özel scroll loop'u YOK).
++     Hız, pointer viewport'un üst/alt %20'lik bölgesine girdikçe
++     doğrusal artar; en kenarda `acceleration` px / 5 ms'ye ulaşır.
++     Varsayılan 10 → 40 (en kenarda teorik ≈8.000 px/sn; bölgenin
++     iç sınırına yakın yavaş → hassas konumlama korunur).
++   • Sibling kart animasyonu: varsayılan 200 ms → 120 ms. Hızlı
++     scroll'da kartlar pointer'ın gerisinde kalmaz.
++   • DragOverlay: sürüklenen kart `position: fixed` bir kopya olarak
++     pointer'a yapışık çizilir; hızlı auto-scroll'da listede geride
++     kalmaz. Listedeki asıl kart, bırakılacağı yeri gösteren yer
++     tutucu olur. Bırakınca animasyon yok (anında).
++   • getNewIndex: O(N²) varsayılan yerine O(1) (bkz. sort-new-index).
++   • Uzun liste: yalnız viewport'a YAKIN kartlar (±NEAR_MARGIN)
++     dnd-kit'e kayıtlı (useSortable). Uzaktaki kartlar birebir aynı
++     görünümde statik render edilir. dnd-kit her pointer/scroll
++     adımında tüm kayıtlı kartları yeniden hesapladığı için (çarpışma
++     + yer değiştirme) 1.000+ villada ana thread kilitleniyordu; artık
++     iş, liste uzunluğundan bağımsız (~görünen kart sayısı).
++     Sürüklenen kart her zaman kayıtlı kalır. Sıra/index'ler ve
++     SortableContext `items` TÜM listeyi içerir → global sort_order
++     semantiği ve kaydedilen değerler değişmez. */
++const AUTO_SCROLL: AutoScrollOptions = { acceleration: 40 };
++const SORT_TRANSITION = { duration: 120, easing: "ease-out" };
++const GRIP_ICON = <GripVertical size={14} />;
++const DRAG_HANDLE_CLASS = `
++          shrink-0 inline-flex items-center justify-center
++          w-7 h-7 rounded-md
++          text-[var(--admin-muted-2)] hover:text-[var(--admin-text)]
++          hover:bg-[var(--admin-bg-soft)]
++          cursor-grab active:cursor-grabbing
++          transition-colors motion-reduce:transition-none
++          focus:outline-none focus-visible:ring-2
++          focus-visible:ring-[var(--admin-accent-soft,rgba(0,0,0,0.1))]
++          disabled:opacity-50 disabled:cursor-not-allowed
++        `;
++
++/* Viewport'un üst/altından bu kadar uzaktaki kartlar da kayıtlı
++   tutulur (hızlı scroll'da hedef kart her zaman hazır olsun). */
++const NEAR_MARGIN = "1500px 0px";
++/* İlk render (SSR + hydration) için: IntersectionObserver ilk
++   sonucunu verene kadar üstteki kartlar kayıtlı başlar. */
++const INITIAL_NEAR_COUNT = 40;
++
++/* Tek (paylaşılan) IntersectionObserver — kart başına observer yok. */
++type NearCallback = (near: boolean) => void;
++let nearObserver: IntersectionObserver | null = null;
++const nearCallbacks = new WeakMap<Element, NearCallback>();
++function observeNearViewport(el: Element, cb: NearCallback): () => void {
++  if (typeof IntersectionObserver === "undefined") {
++    cb(true); // eski tarayıcı: eski davranış (tüm kartlar kayıtlı)
++    return () => {};
++  }
++  nearObserver ??= new IntersectionObserver(
++    (entries) => {
++      for (const e of entries) nearCallbacks.get(e.target)?.(e.isIntersecting);
++    },
++    { rootMargin: NEAR_MARGIN }
++  );
++  nearCallbacks.set(el, cb);
++  nearObserver.observe(el);
++  return () => {
++    nearObserver?.unobserve(el);
++    nearCallbacks.delete(el);
++  };
++}
++
+ export default function VillaSortPanel({
+   initialVillas,
+ }: {
+@@ -74,13 +146,44 @@ export default function VillaSortPanel({
+ 
+   const [items, setItems] = useState<VillaItem[]>(initialVillas);
+   const [persisting, setPersisting] = useState(false);
++  /* Yalnız DragOverlay içeriği için (sıralama mantığı kullanmaz). */
++  const [activeId, setActiveId] = useState<string | null>(null);
+ 
+   /* Prop değişirse (router.refresh sonrası) local state'i senkronize et. */
+   useEffect(() => {
+     setItems(initialVillas);
+   }, [initialVillas]);
+ 
++  /* ⚡ SMOOTH SCROLL — globals.css `html { scroll-behavior: smooth }`
++     dnd-kit'in auto-scroll'u her 5 ms'de `scrollBy` çağırır; smooth
++     davranışta her çağrı bir önceki animasyonu kesip yeniden başlatır
++     → scroll çok yavaş/takılır. Yalnız SÜRÜKLEME SÜRESİNCE <html>
++     inline `scroll-behavior: auto` yapılır; bırakma/iptal/unmount'ta
++     önceki inline değer AYNEN geri yüklenir. CSS dosyası değişmez. */
++  const restoreScrollRef = useRef<(() => void) | null>(null);
++  const restoreScrollBehavior = useCallback(() => {
++    restoreScrollRef.current?.();
++    restoreScrollRef.current = null;
++  }, []);
++  function handleDragStart(event: DragStartEvent) {
++    setActiveId(String(event.active.id));
++    restoreScrollBehavior();
++    const root = document.documentElement;
++    const prevInline = root.style.scrollBehavior;
++    root.style.scrollBehavior = "auto";
++    restoreScrollRef.current = () => {
++      root.style.scrollBehavior = prevInline;
++    };
++  }
++  useEffect(() => restoreScrollBehavior, [restoreScrollBehavior]);
++  function handleDragCancel() {
++    setActiveId(null);
++    restoreScrollBehavior();
++  }
++
+   async function handleDragEnd(event: DragEndEvent) {
++    setActiveId(null);
++    restoreScrollBehavior();
+     const { active, over } = event;
+     if (!over || active.id === over.id) return;
+ 
+@@ -150,6 +253,10 @@ export default function VillaSortPanel({
+      ⚠️ Erken `return`'den ÖNCE çağrılır — hook sırası her render'da
+      aynı kalmalı (react-hooks/rules-of-hooks). */
+   const sortableIds = useMemo(() => items.map((v) => v.id), [items]);
++  const activeIndex = activeId
++    ? items.findIndex((v) => v.id === activeId)
++    : -1;
++  const activeVilla = activeIndex === -1 ? null : items[activeIndex];
+ 
+   if (items.length === 0) {
+     return (
+@@ -190,7 +297,10 @@ export default function VillaSortPanel({
+ 
+       <DndContext
+         collisionDetection={closestCenter}
++        autoScroll={AUTO_SCROLL}
++        onDragStart={handleDragStart}
+         onDragEnd={handleDragEnd}
++        onDragCancel={handleDragCancel}
+       >
+         <SortableContext
+           items={sortableIds}
+@@ -198,20 +308,82 @@ export default function VillaSortPanel({
+         >
+           <div className="flex flex-col gap-2">
+             {items.map((villa, index) => (
+-              <SortRowCard
++              <SortRow
+                 key={villa.id}
+                 villa={villa}
+                 index={index}
+                 persisting={persisting}
++                forceSortable={villa.id === activeId}
+               />
+             ))}
+           </div>
+         </SortableContext>
++        <DragOverlay dropAnimation={null}>
++          {activeVilla ? (
++            <article className="admin-card p-3 flex items-center gap-3 shadow-xl cursor-grabbing">
++              <span
++                aria-hidden
++                className="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md text-[var(--admin-text)] bg-[var(--admin-bg-soft)]"
++              >
++                {GRIP_ICON}
++              </span>
++              <SortRowContent
++                title={activeVilla.title}
++                id={String(activeVilla.id)}
++                index={activeIndex}
++              />
++            </article>
++          ) : null}
++        </DragOverlay>
+       </DndContext>
+     </div>
+   );
+ }
+ 
++/* ⚡ SortRow — kart viewport'a yakınsa (veya sürükleniyorsa) dnd-kit
++   kartı, değilse aynı görünümde statik kart. Sarmalayıcı <div> yalnız
++   IntersectionObserver hedefi; flex `gap` aynı şekilde uygulanır. */
++const SortRow = memo(function SortRow({
++  villa,
++  index,
++  persisting,
++  forceSortable,
++}: {
++  villa: VillaItem;
++  index: number;
++  persisting: boolean;
++  forceSortable: boolean;
++}) {
++  const ref = useRef<HTMLDivElement>(null);
++  const [near, setNear] = useState(index < INITIAL_NEAR_COUNT);
++  useEffect(() => {
++    const el = ref.current;
++    if (!el) return;
++    return observeNearViewport(el, setNear);
++  }, []);
++
++  return (
++    <div ref={ref}>
++      {near || forceSortable ? (
++        <SortRowCard villa={villa} index={index} persisting={persisting} />
++      ) : (
++        <article className="admin-card p-3 flex items-center gap-3">
++          <button
++            type="button"
++            aria-label={`Sürükle: ${villa.title} sırasını değiştir`}
++            title="Sürükle: sırala"
++            disabled={persisting}
++            className={DRAG_HANDLE_CLASS}
++          >
++            {GRIP_ICON}
++          </button>
++          <SortRowContent title={villa.title} id={String(villa.id)} index={index} />
++        </article>
++      )}
++    </div>
++  );
++});
++
+ /* ===============================================================
+    SortRowCard — minimal kart: drag handle + title + #ID + sıra no
+    ===============================================================
+@@ -234,7 +406,11 @@ const SortRowCard = memo(function SortRowCard({
+     transform,
+     transition,
+     isDragging,
+-  } = useSortable({ id: villa.id });
++  } = useSortable({
++    id: villa.id,
++    transition: SORT_TRANSITION,
++    getNewIndex: fastNewIndex,
++  });
+ 
+   const style: React.CSSProperties = {
+     transform: CSS.Transform.toString(transform),
+@@ -248,7 +424,7 @@ const SortRowCard = memo(function SortRowCard({
+       style={style}
+       className={
+         "admin-card p-3 flex items-center gap-3 " +
+-        (isDragging ? "shadow-xl z-10" : "")
++        (isDragging ? "z-10" : "")
+       }
+     >
+       {/* DRAG HANDLE — tek interactive element; tüm listener'lar
+@@ -260,28 +436,39 @@ const SortRowCard = memo(function SortRowCard({
+         aria-label={`Sürükle: ${villa.title} sırasını değiştir`}
+         title="Sürükle: sırala"
+         disabled={persisting}
+-        className="
+-          shrink-0 inline-flex items-center justify-center
+-          w-7 h-7 rounded-md
+-          text-[var(--admin-muted-2)] hover:text-[var(--admin-text)]
+-          hover:bg-[var(--admin-bg-soft)]
+-          cursor-grab active:cursor-grabbing
+-          transition-colors motion-reduce:transition-none
+-          focus:outline-none focus-visible:ring-2
+-          focus-visible:ring-[var(--admin-accent-soft,rgba(0,0,0,0.1))]
+-          disabled:opacity-50 disabled:cursor-not-allowed
+-        "
++        className={DRAG_HANDLE_CLASS}
+       >
+-        <GripVertical size={14} />
++        {GRIP_ICON}
+       </button>
+ 
++      <SortRowContent title={villa.title} id={String(villa.id)} index={index} />
++    </article>
++  );
++});
++
++
++/* ⚡ Kart içeriği (başlık + #ID + sıra no) — memo: sürükleme sırasında
++   dnd-kit tüm kartların hook'larını yeniden çalıştırır; içerik props'u
++   değişmediği için bu alt ağaç yeniden render EDİLMEZ. Görünüm aynı;
++   DragOverlay kopyası da aynı bileşeni kullanır. */
++const SortRowContent = memo(function SortRowContent({
++  title,
++  id,
++  index,
++}: {
++  title: string;
++  id: string;
++  index: number;
++}) {
++  return (
++    <>
+       {/* CONTENT — title + #ID */}
+       <div className="flex-1 min-w-0">
+         <p className="text-[14px] font-medium text-[var(--admin-text)] truncate">
+-          {villa.title}
++          {title}
+         </p>
+         <p className="text-[11.5px] text-[var(--admin-muted-2)] mt-0.5 font-mono">
+-          #{String(villa.id).slice(0, 8)}
++          #{id.slice(0, 8)}
+         </p>
+       </div>
+ 
+@@ -292,6 +479,6 @@ const SortRowCard = memo(function SortRowCard({
+       >
+         #{index + 1}
+       </span>
+-    </article>
++    </>
+   );
+ });
+diff --git a/app/(admin)/maki-admin/villas/siralama/_components/sort-new-index.ts b/app/(admin)/maki-admin/villas/siralama/_components/sort-new-index.ts
+new file mode 100644
+index 0000000..b126aa8
+--- /dev/null
++++ b/app/(admin)/maki-admin/villas/siralama/_components/sort-new-index.ts
+@@ -0,0 +1,55 @@
++import type { UniqueIdentifier } from "@dnd-kit/core";
++import type { NewIndexGetter } from "@dnd-kit/sortable";
++
++/* ===============================================================
++   ⚡ O(1) `getNewIndex` — dnd-kit `defaultNewIndexGetter` ile AYNI sonuç
++   ===============================================================
++   dnd-kit varsayılanı her kart, her render'da
++   `arrayMove(items, activeIndex, overIndex).indexOf(id)` çalıştırır:
++   N kart × N elemanlı yeni dizi = O(N²) bellek + GC. 1.000+ villada
++   sürükleme sırasında ana thread'i kilitliyordu.
++
++   Bu sürüm aynı değeri, dizi kopyalamadan hesaplar:
++     • id → index haritası `items` dizi kimliği başına BİR kez kurulur
++       (SortableContext, `items` değişmedikçe aynı diziyi verir).
++     • arrayMove anlamı: taşınan eleman overIndex'e gider; aradaki
++       elemanlar bir kayar; diğerleri yerinde kalır.
++   Yalnız görsel hesaplamada kullanılır (useSortable); kaydedilen
++   sort_order'lar handleDragEnd'deki arrayMove'dan gelir (değişmedi).
++   =============================================================== */
++
++const indexCache = new WeakMap<
++  readonly UniqueIdentifier[],
++  Map<UniqueIdentifier, number>
++>();
++
++function indexOfId(items: readonly UniqueIdentifier[], id: UniqueIdentifier) {
++  let map = indexCache.get(items);
++  if (!map) {
++    map = new Map();
++    /* İlk görülen index — `Array.prototype.indexOf` ile aynı. */
++    items.forEach((item, i) => {
++      if (!map!.has(item)) map!.set(item, i);
++    });
++    indexCache.set(items, map);
++  }
++  return map.get(id) ?? -1;
++}
++
++export const fastNewIndex: NewIndexGetter = ({
++  id,
++  items,
++  activeIndex,
++  overIndex,
++}) => {
++  const index = indexOfId(items, id);
++  if (index === -1) return -1;
++  if (index === activeIndex) return overIndex;
++  if (activeIndex < overIndex && index > activeIndex && index <= overIndex) {
++    return index - 1;
++  }
++  if (activeIndex > overIndex && index >= overIndex && index < activeIndex) {
++    return index + 1;
++  }
++  return index;
++};
+diff --git a/tests/unit/villa-sort-drag-speed.test.ts b/tests/unit/villa-sort-drag-speed.test.ts
+new file mode 100644
+index 0000000..417eeb0
+--- /dev/null
++++ b/tests/unit/villa-sort-drag-speed.test.ts
+@@ -0,0 +1,98 @@
++/* ===============================================================
++   ⚡ /maki-admin/villas/siralama — sürükleme hızı iyileştirmesi
++   ===============================================================
++   1) `fastNewIndex` dnd-kit `defaultNewIndexGetter` ile BİREBİR aynı
++      sonucu verir (görsel yer değiştirme hesabı; kaydetme değil).
++   2) Kaynak kilidi: hız ayarları yalnız bu panelde; kaydetme akışı
++      (arrayMove + 0..N-1 + endpoint) değişmedi.
++=============================================================== */
++
++import { describe, it, expect } from "vitest";
++import { readFileSync } from "node:fs";
++import { join } from "node:path";
++import { defaultNewIndexGetter } from "@dnd-kit/sortable";
++import type { UniqueIdentifier } from "@dnd-kit/core";
++
++import { fastNewIndex } from "@/app/(admin)/maki-admin/villas/siralama/_components/sort-new-index";
++
++const PANEL = "app/(admin)/maki-admin/villas/siralama/_components/VillaSortPanel.tsx";
++const src = readFileSync(join(process.cwd(), PANEL), "utf-8");
++
++describe("fastNewIndex ≡ defaultNewIndexGetter", () => {
++  it("küçük listelerde TÜM (id, activeIndex, overIndex) kombinasyonları", () => {
++    for (let n = 1; n <= 7; n++) {
++      const items: UniqueIdentifier[] = Array.from({ length: n }, (_, i) => `v${i}`);
++      for (let a = 0; a < n; a++) {
++        for (let o = 0; o < n; o++) {
++          for (const id of [...items, "yok"]) {
++            const args = { id, items, activeIndex: a, overIndex: o };
++            expect(fastNewIndex(args)).toBe(defaultNewIndexGetter(args));
++          }
++        }
++      }
++    }
++  });
++
++  it("1500 elemanlı listede rastgele 5000 durum (sayısal id dahil)", () => {
++    const items: UniqueIdentifier[] = Array.from({ length: 1500 }, (_, i) =>
++      i % 3 === 0 ? i : `villa-${i}`
++    );
++    let seed = 42;
++    const rnd = (m: number) => {
++      seed = (seed * 1103515245 + 12345) % 2147483648;
++      return seed % m;
++    };
++    for (let k = 0; k < 5000; k++) {
++      const args = {
++        id: items[rnd(1500)],
++        items,
++        activeIndex: rnd(1500),
++        overIndex: rnd(1500),
++      };
++      expect(fastNewIndex(args)).toBe(defaultNewIndexGetter(args));
++    }
++  });
++
++  it("items dizisi değişince (yeni kimlik) eski önbellek kullanılmaz", () => {
++    const a: UniqueIdentifier[] = ["x", "y", "z"];
++    const b: UniqueIdentifier[] = ["z", "y", "x"];
++    expect(fastNewIndex({ id: "x", items: a, activeIndex: 1, overIndex: 1 })).toBe(0);
++    expect(fastNewIndex({ id: "x", items: b, activeIndex: 1, overIndex: 1 })).toBe(2);
++  });
++});
++
++describe("hız ayarları — yalnız bu panel, dnd-kit'in kendi seçenekleri", () => {
++  it("auto-scroll dnd-kit `autoScroll` prop'u ile (özel scroll loop yok)", () => {
++    expect(src).toMatch(/const AUTO_SCROLL: AutoScrollOptions = \{ acceleration: \d+ \}/);
++    expect(src).toContain("autoScroll={AUTO_SCROLL}");
++    expect(src).not.toMatch(/requestAnimationFrame|setInterval|scrollBy\(/);
++  });
++
++  it("smooth scroll yalnız sürükleme süresince kapatılır ve geri yüklenir", () => {
++    expect(src).toContain('root.style.scrollBehavior = "auto"');
++    expect(src).toContain("root.style.scrollBehavior = prevInline");
++    expect(src).toContain("onDragCancel={handleDragCancel}");
++    /* bırakma + iptal + unmount yolları geri yükler */
++    expect(src.match(/restoreScrollBehavior\(\)/g)?.length).toBeGreaterThanOrEqual(3);
++    expect(src).toContain("useEffect(() => restoreScrollBehavior, [restoreScrollBehavior])");
++  });
++
++  it("DragOverlay + O(1) getNewIndex", () => {
++    expect(src).toContain("<DragOverlay dropAnimation={null}>");
++    expect(src).toContain("getNewIndex: fastNewIndex");
++  });
++
++  it("kaydetme akışı DEĞİŞMEDİ", () => {
++    expect(src).toContain("arrayMove(items, oldIndex, newIndex)");
++    expect(src).toContain('"/api/admin/villas/sort-orders"');
++    expect(src).toMatch(/sort_order:\s*idx/);
++    /* SortableContext TÜM listeyi alır (pencereleme yalnız dnd kaydı) */
++    expect(src).toContain("items={sortableIds}");
++    expect(src).toContain("const sortableIds = useMemo(() => items.map((v) => v.id), [items]);");
++  });
++
++  it("sürüklenen kart pencere dışına çıksa da dnd-kit'e kayıtlı kalır", () => {
++    expect(src).toContain("forceSortable={villa.id === activeId}");
++    expect(src).toContain("near || forceSortable ?");
++  });
++});
+diff --git a/tests/unit/villa-sort-order-panel.test.ts b/tests/unit/villa-sort-order-panel.test.ts
+index 7c2dd2f..f826327 100644
+--- a/tests/unit/villa-sort-order-panel.test.ts
++++ b/tests/unit/villa-sort-order-panel.test.ts
+@@ -93,7 +93,9 @@ describe("B) API sözleşmesi — kaynak kilidi", () => {
+     expect(src).toContain("closestCenter");
+     expect(src).toContain("verticalListSortingStrategy");
+     expect(src).toContain("arrayMove(items, oldIndex, newIndex)");
+-    expect(src).toContain("useSortable({ id: villa.id })");
++    /* id aynı; yalnız performans seçenekleri eklendi (transition +
++       O(1) getNewIndex) — bkz. villa-sort-drag-speed.test.ts. */
++    expect(src).toMatch(/useSortable\(\{\s*id: villa\.id,/);
+   });
+ 
+   it("fail-revert + cache invalidation + refresh duruyor", () => {

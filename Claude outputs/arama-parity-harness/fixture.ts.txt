@@ -1,0 +1,124 @@
+/* Deterministik /arama parity fixture'ı — gerçek DB verisi DEĞİLDİR. */
+function rng(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const pad = (n: number, w: number) => String(n).padStart(w, "0");
+export const uid = (prefix: string, i: number) =>
+  `${prefix}${pad(i, 8 - prefix.length)}-0000-4000-8000-${pad(i, 12)}`;
+
+export const LOC = {
+  kalkan: uid("a1", 1),
+  islamlar: uid("a1", 2),
+  kas: uid("a1", 3),
+  fethiye: uid("a1", 4),
+};
+export const TYPE = { havuzlu: uid("b2", 1), balayi: uid("b2", 2), muhafazakar: uid("b2", 3) };
+export const FEAT = { F1: uid("c3", 1), F2: uid("c3", 2), F3: uid("c3", 3) };
+
+export const LOCATIONS = [
+  { id: LOC.kalkan, name: "Kalkan", slug: "kalkan", filter_group_name: "Kalkan", show_in_filter: true },
+  { id: LOC.islamlar, name: "İslamlar", slug: "islamlar", filter_group_name: "Kalkan", show_in_filter: false },
+  { id: LOC.kas, name: "Kaş", slug: "kas", filter_group_name: null, show_in_filter: true },
+  { id: LOC.fethiye, name: "Fethiye", slug: "fethiye", filter_group_name: "", show_in_filter: true },
+];
+export const TYPES = [
+  { id: TYPE.havuzlu, name: "Havuzlu", slug: "havuzlu" },
+  { id: TYPE.balayi, name: "Balayı", slug: "balayi" },
+  { id: TYPE.muhafazakar, name: "Muhafazakar", slug: "muhafazakar" },
+];
+export const FEATURES = [
+  { id: FEAT.F1, name: "Özel Havuz" },
+  { id: FEAT.F2, name: "Jakuzi" },
+  { id: FEAT.F3, name: "Sauna" },
+];
+export const RATE_ROWS = [
+  { code: "USD", rate: "32.5", updated_at: "2027-06-01T06:00:00Z" },
+  { code: "EUR", rate: 35.1, updated_at: "2027-06-01T06:00:00Z" },
+  { code: "GBP", rate: 41.2, updated_at: "2027-06-01T06:00:00Z" },
+];
+
+export function buildFixture(n: number, seed = 42) {
+  const r = rng(seed);
+  const villas: any[] = [];
+  const images: any[] = [];
+  const prices: any[] = [];
+  const discounts: any[] = [];
+  const typeRels: any[] = [];
+  const featureRels: any[] = [];
+  const reviews: any[] = [];
+  const reservations: any[] = [];
+  const manual: any[] = [];
+  const external: any[] = [];
+  const translations: any[] = [];
+  const locs = [LOC.kalkan, LOC.islamlar, LOC.kas, LOC.fethiye];
+  for (let i = 1; i <= n; i++) {
+    const id = uid("d4", i);
+    const cur = ["TRY", "EUR", "USD"][i % 3];
+    villas.push({
+      id,
+      slug: `villa-${i}`,
+      title: `Villa ${i}`,
+      description: "x".repeat(200),
+      badge: i % 4 === 0 ? "Yeni" : null,
+      bedrooms: 1 + (i % 6),
+      bathrooms: 1 + (i % 4),
+      guests: 2 + ((i * 7) % 11),
+      cleaning_fee: i % 3 === 0 ? 0 : 500 + (i % 5) * 250,
+      cleaning_currency: i % 2 === 0 ? "TRY" : cur,
+      cleaning_limit: [0, 7, 3, 0][i % 4],
+      currency: i % 5 === 0 ? null : cur,
+      is_active: i % 31 !== 0,
+      deleted_at: i % 37 === 0 ? "2027-01-01T00:00:00Z" : null,
+      location_id: locs[i % 4],
+      sort_order: Math.floor(i / 3) % 40,
+      created_at: `2026-0${1 + (i % 9)}-1${i % 10}T00:00:00Z`,
+    });
+    const nImg = 1 + (i % 3);
+    for (let k = 0; k < nImg; k++) {
+      images.push({ villa_id: id, image_url: `/img/${i}-${k}.webp`, is_cover: k === nImg - 1 && i % 2 === 0, sort_order: (k * 3) % 5 });
+    }
+    if (i % 29 !== 0) {
+      const base = cur === "TRY" ? 3000 + Math.round(r() * 200) * 100 : 100 + Math.round(r() * 60) * 10;
+      if (i % 4 === 0) prices.push({ villa_id: id, price: Math.round(base * 0.5), currency: cur, start_date: "2025-06-01", end_date: "2025-08-31" });
+      prices.push({ villa_id: id, price: base, currency: cur, start_date: "2027-01-01", end_date: "2027-05-31" });
+      if (i % 16 === 0) prices.push({ villa_id: id, price: Math.round(base * 1.7), currency: cur, start_date: "2027-06-05", end_date: "2027-06-20" });
+      if (i % 9 === 0) prices.push({ villa_id: id, price: Math.round(base * 1.5), currency: cur, start_date: "2027-06-01", end_date: "2027-06-11" });
+      else prices.push({ villa_id: id, price: i % 13 === 0 ? 0 : Math.round(base * 1.5), currency: cur, start_date: "2027-06-01", end_date: "2027-06-30" });
+      if (i % 8 === 0 && i % 16 !== 0) prices.push({ villa_id: id, price: Math.round(base * 1.2), currency: cur, start_date: "2027-06-05", end_date: "2027-06-20" });
+      prices.push({ villa_id: id, price: Math.round(base * 1.3), currency: cur, start_date: "2027-07-01", end_date: "2027-12-31" });
+    }
+    if (i % 6 === 0) discounts.push({ villa_id: id, start_date: "2027-06-11", end_date: "2027-06-13", discount_type: "percent", discount_value: 15, currency: null });
+    if (i % 10 === 0) discounts.push({ villa_id: id, start_date: "2027-06-09", end_date: "2027-06-12", discount_type: "fixed", discount_value: i % 20 === 0 ? 150 : 4000, currency: i % 20 === 0 ? "EUR" : "TRY" });
+    if (i % 14 === 0) discounts.push({ villa_id: id, start_date: "2027-06-14", end_date: "2027-06-14", discount_type: "bogus", discount_value: 99, currency: null });
+    if (i % 2 === 0) typeRels.push({ villa_id: id, type_id: TYPE.havuzlu });
+    if (i % 3 === 0) typeRels.push({ villa_id: id, type_id: TYPE.balayi });
+    if (i % 10 === 0) typeRels.push({ villa_id: id, type_id: TYPE.havuzlu });
+    if (i % 7 === 0) typeRels.push({ villa_id: id, type_id: TYPE.muhafazakar });
+    if (i % 2 === 1 || i % 5 === 0) featureRels.push({ villa_id: id, feature_id: FEAT.F1 });
+    if (i % 3 === 1) featureRels.push({ villa_id: id, feature_id: FEAT.F2 });
+    if (i % 4 === 0) featureRels.push({ villa_id: id, feature_id: FEAT.F3 });
+    if (i % 9 === 1) featureRels.push({ villa_id: id, feature_id: FEAT.F2 });
+    if (i % 3 === 0) { reviews.push({ villa_id: id, rating: 4 }); reviews.push({ villa_id: id, rating: 5 }); }
+    if (i % 7 === 0) reviews.push({ villa_id: id, rating: 3.6 });
+    if (i % 5 === 0) reservations.push({ villa_id: id, status: "confirmed", start_date: "2027-06-12", end_date: "2027-06-14" });
+    if (i % 7 === 0) reservations.push({ villa_id: id, status: "pending", start_date: "2027-06-08", end_date: "2027-06-10" });
+    if (i % 11 === 0) reservations.push({ villa_id: id, status: "cancelled", start_date: "2027-06-10", end_date: "2027-06-15" });
+    if (i % 23 === 0) reservations.push({ villa_id: id, status: "rejected", start_date: "2027-06-11", end_date: "2027-06-13" });
+    if (i % 13 === 0) manual.push({ villa_id: id, start_date: "2027-06-14", end_date: "2027-06-20" });
+    if (i % 17 === 0) external.push({ villa_id: id, is_active: true, start_date: "2027-06-01", end_date: "2027-06-11" });
+    if (i % 19 === 0) external.push({ villa_id: id, is_active: false, start_date: "2027-06-10", end_date: "2027-06-15" });
+    if (i % 4 === 0) translations.push({ entity: "villa", villa_id: id, badge: i % 8 === 0 ? "New" : "", locale: "en" });
+  }
+  translations.push({ entity: "villa_type", type_id: TYPE.havuzlu, name: "With Pool", locale: "en" });
+  translations.push({ entity: "villa_type", type_id: TYPE.balayi, name: "Honeymoon", locale: "en" });
+  translations.push({ entity: "villa_type", type_id: TYPE.havuzlu, name: "Mit Pool", locale: "de" });
+  translations.push({ entity: "villa_feature", feature_id: FEAT.F1, name: "Private Pool", locale: "en" });
+  return { villas, images, prices, discounts, typeRels, featureRels, reviews, reservations, manual, external, translations };
+}

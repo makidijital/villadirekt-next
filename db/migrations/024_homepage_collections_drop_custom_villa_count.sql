@@ -1,0 +1,41 @@
+-- ============================================================================
+-- Migration 024 — homepage_collections.custom_villa_count cleanup (Faz 43)
+-- ============================================================================
+-- AMAÇ:
+--   `custom_villa_count` kolonu projedeki hiçbir kod yolunda
+--   referans edilmiyor — exhaustive codebase audit (FAZ 43):
+--     - types/database.ts                  : 0 referans
+--     - lib/cache.helpers.ts               : 0 referans
+--     - services/homepage-collection.svc   : 0 referans
+--     - admin/homepage-collection page     : 0 referans
+--     - components/villa/VillaList         : 0 referans
+--     - migrations/012_homepage_collections: schema'da TANIMLI DEĞİL
+--   Phantom kolon: muhtemelen veritabanı yönetim paneli üzerinden manuel
+--   eklenmiş, kod tarafına hiç sızmamış.
+--
+--   `custom_title` (active, display_title fallback) ve
+--   `custom_cover_image` (admin yazıyor, render half-wired) ETKİLENMEZ
+--   — bu migration yalnız `custom_villa_count` kolonunu hedefler.
+--
+-- TASARIM:
+--   • `DROP COLUMN IF EXISTS` → idempotent.
+--     - DB'de varsa kolon silinir.
+--     - DB'de yoksa (zaten var olmayabilir) hata atmaz.
+--   • Mevcut row'lar etkilenmez (kolon değeri zaten hiç okunmuyor).
+--   • Index / policy / trigger bu kolona bağlı DEĞİL.
+--   • homepage_collections unique villa_id index + active_sort index
+--     dokunulmaz (migration 012'de tanımlı; bağımsız kolonlar).
+--
+-- BACKWARD-COMPATIBILITY:
+--   • TypeScript tarafı zaten bu kolonu bilmiyor → type değişikliği
+--     gerekmez.
+--   • Hiçbir consumer kolonu okumadığı için runtime breaking change
+--     YOK.
+--
+-- ROLLBACK (gerekirse, ayrı transaction'da):
+--   ALTER TABLE public.homepage_collections
+--     ADD COLUMN IF NOT EXISTS custom_villa_count INT;
+-- ============================================================================
+
+ALTER TABLE public.homepage_collections
+  DROP COLUMN IF EXISTS custom_villa_count;

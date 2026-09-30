@@ -1,0 +1,1813 @@
+@import "tailwindcss";
+
+/* ================================================================
+   PREMIUM DESIGN SYSTEM — VILLA KİRALAMA
+   Palette: Warm sand · deep stone · champagne gold
+   Typography: Fraunces (display) + Inter (body)
+   ================================================================ */
+
+@theme {
+  /* 🎨 Brand */
+  /* 🌊 REBRAND — cool coastal navy/slate neutrals (warm stone → navy).
+     Lightness ramp paritesi korundu → metin kontrastı ≥ önceki. */
+  --color-ivory: #f6f8fb;
+  --color-sand-50: #f6f8fb;
+  --color-sand-100: #eaf0f6;
+  --color-sand-200: #d8e2ec;
+  --color-sand-300: #b7c6d6;
+  --color-sand-400: #8fa2b8;
+  --color-stone-50: #f5f7fa;
+  --color-stone-100: #e9eef4;
+  --color-stone-200: #d2dbe5;
+  --color-stone-300: #97a6b8;
+  --color-stone-400: #5f7187;
+  --color-stone-500: #455468;
+  --color-stone-600: #2f3e54;
+  --color-stone-700: #1d2e4d;
+  --color-stone-800: #122441;
+  --color-stone-900: #0b1f3a;
+  /* ════════════════════════════════════════════════════════════
+     🌊 FAZ 18 — MEDITERRANEAN RESORT PALETTE
+     ════════════════════════════════════════════════════════════
+     Önceki champagne (warm gold) palette KALICI olarak Mediterranean
+     aqua/cyan tonlarına geçirildi. Token İSİMLERİ KORUNDU →
+     mevcut JSX class'ları (`text-[var(--color-champagne-500)]`,
+     `border-champagne-300`, vs.) otomatik resort palette'i alır.
+     SIFIR JSX dokunuşu.
+
+     Primary accent: Mediterranean cyan (pool/sea)
+     Secondary accent: Sunset coral (gün batımı)
+     Tertiary warm: Peach (tropical)
+
+     Stone palette (text) ve ivory (bg) KORUNDU — Mediterranean
+     vilaların sun-baked taş duvarına karşı cyan deniz = klasik
+     resort kombinasyonu.
+
+     ⚠️ ADMIN SHELL scope override'ları aktif kalıyor → admin
+     paneli kendi navy/cyan tasarım dilini sürdürür; etkilenmez.
+     ════════════════════════════════════════════════════════════ */
+
+  /* 🌊 AQUA / Mediterranean cyan — primary accent (legacy "champagne") */
+  --color-champagne-50: #e8f7fd;   /* very light turquoise, glass surface */
+  --color-champagne-100: #c4ecfb;  /* aqua mist */
+  --color-champagne-200: #90dcf8;  /* lagoon highlight */
+  --color-champagne-300: #54c8f3;  /* shallow water */
+  --color-champagne-400: #1fb2ec;  /* pool turquoise */
+  --color-champagne-500: #02aae5;  /* Mediterranean turquoise (secondary) */
+  --color-champagne-600: #0287bd;  /* deep sea */
+  --color-champagne-700: #03729c;  /* lagoon depth (eyebrow, AA on light) */
+  --color-champagne-800: #045d7e;  /* deep teal */
+
+  /* 🩵 TURQUOISE — secondary accent (legacy "bronze" isimleri korundu) */
+  --color-bronze-500: #02aae5;     /* brand turquoise */
+  --color-bronze-600: #0287bd;     /* deep turquoise */
+  --color-bronze-700: #03729c;     /* deepest turquoise */
+
+  /* ════════════════════════════════════════════════════════════
+     🛡️ FAZ 38 — BRAND CORAL (#FF653F)
+     ════════════════════════════════════════════════════════════
+     Yeni primary brand accent — luxury Mediterranean travel
+     experience için Hero ve seçili call-to-action surface'lerinde
+     kullanılır. Mevcut champagne/cyan/coral token'ları DOKUNULMADI;
+     bu kademe yalnız ek katman. Eski JSX class'ları davranışı korunur.
+     ════════════════════════════════════════════════════════════ */
+  /* 🩵 REBRAND — brand TURQUOISE accent = logo turkuazı #02AAE5.
+     Token isimleri korundu → JSX `var(--brand-coral)` otomatik turkuaz alır.
+     Tüm aqua/champagne/coral/bronze rampaları #02AAE5'ten türetilmiş tek
+     ramp'e taşındı. Solid CTA white-text kontrastı için .btn-primary tabanı
+     türetilmiş 700 (#03729c) kullanır — bkz. .btn-primary. */
+  --brand-coral:      #02aae5;     /* primary brand (logo turquoise) */
+  --brand-coral-soft: #54c8f3;     /* hover/secondary (light turquoise) */
+  --brand-coral-deep: #03729c;     /* active/press (deep turquoise) */
+  --brand-coral-tint: #e8f7fd;     /* surface bg (turquoise glass) */
+  --brand-coral-ink:  #045d7e;     /* text on turquoise surface (deep teal) */
+
+  /* 🩵 Tertiary turquoise (legacy "terracotta" isimleri korundu) */
+  --color-terracotta-400: #54c8f3; /* light turquoise glow */
+  --color-terracotta-500: #1fb2ec; /* pool turquoise */
+
+  /* Semantic aliases — yeni kod için (mevcut champagne-* legacy isimler
+     korunmuştur; new dev bu semantic aliases'ı kullanabilir). */
+  --color-aqua-50: #e8f7fd;
+  --color-aqua-100: #c4ecfb;
+  --color-aqua-200: #90dcf8;
+  --color-aqua-300: #54c8f3;
+  --color-aqua-400: #1fb2ec;
+  --color-aqua-500: #02aae5;
+  --color-aqua-600: #0287bd;
+  --color-aqua-700: #03729c;
+  --color-aqua-800: #045d7e;
+  --color-coral-400: #1fb2ec;
+  --color-coral-500: #02aae5;
+  --color-coral-600: #0287bd;
+  --color-peach-300: #c4ecfb;
+  --color-peach-400: #90dcf8;
+  --color-peach-500: #54c8f3;
+
+  /* 🔠 Fonts */
+  /* 🛡️ PUBLIC TYPOGRAPHY — body/UI: Outfit. Başlıklar (h1-h6 + .font-display):
+     Outfit + next/font'un otomatik ürettiği metrik-eşleşen "Outfit Fallback"
+     @font-face'i, spesifikasyona göre (`'Outfit', 'Outfit Fallback', sans-serif`).
+     Admin `.admin-shell` içinde --font-display Fraunces'e, --font-sans
+     Inter'e PINLENİR (aşağıda) → admin tipografisi birebir korunur. */
+  --font-display: var(--font-outfit), "Outfit", "Outfit Fallback", sans-serif;
+  --font-sans: var(--font-outfit), "Outfit", system-ui, -apple-system,
+    sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* 🌫 Shadows (premium soft layered) */
+  --shadow-card: 0 1px 2px rgb(27 26 23 / 0.04), 0 8px 24px -12px rgb(27 26 23 / 0.08);
+  --shadow-card-hover: 0 4px 6px rgb(27 26 23 / 0.04), 0 24px 48px -16px rgb(27 26 23 / 0.18);
+  --shadow-glass: 0 8px 32px -8px rgb(27 26 23 / 0.12);
+  --shadow-soft: 0 1px 3px rgb(27 26 23 / 0.04), 0 4px 12px -4px rgb(27 26 23 / 0.06);
+
+  /* 🌅 FAZ 18 — RESORT SHADOWS (sunset coral + Mediterranean cyan) */
+  /* Coral-tinted warm shadow — kart altlarında sunset glow hissi */
+  --shadow-warm: 0 1px 2px rgb(27 26 23 / 0.04),
+    0 10px 28px -12px rgb(2 170 229 / 0.22);
+  --shadow-warm-hover: 0 2px 4px rgb(27 26 23 / 0.06),
+    0 22px 48px -14px rgb(2 170 229 / 0.32);
+  --shadow-elevated: 0 4px 8px rgb(27 26 23 / 0.06),
+    0 32px 64px -20px rgb(11 31 58 / 0.22);
+  /* Turquoise glow — primary accent ambient (sea highlight) */
+  --shadow-glow-champagne: 0 0 0 1px rgb(84 200 243 / 0.4),
+    0 8px 28px -6px rgb(2 170 229 / 0.42);
+  /* Turquoise glow — accent CTA/badge (rebrand: amber → turquoise) */
+  --shadow-glow-coral: 0 0 0 1px rgb(84 200 243 / 0.4),
+    0 8px 28px -6px rgb(2 170 229 / 0.42);
+
+  /* 🌅 CINEMATIC HERO — tropical sunset overlay (coral → cyan):
+     Üst kısımda warm sunset glow, alt kısımda deep sea darkness.
+     Travel-poster Mediterranean atmosphere. */
+  --gradient-hero-warm: linear-gradient(
+    180deg,
+    rgb(2 170 229 / 0.10) 0%,
+    rgb(2 170 229 / 0.18) 35%,
+    rgb(11 95 91 / 0.5) 75%,
+    rgb(11 31 58 / 0.85) 100%
+  );
+}
+
+/* ----------------------------------------------------------------
+   ROOT
+   ---------------------------------------------------------------- */
+:root {
+  --background: #f6f8fb;
+  --foreground: #16263f;
+  --muted: #455468;
+  --border: #e3e9f0;
+  /* 🌊 REBRAND — Focus ring turkuaz (secondary accent). Tailwind
+     `ring-*` utility'leri kendi `--tw-ring-color`'ını taşır; bu token
+     CSS docs/legacy reference + form focus ile tutarlı. */
+  --ring: #02aae5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #f6f8fb;
+    --foreground: #16263f;
+  }
+}
+
+* {
+  border-color: var(--border);
+}
+
+/* 🎨 BAŞLIK RENGİ — hero + section h1/h2 (#082060).
+   Yalnız `text-[var(--color-stone-900)]` class'ını kullanan h1/h2'leri
+   hedefler (specificity h1.class = 0,1,1 > Tailwind .class = 0,1,0 →
+   override). Beyaz-on-koyu başlıklar (`text-white`, FAQ navy panel vb.)
+   bu class'ı kullanmadığı için ETKİLENMEZ. bg-stone-900 / body metni
+   ve diğer non-heading stone-900 kullanımları da değişmez. */
+h1.text-\[var\(--color-stone-900\)\],
+h2.text-\[var\(--color-stone-900\)\] {
+  color: #082060;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  /* 🌊 FAZ 18 — MEDITERRANEAN AMBIENT GRADIENT
+     Solid ivory üstüne 2-katmanlı sunset+sea atmosfer:
+       • Top-right: cyan glow (Mediterranean daylight, pool reflection)
+       • Bottom-left: coral glow (sunset golden hour)
+     Yumuşak (max 0.10 opacity) — "yazlık tatil" hissi yaratır, loud
+     değil. Stone text contrast korunur; AA. --background ivory bg
+     altta neutral kalır.
+
+     background-attachment: fixed → desktop'ta parallax luxury hissi;
+     iOS Safari otomatik scroll fallback (görsel etki minimal). */
+  background:
+    radial-gradient(
+      ellipse 90% 65% at 100% 0%,
+      rgb(2 170 229 / 0.10) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 80% 55% at 0% 100%,
+      rgb(2 170 229 / 0.08) 0%,
+      transparent 55%
+    ),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.01em;
+}
+
+/* ----------------------------------------------------------------
+   TYPOGRAPHY
+   ---------------------------------------------------------------- */
+.font-display {
+  font-family: var(--font-display);
+  /* 🛡️ Inter Tight premium heading: net weight hiyerarşisi (body 400
+     Inter vs display 600 Inter Tight) + sıkı tracking. Explicit
+     Tailwind weight (font-light/medium/semibold) bunu override eder.
+     ss01/ss02 (Fraunces serif alternatları) kaldırıldı — Inter Tight
+     için gereksiz. Admin `.admin-shell .font-display` kendi weight'ini
+     ayrı tanımlar → etkilenmez. */
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+/* ================================================================
+   🛡️ PUBLIC BAŞLIK FONTU — h1-h6 (merkezi, component'lere dokunmadan)
+   ================================================================
+   `.public-shell` altındaki (app/(public)/layout.tsx kök wrapper'ı —
+   yani TÜM public sayfalar: anasayfa, villa listeleme/arama, villa
+   detay, teklif al, favoriler, public header/topbar/footer) HER h1-h6
+   otomatik olarak --font-display (Outfit + Outfit Fallback) kullanır.
+   Böylece `.font-display` class'ı olmayan başlıklar (ör. küçük eyebrow
+   h2/h3 etiketleri) da kapsanır — tek tek component'e font-family
+   YAZILMADI. Yalnızca `font-family`; font-size/weight/line-height/
+   letter-spacing bu kuraldan ETKİLENMEZ (component'lerin kendi
+   class'ları aynen geçerli kalır).
+   `.admin-shell` bu selector'ların dışında (admin ayrı DOM subtree'de,
+   `.public-shell` class'ı hiç taşımaz) → admin başlıkları (Inter/
+   Fraunces) BİREBİR korunur; bu kural admin'e hiç uygulanmaz. */
+.public-shell h1,
+.public-shell h2,
+.public-shell h3,
+.public-shell h4,
+.public-shell h5,
+.public-shell h6 {
+  font-family: var(--font-display);
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  /* 🌊 FAZ 18 — Mediterranean deep teal eyebrow (was champagne brown).
+     Resort kimliği taşır; tüm public section başlıklarında "Akdeniz"
+     hissi. Admin shell override eder (cool slate). */
+  color: var(--color-champagne-700);
+  text-shadow: 0 1px 0 rgb(84 200 243 / 0.06);
+}
+
+/* ----------------------------------------------------------------
+   FORM CONTROLS — premium tokens
+   ---------------------------------------------------------------- */
+input,
+textarea,
+select {
+  background: #ffffff !important;
+  color: #1b1a17 !important;
+  opacity: 1 !important;
+  border: 1px solid #ece8df;
+  border-radius: 12px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #a89e8a;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-champagne-500);
+  outline: none;
+  /* 🌊 REBRAND — turkuaz focus ring */
+  box-shadow: 0 0 0 4px rgb(2 170 229 / 0.16);
+}
+
+.input {
+  border: 1px solid #ece8df;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  background: white;
+  color: #1b1a17;
+  width: 100%;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.input:focus {
+  border-color: var(--color-champagne-500);
+  /* 🌊 REBRAND — turkuaz focus ring */
+  box-shadow: 0 0 0 4px rgb(2 170 229 / 0.16);
+}
+
+/* Premium select chevron */
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a554c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px;
+  padding-right: 36px;
+}
+
+/* ================================================================
+   🛡️ FAZ 39C — UNIFIED LUXURY BUTTON SYSTEM
+   ================================================================
+   Tek dil. Tek palette. Hiç gradient karışımı yok. Admin scope
+   `.admin-shell .btn-primary` (line ~951) bu base'i kendi
+   slate/navy diline override eder; bu blok yalnız PUBLIC surface'leri
+   etkiler.
+
+   🩵 TURKUAZ REBRAND: brand accent artık logo turkuazı (#02AAE5).
+   .btn-primary tek **turkuaz solid** + multi-stop ambient shadow.
+   Beyaz metin kontrastı için CTA tabanı 700 (#03729c ≈5.4:1) →
+   hover 800 (#045d7e). Accent border/text/icon ise tam #02AAE5.
+
+   - `.btn-primary` → coral solid primary, white text, hover lift
+   - `.btn-primary.btn-glow` → premium halo for hero/booking CTAs
+   - `.btn-ghost` → stone-700 text on transparent, hover coral-tint
+   - `.btn-dark` → stone-900 base for niche dark CTAs (preserved
+     because some admin/edge surfaces rely on it; payload identical)
+   ================================================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px; /* luxury pill */
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.005em;
+  /* 🩵 Rebrand: turkuaz CTA. Brand turkuazı #02AAE5 beyaz metin için
+     fazla parlak (≈2.7:1); CTA tabanı türetilmiş 700 (#03729c) →
+     beyaz metin ≈ 5.4:1 (AA). Hover 800 (#045d7e ≈ 7.3:1). */
+  background: #03729c;
+  color: #ffffff;
+  border: 1px solid transparent;
+  box-shadow:
+    0 1px 2px rgb(27 26 23 / 0.08),
+    0 14px 28px -10px rgba(2, 170, 229, 0.45),
+    0 4px 12px -6px rgba(2, 170, 229, 0.30),
+    inset 0 1px 0 rgb(255 255 255 / 0.18);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease, background-color 220ms ease;
+}
+
+.btn-primary:hover {
+  background: #045d7e;
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgb(27 26 23 / 0.10),
+    0 22px 40px -12px rgba(2, 170, 229, 0.55),
+    0 8px 20px -8px rgba(2, 170, 229, 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 2px rgb(27 26 23 / 0.10),
+    0 6px 14px -6px rgba(2, 170, 229, 0.45);
+}
+
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(2, 170, 229, 0.32),
+    0 14px 28px -10px rgba(2, 170, 229, 0.45),
+    0 4px 12px -6px rgba(2, 170, 229, 0.30);
+}
+
+/* Glow modifier — hero / booking sidebar / featured CTA için
+   ekstra ambient halo. Coral-only; gradient karışımı yok. */
+.btn-primary.btn-glow {
+  box-shadow:
+    0 1px 2px rgb(27 26 23 / 0.08),
+    0 20px 40px -10px rgba(2, 170, 229, 0.55),
+    0 10px 24px -8px rgba(2, 170, 229, 0.40),
+    0 0 0 1px rgba(2, 170, 229, 0.18),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+
+.btn-primary.btn-glow:hover {
+  box-shadow:
+    0 2px 4px rgb(27 26 23 / 0.10),
+    0 28px 52px -10px rgba(2, 170, 229, 0.65),
+    0 14px 28px -8px rgba(2, 170, 229, 0.50),
+    0 0 0 1px rgba(2, 170, 229, 0.25),
+    inset 0 1px 0 rgb(255 255 255 / 0.28);
+}
+
+/* Ghost — luxury secondary action. Stone text + hover coral tint. */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.005em;
+  background: transparent;
+  color: #2c2925; /* stone-700 */
+  border: 1px solid #d6cebd; /* stone-200 */
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.btn-ghost:hover {
+  background: var(--brand-coral-tint);
+  border-color: var(--brand-coral);
+  color: #1b1a17; /* stone-900 */
+  transform: translateY(-1px);
+}
+
+.btn-ghost:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 170, 229, 0.22);
+}
+
+/* Dark — niche stone CTA; preserved for legacy public surfaces.
+   Coral palette ile entegre değil; bilinçli neutral fallback. */
+.btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  background: #1b1a17;
+  color: #faf7f2;
+  border: 1px solid #1b1a17;
+  transition: background-color 220ms ease;
+}
+
+.btn-dark:hover {
+  background: #2c2925;
+}
+
+/* ----------------------------------------------------------------
+   CARDS
+   ---------------------------------------------------------------- */
+.card-premium {
+  /* 🛡️ FAZ 17 — subtle warm gradient bg (saf beyaz → sand-50);
+     düz beyaz tekdüzeliğini kırar, premium depth ekler. */
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f2 100%);
+  border: 1px solid #ece8df;
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 280ms ease, transform 280ms ease,
+    border-color 280ms ease;
+}
+
+.card-premium:hover {
+  /* Hover'da küçük translateY → tıklanabilirlik enerjisi.
+     Warm shadow varyantı ile champagne ambient glow. */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-warm-hover);
+  border-color: var(--color-champagne-300);
+}
+
+/* 🌅 FAZ 18 — `.card-warm` variant: tropical sunset card.
+   Hospitality-style featured kartlar için (peach → aqua tint).
+   "Spotlight pick" hissi. Opsiyonel adoption — mevcut card-premium
+   yerlerine dokunulmaz. */
+.card-warm {
+  background: linear-gradient(
+    180deg,
+    #e8f7fd 0%,
+    #ffffff 100%
+  );
+  border: 1px solid rgb(84 200 243 / 0.45);
+  border-radius: 20px;
+  box-shadow: var(--shadow-warm);
+  transition: box-shadow 280ms ease, transform 280ms ease,
+    border-color 280ms ease;
+}
+
+.card-warm:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-warm-hover);
+  border-color: var(--color-coral-400, #1fb2ec);
+}
+
+/* 🌊 FAZ 18 — `.card-aqua` variant: cool Mediterranean spotlight.
+   Pool/sea-themed kartlar; "lagoon view" hissi. */
+.card-aqua {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e8f7fd 100%
+  );
+  border: 1px solid var(--color-aqua-200, #90dcf8);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgb(27 26 23 / 0.04),
+    0 10px 28px -12px rgb(2 170 229 / 0.18);
+  transition: box-shadow 280ms ease, transform 280ms ease,
+    border-color 280ms ease;
+}
+
+.card-aqua:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgb(27 26 23 / 0.06),
+    0 22px 48px -14px rgb(2 170 229 / 0.32);
+  border-color: var(--color-aqua-400, #1fb2ec);
+}
+
+/* 🛡️ FAZ 17 — `.warm-glow` utility: subtle champagne ambient
+   shadow. Card / badge / chip / image container'a eklenebilir. */
+.warm-glow {
+  box-shadow: var(--shadow-glow-champagne);
+}
+
+/* 🌊 FAZ 18 — `.section-divider-warm`: section'lar arası hairline
+   gradient divider. Coral → aqua → coral resort flow (gün batımı
+   ufuğu hissi). Sert blok yerine premium continuity. */
+.section-divider-warm {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-coral-400, #1fb2ec) 25%,
+    var(--color-aqua-400, #1fb2ec) 50%,
+    var(--color-coral-400, #1fb2ec) 75%,
+    transparent 100%
+  );
+  opacity: 0.35;
+}
+
+.glass {
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border: 1px solid rgb(255 255 255 / 0.5);
+}
+
+.glass-dark {
+  background: rgb(27 26 23 / 0.55);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+/* ----------------------------------------------------------------
+   SKELETONS / LOADING
+   ---------------------------------------------------------------- */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #ece8df;
+  border-radius: 12px;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.7),
+    transparent
+  );
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fade-in-up 420ms ease-out both;
+}
+
+/* ================================================================
+   🔥 MANUAL RESERVATION CALENDAR (.mr-calendar-premium) — fully custom
+   ================================================================
+   Sadece harici rezervasyon ekranındaki custom calendar grid'i
+   etkiler. react-day-picker BU EKRANDAN TAMAMEN KALDIRILDI.
+   Diğer DayPicker instance'ları (reservation create, detail,
+   public availability, booking sidebar) ETKİLENMEZ.
+
+   ⚠️ Reservation engine, getDayStyle çıktıları, modifier'lar,
+   blocked/pending half-day gradient'leri AYNEN korunur — bu CSS
+   yalnız hover micro-interaction ve dragging cursor görevi yapar.
+   Selection görseli (ring + glow + scale) cell inline style'ında.
+   ================================================================ */
+
+/* Cell hover — subtle scale; getDayStyle bg'sini ezmez (inner div
+   absolute katmanda render). */
+.mr-calendar-premium .mr-cell-hover {
+  transition: transform 0.16s ease;
+}
+.mr-calendar-premium .mr-cell-hover:hover {
+  transform: scale(1.06);
+}
+
+/* Drag sırasında hücre içeriklerinin metin seçimi engelle */
+.mr-calendar-premium {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Modal helpers — premium centered popup (Pricing Canvas vb.) */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fade-in 180ms ease-out both;
+}
+
+@keyframes scale-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.scale-fade-in {
+  animation: scale-fade-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ----------------------------------------------------------------
+   SCROLLBAR (premium)
+   ---------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  /* 🌊 REBRAND — soft turquoise-tinted scrollbar. */
+  background: #bfe3df;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #54c8f3;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* ----------------------------------------------------------------
+   REACT-DATEPICKER — PREMIUM RE-THEME
+   ---------------------------------------------------------------- */
+.react-datepicker {
+  font-family: var(--font-sans) !important;
+  border: 1px solid #ece8df !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card-hover) !important;
+  overflow: hidden;
+  background: #ffffff !important;
+}
+
+.react-datepicker__header {
+  background: #faf7f2 !important;
+  border-bottom: 1px solid #ece8df !important;
+  padding-top: 12px !important;
+}
+
+.react-datepicker__current-month {
+  font-family: var(--font-display) !important;
+  font-weight: 500 !important;
+  color: #1b1a17 !important;
+  font-size: 15px !important;
+  letter-spacing: -0.01em;
+}
+
+.react-datepicker__day-name {
+  color: #7a7163 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  /* 🔧 Kolon hizası — başlık hücresini gün hücresiyle (`__day`) BİREBİR
+     aynı ayak izine getir (em/11px daralmasını nötrler). Yalnız hizalama;
+     __day geometrisine ve availability renklerine dokunulmaz. */
+  width: 2.1rem !important;
+  line-height: 2.1rem !important;
+  margin: 0.15rem !important;
+}
+
+.react-datepicker__day {
+  color: #2c2925 !important;
+  border-radius: 9999px !important;
+  width: 2.1rem !important;
+  line-height: 2.1rem !important;
+  margin: 0.15rem !important;
+  transition: background 140ms ease;
+}
+
+.react-datepicker__day:hover {
+  /* 🌊 REBRAND — soft turquoise hover. */
+  background: #e8f7fd !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  /* 🌊 REBRAND — deep turquoise selection; beyaz yazı ~4.3:1 (AA,
+     eski #06b6d4 ~2.9'dan iyileşti). */
+  background: #03729c !important;
+  color: #ffffff !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background: #c4ecfb !important;
+  color: #03729c !important;
+}
+
+.react-datepicker__day--disabled {
+  color: #c9c2b1 !important;
+}
+
+.react-datepicker__navigation {
+  top: 14px !important;
+}
+
+/* 🔴 RED — booked */
+.react-datepicker__day.full-red {
+  background-color: #d04a4a !important;
+  color: white !important;
+  border-radius: 9999px !important;
+}
+
+.react-datepicker__day.half-left-red {
+  background: linear-gradient(to right, #d04a4a 50%, transparent 50%) !important;
+  border-radius: 9999px !important;
+  color: white !important;
+}
+
+.react-datepicker__day.half-right-red {
+  background: linear-gradient(to right, transparent 50%, #d04a4a 50%) !important;
+  border-radius: 9999px !important;
+  color: white !important;
+}
+
+.react-datepicker__day.both-half-red {
+  background: #d04a4a !important;
+  border-radius: 9999px !important;
+  color: white !important;
+}
+
+/* 🟡 YELLOW — pending */
+.react-datepicker__day.full-yellow {
+  background-color: #d8b888 !important;
+  color: #1b1a17 !important;
+  border-radius: 9999px !important;
+}
+
+.react-datepicker__day.half-left-yellow {
+  background: linear-gradient(to right, #d8b888 50%, transparent 50%) !important;
+  border-radius: 9999px !important;
+  color: #1b1a17 !important;
+}
+
+.react-datepicker__day.half-right-yellow {
+  background: linear-gradient(to right, transparent 50%, #d8b888 50%) !important;
+  border-radius: 9999px !important;
+  color: #1b1a17 !important;
+}
+
+.react-datepicker__day.both-half-yellow {
+  background: #d8b888 !important;
+  border-radius: 9999px !important;
+  color: #1b1a17 !important;
+}
+
+.react-datepicker__day.split-red-yellow {
+  background: linear-gradient(to right, #d04a4a 50%, #d8b888 50%) !important;
+  border-radius: 9999px !important;
+  color: white !important;
+}
+
+/* ----------------------------------------------------------------
+   UTILS
+   ---------------------------------------------------------------- */
+.section-narrow {
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .section-narrow {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.gradient-fade-bottom {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(0 0 0 / 0.55) 100%
+  );
+}
+
+.gradient-hero {
+  background: linear-gradient(
+    180deg,
+    rgb(27 26 23 / 0.15) 0%,
+    rgb(27 26 23 / 0.45) 60%,
+    rgb(27 26 23 / 0.75) 100%
+  );
+}
+
+/* 🌅 FAZ 18 — `.gradient-hero-warm`: tropical sunset cinematic overlay.
+   Coral (üst) → Mediterranean cyan (orta) → deep sea (alt). Travel
+   poster + boutique resort vibe. Hero.tsx mevcut overlay kullanımıyla
+   uyumlu (opsiyonel adoption). */
+.gradient-hero-warm {
+  background: var(--gradient-hero-warm);
+}
+
+/* 🌊 FAZ 18 — `.gradient-warm-overlay`: villa cover üstüne hafif
+   tropikal grading. Üstte coral kıvılcımı, altta deep sea fade. */
+.gradient-warm-overlay {
+  background: linear-gradient(
+    180deg,
+    rgb(2 170 229 / 0.06) 0%,
+    transparent 35%,
+    rgb(11 95 91 / 0.18) 100%
+  );
+}
+
+/* 🌊 FAZ 18 — `.gradient-aqua-overlay`: cool resort overlay
+   (pool/sea theme). Top fade'i light cyan, bottom sea darkness. */
+.gradient-aqua-overlay {
+  background: linear-gradient(
+    180deg,
+    rgb(210 243 240 / 0.18) 0%,
+    transparent 50%,
+    rgb(2 170 229 / 0.24) 100%
+  );
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 🌊 Selection — FAZ 18: Mediterranean aqua tint (was bronze).
+   Pool water highlight feeling; text seçimi resort kimliği taşır. */
+::selection {
+  background: rgb(2 170 229 / 0.28);
+  color: #045d7e;
+}
+
+/* ================================================================
+   ADMIN SHELL — Maki Dijital branded SaaS / CRM
+   Dark sidebar (slate-950) · light content · cyan/blue accent
+   Scoped under .admin-shell so the public site is untouched.
+   ================================================================ */
+.admin-shell {
+  /* content surfaces */
+  --admin-bg: #fafafa;
+  --admin-bg-soft: #f6f7f9;
+  --admin-surface: #ffffff;
+  --admin-border: rgb(15 23 42 / 0.08);
+  --admin-border-strong: rgb(15 23 42 / 0.16);
+  --admin-text: #0f172a;
+  --admin-muted: #475569;
+  --admin-muted-2: #94a3b8;
+
+  /* sidebar (dark) */
+  --admin-sidebar-bg: #0b1220;
+  --admin-sidebar-bg-soft: #111a2c;
+  --admin-sidebar-border: rgb(255 255 255 / 0.06);
+  --admin-sidebar-text: #cbd5e1;
+  --admin-sidebar-text-strong: #f8fafc;
+  --admin-sidebar-muted: #64748b;
+
+  /* brand accent — Maki Dijital (cyan / blue), used sparingly */
+  --admin-accent: #06b6d4;
+  --admin-accent-strong: #0ea5e9;
+  --admin-accent-soft: rgb(6 182 212 / 0.12);
+  --admin-active-bg: rgb(255 255 255 / 0.06);
+
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+/* ================================================================
+   ADMIN GLOBAL TOKEN MIGRATION
+   ================================================================
+   Eski admin sayfalarındaki kahverengi/champagne/warm-stone
+   tonlarını JSX'e dokunmadan Maki Dijital paletine taşır.
+   Sadece .admin-shell altında geçerli; public site etkilenmez.
+   ================================================================ */
+.admin-shell {
+  /* Ivory bg → cool off-white */
+  --color-ivory: #fafafa;
+
+  /* Sand → soft slate */
+  --color-sand-50: #f8fafc;
+  --color-sand-100: #f1f5f9;
+  --color-sand-200: #e2e8f0;
+  --color-sand-300: #cbd5e1;
+  --color-sand-400: #94a3b8;
+
+  /* Stone → cool slate */
+  --color-stone-50: #f8fafc;
+  --color-stone-100: #eef2f7;
+  --color-stone-200: #e2e8f0;
+  --color-stone-300: #cbd5e1;
+  --color-stone-400: #94a3b8;
+  --color-stone-500: #64748b;
+  --color-stone-600: #475569;
+  --color-stone-700: #334155;
+  --color-stone-800: #1e293b;
+  --color-stone-900: #0f172a;
+
+  /* Champagne / gold → Maki cyan-blue */
+  --color-champagne-50: #ecfeff;
+  --color-champagne-100: #cffafe;
+  --color-champagne-200: #a5f3fc;
+  --color-champagne-300: #67e8f9;
+  --color-champagne-500: #06b6d4;
+  --color-champagne-600: #0891b2;
+  --color-champagne-700: #0e7490;
+}
+
+/* Typography tone for admin — sans-serif headings (Linear/Stripe vibe).
+   General Sans yüklendiğinde otomatik tercih edilir; aksi halde Inter. */
+.admin-shell {
+  --admin-font-display: "General Sans", var(--font-inter), Inter, system-ui,
+    -apple-system, sans-serif;
+  /* 🛡️ ADMIN PIN — public --font-sans/--font-display Outfit'e geçti.
+     Admin gövde Inter + başlık Fraunces (admin-page-header__title,
+     admin-card__title, admin-stat__value, admin-brand-name + admin datepicker)
+     KORUNSUN diye token'lar admin subtree'sinde pinlenir. Admin BİREBİR aynı. */
+  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-fraunces), "Fraunces", Georgia, serif;
+}
+
+.admin-shell .font-display {
+  font-family: var(--admin-font-display);
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+/* Eyebrow → slate muted with subtle cyan hint */
+.admin-shell .eyebrow {
+  color: var(--admin-muted-2);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+/* Card premium → cool surface, cyan-tinted hover border */
+.admin-shell .card-premium {
+  background: var(--admin-surface);
+  border-color: var(--admin-border);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
+}
+
+.admin-shell .card-premium:hover {
+  border-color: rgb(6 182 212 / 0.32);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.04),
+    0 12px 28px -16px rgb(15 23 42 / 0.18);
+}
+
+/* Form focus inside admin → cyan accent (override champagne) */
+.admin-shell input:focus,
+.admin-shell textarea:focus,
+.admin-shell select:focus,
+.admin-shell .input:focus {
+  border-color: var(--admin-accent) !important;
+  box-shadow: 0 0 0 3px rgb(6 182 212 / 0.14) !important;
+}
+
+/* Primary button inside admin shell → slate/navy with cyan ambient hover.
+   Eski tüm btn-primary (champagne gradient) admin sayfalarında otomatik
+   dark SaaS tonuna geçer. */
+.admin-shell .btn-primary {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.18),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.admin-shell .btn-primary:hover {
+  background: #1e293b;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.2),
+    0 8px 22px -12px rgb(6 182 212 / 0.55);
+}
+
+/* Ghost button inside admin shell — softer slate */
+.admin-shell .btn-ghost {
+  background: var(--admin-surface);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+.admin-shell .btn-ghost:hover {
+  background: var(--admin-bg-soft);
+  border-color: var(--admin-border-strong);
+}
+
+/* Dark button kept consistent with primary */
+.admin-shell .btn-dark {
+  background: #0f172a;
+  border-color: #0f172a;
+}
+
+.admin-shell .btn-dark:hover {
+  background: #1e293b;
+}
+
+/* Sidebar — premium dark navy with subtle top glow */
+.admin-sidebar {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(125, 211, 252, 0.05), transparent 60%),
+    var(--admin-sidebar-bg);
+  border-right: 1px solid var(--admin-sidebar-border);
+  color: var(--admin-sidebar-text);
+}
+
+/* Group labels — wider tracking, bolder weight, premium feel */
+.admin-sidebar-group-label {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--admin-sidebar-muted);
+}
+
+/* Nav items — slightly more breathing room + smoother transitions */
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--admin-sidebar-text);
+  position: relative;
+  transition:
+    background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-nav-item:hover {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--admin-sidebar-text-strong);
+}
+
+/* Active item — premium pill with cyan glow + soft gradient + ring */
+.admin-nav-item.is-active {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(125, 211, 252, 0.12) 0%,
+      rgba(6, 182, 212, 0.06) 100%
+    );
+  color: var(--admin-sidebar-text-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(125, 211, 252, 0.18),
+    0 8px 24px -12px rgba(6, 182, 212, 0.4);
+}
+
+/* Active left rail — taller, gradient, stronger glow */
+.admin-nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 22px;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(180deg, #7dd3fc 0%, #06b6d4 100%);
+  box-shadow: 0 0 18px -2px rgba(125, 211, 252, 0.7);
+}
+
+/* Icons — smooth color + subtle motion on hover/active */
+.admin-nav-item .admin-icon {
+  color: var(--admin-sidebar-muted);
+  transition:
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-nav-item:hover .admin-icon {
+  color: var(--admin-sidebar-text-strong);
+  transform: translateX(1px);
+}
+
+.admin-nav-item.is-active .admin-icon {
+  color: #7dd3fc;
+  transform: scale(1.06);
+}
+
+/* Sidebar custom scrollbar — thin, premium */
+.admin-sidebar nav::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-sidebar nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-sidebar nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  transition: background 200ms ease;
+}
+.admin-sidebar nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(125, 211, 252, 0.18);
+}
+.admin-sidebar nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+/* Topbar — clean white SaaS */
+.admin-topbar {
+  background: rgb(255 255 255 / 0.85);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-search {
+  background: var(--admin-bg-soft);
+  border: 1px solid transparent;
+  transition: border-color 160ms ease, background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.admin-search:focus-within {
+  background: #fff;
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px rgb(6 182 212 / 0.12);
+}
+
+.admin-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text);
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.admin-icon-btn:hover {
+  background: var(--admin-bg-soft);
+  color: var(--admin-accent-strong);
+}
+
+/* Brand mark in sidebar — cyan/blue/green gradient, premium glow.
+   Login ekranındaki BIG mark ile aynı tasarım dilini paylaşır:
+   sky-300 ring, daha derin shadow, içeride hairline highlight. */
+.admin-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: opacity 200ms ease;
+}
+
+.admin-brand:hover {
+  opacity: 0.92;
+}
+
+.admin-brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    #1d4ed8 0%,
+    #06b6d4 55%,
+    #84cc16 100%
+  );
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.32),
+    0 14px 32px -12px rgba(6, 182, 212, 0.55),
+    0 0 0 1px rgba(125, 211, 252, 0.16),
+    inset 0 1px 0 rgb(255 255 255 / 0.2);
+}
+
+.admin-brand-text {
+  line-height: 1.05;
+}
+
+.admin-brand-name {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  letter-spacing: -0.015em;
+  color: var(--admin-sidebar-text-strong);
+}
+
+.admin-brand-sub {
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--admin-sidebar-muted);
+  margin-top: 2px;
+}
+
+/* Avatar circle (gradient mark) */
+.admin-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #06b6d4 100%);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.18);
+}
+
+/* Page heading helpers */
+.admin-page-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--admin-muted-2);
+}
+
+.admin-page-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--admin-text);
+}
+
+/* ----------------------------------------------------------------
+   ADMIN DESIGN SYSTEM
+   Unified visual language for all admin pages.
+   Scoped under .admin-shell so the public site is untouched.
+   ---------------------------------------------------------------- */
+
+/* PAGE HEADER */
+.admin-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--admin-border);
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+  .admin-page-header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+}
+
+.admin-page-header__title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--admin-text);
+  margin-top: 6px;
+}
+
+.admin-page-header__sub {
+  font-size: 14px;
+  color: var(--admin-muted);
+  margin-top: 8px;
+  max-width: 56ch;
+  line-height: 1.55;
+}
+
+.admin-page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* CARD */
+.admin-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
+  transition: box-shadow 220ms ease, border-color 220ms ease,
+    transform 220ms ease;
+}
+
+.admin-card:hover {
+  border-color: var(--admin-border-strong);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.04),
+    0 12px 28px -16px rgb(15 23 42 / 0.18);
+}
+
+.admin-card-flat {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+}
+
+.admin-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-card__title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: -0.015em;
+  color: var(--admin-text);
+}
+
+.admin-card__sub {
+  font-size: 12.5px;
+  color: var(--admin-muted-2);
+  margin-top: 2px;
+}
+
+/* KPI / STAT */
+.admin-stat {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  transition: border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.admin-stat:hover {
+  border-color: var(--admin-border-strong);
+}
+
+.admin-stat__label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--admin-muted-2);
+}
+
+.admin-stat__value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--admin-text);
+  margin-top: 8px;
+}
+
+.admin-stat__delta {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #137a4f;
+  margin-top: 8px;
+}
+
+.admin-stat__delta--down {
+  color: #b03a48;
+}
+
+.admin-stat__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-bg-soft);
+  color: var(--admin-muted);
+  border: 1px solid var(--admin-border);
+}
+
+/* TABLE / ROW */
+.admin-table {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.admin-table__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--admin-border);
+  background: var(--admin-bg-soft);
+}
+
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--admin-border);
+  transition: background 160ms ease;
+}
+
+.admin-row:last-child {
+  border-bottom: 0;
+}
+
+.admin-row:hover {
+  background: var(--admin-bg-soft);
+}
+
+/* FILTER BAR */
+.admin-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-pill-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--admin-bg-soft);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  flex: 1;
+  min-width: 220px;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.admin-pill-search:focus-within {
+  border-color: var(--admin-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(6 182 212 / 0.12);
+}
+
+.admin-pill-search input {
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 13.5px;
+  width: 100%;
+}
+
+/* BADGES */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.admin-badge--neutral {
+  background: var(--admin-bg-soft);
+  color: var(--admin-muted);
+  border-color: var(--admin-border);
+}
+
+.admin-badge--pending {
+  background: #fff8eb;
+  color: #92560a;
+  border-color: #fde7bf;
+}
+
+.admin-badge--confirmed {
+  background: #ecfaf2;
+  color: #176b46;
+  border-color: #c8eed7;
+}
+
+.admin-badge--rejected,
+.admin-badge--blocked {
+  background: #fdeef0;
+  color: #9a2a36;
+  border-color: #f4cfd5;
+}
+
+.admin-badge--info {
+  background: #eef4fb;
+  color: #2a548a;
+  border-color: #d3e2f5;
+}
+
+.admin-badge--paid {
+  background: #ecfaf2;
+  color: #176b46;
+  border-color: #c8eed7;
+}
+
+.admin-badge--partial {
+  background: #fff8eb;
+  color: #92560a;
+  border-color: #fde7bf;
+}
+
+.admin-badge--unpaid {
+  background: var(--admin-bg-soft);
+  color: var(--admin-muted);
+  border-color: var(--admin-border);
+}
+
+/* DOT */
+.admin-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* SOFT DIVIDER */
+.admin-divider {
+  height: 1px;
+  background: var(--admin-border);
+  width: 100%;
+}
+
+/* MUTED LINK */
+.admin-muted-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 160ms ease;
+}
+
+.admin-muted-link:hover {
+  color: var(--admin-text);
+}
+
+/* QUICK ACTION TILE */
+.admin-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  transition: border-color 180ms ease, background 180ms ease,
+    transform 180ms ease;
+}
+
+.admin-tile:hover {
+  border-color: var(--admin-border-strong);
+  background: var(--admin-bg-soft);
+}
+
+.admin-tile__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-muted);
+  background: var(--admin-bg-soft);
+  border: 1px solid var(--admin-border);
+}
+
+.admin-tile:hover .admin-tile__icon {
+  color: var(--admin-accent);
+}
+
+/* PRIMARY DARK BUTTON (SaaS-style — slate/navy) */
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  background: #0f172a;
+  color: #fff;
+  border: 1px solid #0f172a;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.18),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+  transition: background 180ms ease, transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.admin-btn-primary:hover {
+  background: #1e293b;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.2),
+    0 8px 22px -12px rgb(6 182 212 / 0.55);
+}
+
+.admin-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 13.5px;
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.admin-btn-ghost:hover {
+  background: var(--admin-bg-soft);
+  border-color: var(--admin-border-strong);
+}
+
+/* ================================================================
+   VILLA DESCRIPTION — rich text (Tiptap) render + editör tipografisi
+   ================================================================
+   `.villa-description` : public villa detay render (sanitize edilmiş HTML).
+   `.villa-rte`         : admin editör içi WYSIWYG parite.
+   Public token'larıyla (mevcut palet) uyumlu; tasarımı bozmaz.
+   ================================================================ */
+.villa-description > :first-child,
+.villa-rte > :first-child {
+  margin-top: 0;
+}
+.villa-description h2,
+.villa-rte h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--color-stone-900);
+  margin: 1.4em 0 0.5em;
+  line-height: 1.25;
+}
+.villa-description h3,
+.villa-rte h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-stone-900);
+  margin: 1.2em 0 0.4em;
+}
+.villa-description h4,
+.villa-rte h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-stone-800);
+  margin: 1em 0 0.35em;
+}
+.villa-description p,
+.villa-rte p {
+  margin: 0.6em 0;
+}
+.villa-description ul,
+.villa-rte ul {
+  list-style: disc;
+  padding-left: 1.4em;
+  margin: 0.6em 0;
+}
+.villa-description ol,
+.villa-rte ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+  margin: 0.6em 0;
+}
+.villa-description li,
+.villa-rte li {
+  margin: 0.25em 0;
+}
+.villa-description a,
+.villa-rte a {
+  color: var(--brand-coral);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.villa-description blockquote,
+.villa-rte blockquote {
+  border-left: 3px solid var(--brand-coral);
+  padding-left: 1em;
+  margin: 0.8em 0;
+  color: var(--color-stone-500);
+  font-style: italic;
+}
+.villa-description img,
+.villa-rte img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 0.8em 0;
+}
+.villa-description table,
+.villa-rte table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  font-size: 0.95em;
+}
+.villa-description th,
+.villa-description td,
+.villa-rte th,
+.villa-rte td {
+  border: 1px solid var(--color-stone-200);
+  padding: 0.5em 0.7em;
+  text-align: left;
+}
+.villa-description th,
+.villa-rte th {
+  background: var(--color-stone-50);
+  font-weight: 600;
+  color: var(--color-stone-800);
+}

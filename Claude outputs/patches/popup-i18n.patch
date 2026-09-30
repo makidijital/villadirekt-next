@@ -1,0 +1,1426 @@
+diff --git a/app/(admin)/maki-admin/settings/popup/page.tsx b/app/(admin)/maki-admin/settings/popup/page.tsx
+index 800bb2d..e1252e0 100644
+--- a/app/(admin)/maki-admin/settings/popup/page.tsx
++++ b/app/(admin)/maki-admin/settings/popup/page.tsx
+@@ -13,9 +13,13 @@ import {
+   POPUP_IMAGE_FOLDER,
+   POPUP_IMAGE_SLUG,
+   POPUP_LIMITS,
++  POPUP_TRANSLATION_LOCALES,
+   isSafePopupUrl,
++  mergePopupText,
+   type PopupDismissDuration,
+   type PopupDisplayScope,
++  type PopupTextFields,
++  type PopupTranslationLocale,
+ } from "@/lib/site-popup";
+ 
+ import {
+@@ -46,6 +50,46 @@ const SCOPES: ScopeOption[] = [
+   { value: "all", label: "Tüm site", hint: "Ziyaretçinin girdiği ilk public sayfada açılır." },
+ ];
+ 
++/* 🌐 Çoklu dil (migration 096): TR canonical (site_popup), EN/DE ayrı
++   tablo. Dil sekmesi yalnız dile bağlı alanları (vurgu, başlık,
++   açıklama, alt bilgiler, buton metni/URL'i) değiştirir; görsel,
++   aktif/pasif, buton göster/gizle, kapsam, tarih ve süre ORTAKTIR.
++   Tüm dillerin taslağı aynı state'te tutulur → sekme değiştirmek
++   içerik kaybettirmez; tek "Kaydet" hepsini yazar. */
++type EditLocale = "tr" | PopupTranslationLocale;
++type PopupTextState = {
++  title: string;
++  description: string;
++  highlight: string;
++  stats: string[];
++  buttonText: string;
++  buttonUrl: string;
++};
++const EDIT_LOCALES: ReadonlyArray<{ code: EditLocale; label: string }> = [
++  { code: "tr", label: "Türkçe" },
++  { code: "en", label: "English" },
++  { code: "de", label: "Deutsch" },
++];
++const emptyText = (): PopupTextState => ({
++  title: "",
++  description: "",
++  highlight: "",
++  stats: [],
++  buttonText: "",
++  buttonUrl: "",
++});
++const NON_TR_PLACEHOLDER = "Boş bırakılırsa Türkçe metin gösterilir";
++const isUrlInvalid = (url: string) => url.trim().length > 0 && !isSafePopupUrl(url.trim());
++/** Form metni → temiz alanlar (önizleme/kayıt). */
++const toFields = (t: PopupTextState): PopupTextFields => ({
++  title: t.title.trim() || null,
++  description: t.description.trim() || null,
++  highlight: t.highlight.trim() || null,
++  stats: t.stats.map((x) => x.trim()).filter(Boolean),
++  buttonText: t.buttonText.trim() || null,
++  buttonUrl: t.buttonUrl.trim() || null,
++});
++
+ export default function SettingsPopupPage() {
+   const toast = useNotify();
+ 
+@@ -57,12 +101,12 @@ export default function SettingsPopupPage() {
+   const [isEnabled, setIsEnabled] = useState(false);
+   const [imagePath, setImagePath] = useState<string | null>(null);
+   const [imageBust, setImageBust] = useState<string | null>(null);
+-  const [title, setTitle] = useState("");
+-  const [description, setDescription] = useState("");
+-  const [highlight, setHighlight] = useState("");
+-  const [stats, setStats] = useState<string[]>([]);
+-  const [buttonText, setButtonText] = useState("");
+-  const [buttonUrl, setButtonUrl] = useState("");
++  const [texts, setTexts] = useState<Record<EditLocale, PopupTextState>>(() => ({
++    tr: emptyText(),
++    en: emptyText(),
++    de: emptyText(),
++  }));
++  const [activeLocale, setActiveLocale] = useState<EditLocale>("tr");
+   const [showButton, setShowButton] = useState(true);
+   const [scope, setScope] = useState<PopupDisplayScope>("home");
+   const [dismiss, setDismiss] = useState<PopupDismissDuration>("session");
+@@ -70,6 +114,27 @@ export default function SettingsPopupPage() {
+   const [endDate, setEndDate] = useState("");
+   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+ 
++  /* Seçili dilin alanları — aşağıdaki form alanları bunlara bağlı. */
++  const { title, description, highlight, stats, buttonText, buttonUrl } = texts[activeLocale];
++  function setText<K extends keyof PopupTextState>(key: K, value: PopupTextState[K]) {
++    setTexts((prev) => ({ ...prev, [activeLocale]: { ...prev[activeLocale], [key]: value } }));
++  }
++  const setTitle = (v: string) => setText("title", v);
++  const setDescription = (v: string) => setText("description", v);
++  const setHighlight = (v: string) => setText("highlight", v);
++  const setButtonText = (v: string) => setText("buttonText", v);
++  const setButtonUrl = (v: string) => setText("buttonUrl", v);
++  const setStats = (update: (prev: string[]) => string[]) =>
++    setTexts((prev) => ({
++      ...prev,
++      [activeLocale]: { ...prev[activeLocale], stats: update(prev[activeLocale].stats) },
++    }));
++  const isTr = activeLocale === "tr";
++  const activeLabel = EDIT_LOCALES.find((l) => l.code === activeLocale)?.label ?? "Türkçe";
++  /* EN/DE'de boş alan için ipucu: Türkçe değer gösterilecek. */
++  const trHint = (trValue: string) =>
++    isTr ? undefined : trValue.trim() ? `Boşsa Türkçe gösterilir: “${trValue.trim()}”` : undefined;
++
+   useEffect(() => {
+     let cancelled = false;
+     loadSitePopupAction()
+@@ -83,12 +148,18 @@ export default function SettingsPopupPage() {
+         }
+         setIsEnabled(v.isEnabled);
+         setImagePath(v.imagePath);
+-        setTitle(v.title);
+-        setDescription(v.description);
+-        setHighlight(v.highlight);
+-        setStats(v.stats);
+-        setButtonText(v.buttonText);
+-        setButtonUrl(v.buttonUrl);
++        setTexts({
++          tr: {
++            title: v.title,
++            description: v.description,
++            highlight: v.highlight,
++            stats: v.stats,
++            buttonText: v.buttonText,
++            buttonUrl: v.buttonUrl,
++          },
++          en: v.translations?.en ?? emptyText(),
++          de: v.translations?.de ?? emptyText(),
++        });
+         setShowButton(v.showButton);
+         setScope(v.scope);
+         setDismiss(v.dismiss);
+@@ -107,23 +178,28 @@ export default function SettingsPopupPage() {
+     };
+   }, []);
+ 
+-  const urlInvalid = buttonUrl.trim().length > 0 && !isSafePopupUrl(buttonUrl.trim());
++  const urlInvalid = isUrlInvalid(buttonUrl);
++  /* Kayıt: herhangi bir dilde geçersiz URL varsa engellenir. */
++  const invalidUrlLocales = EDIT_LOCALES.filter((l) => isUrlInvalid(texts[l.code].buttonUrl));
+ 
+   const previewImage = useMemo(
+     () => resolveAssetUrlVersioned(imagePath, imageBust || updatedAt),
+     [imagePath, imageBust, updatedAt]
+   );
+-  const cleanStats = stats.map((s) => s.trim()).filter(Boolean);
++  /* Önizleme = public ile aynı kural: EN/DE boş alan → Türkçe. */
++  const previewText = isTr
++    ? toFields(texts.tr)
++    : mergePopupText(toFields(texts.tr), toFields(texts[activeLocale]));
+   const previewButton =
+-    showButton && buttonText.trim()
+-      ? { text: buttonText.trim(), url: buttonUrl.trim() || "/", external: false }
++    showButton && previewText.buttonText
++      ? { text: previewText.buttonText, url: previewText.buttonUrl || "/", external: false }
+       : null;
+   const hasPreviewContent = !!(
+     previewImage ||
+-    title.trim() ||
+-    description.trim() ||
+-    highlight.trim() ||
+-    cleanStats.length ||
++    previewText.title ||
++    previewText.description ||
++    previewText.highlight ||
++    previewText.stats.length ||
+     previewButton
+   );
+ 
+@@ -133,10 +209,30 @@ export default function SettingsPopupPage() {
+ 
+   async function handleSubmit(e: React.FormEvent) {
+     e.preventDefault();
+-    if (urlInvalid) {
+-      toast.error("Buton URL'i geçersiz", { id: "settings-popup" });
++    if (invalidUrlLocales.length > 0) {
++      toast.error(
++        `Buton URL'i geçersiz (${invalidUrlLocales.map((l) => l.label).join(", ")})`,
++        { id: "settings-popup" }
++      );
+       return;
+     }
++    const tr = toFields(texts.tr);
++    const translations = Object.fromEntries(
++      POPUP_TRANSLATION_LOCALES.map((l) => {
++        const t = texts[l];
++        return [
++          l,
++          {
++            title: t.title,
++            description: t.description,
++            highlight: t.highlight,
++            stats: t.stats.map((x) => x.trim()).filter(Boolean),
++            buttonText: t.buttonText,
++            buttonUrl: t.buttonUrl,
++          },
++        ];
++      })
++    );
+     setSaving(true);
+     setSaved(false);
+     let res: Awaited<ReturnType<typeof saveSitePopupAction>>;
+@@ -144,17 +240,18 @@ export default function SettingsPopupPage() {
+       res = await saveSitePopupAction({
+         isEnabled,
+         imagePath,
+-        title,
+-        description,
+-        highlight,
+-        stats: cleanStats,
+-        buttonText,
+-        buttonUrl,
++        title: texts.tr.title,
++        description: texts.tr.description,
++        highlight: texts.tr.highlight,
++        stats: tr.stats,
++        buttonText: texts.tr.buttonText,
++        buttonUrl: texts.tr.buttonUrl,
+         showButton,
+         scope,
+         dismiss,
+         startDate,
+         endDate,
++        translations,
+       });
+     } catch {
+       res = { ok: false, error: "Kaydedilemedi" };
+@@ -166,7 +263,12 @@ export default function SettingsPopupPage() {
+     }
+     setUpdatedAt(res.values.updatedAt);
+     setImagePath(res.values.imagePath);
+-    setStats(res.values.stats);
++    const savedValues = res.values;
++    setTexts((prev) => ({
++      tr: { ...prev.tr, stats: savedValues.stats },
++      en: { ...prev.en, stats: savedValues.translations.en.stats },
++      de: { ...prev.de, stats: savedValues.translations.de.stats },
++    }));
+     setSaved(true);
+     toast.success("Kaydedildi", { id: "settings-popup" });
+     window.setTimeout(() => setSaved(false), 1500);
+@@ -201,9 +303,59 @@ export default function SettingsPopupPage() {
+           />
+         </SettingsSection>
+ 
++        {/* DİL SEKMELERİ — dile bağlı alanlar (İçerik metinleri + Buton) */}
++        <div className="space-y-2">
++          <div
++            role="tablist"
++            aria-label="İçerik dili"
++            className="inline-flex gap-1.5 rounded-2xl border border-[var(--color-stone-100)] bg-white p-1.5 shadow-sm w-max max-w-full overflow-x-auto"
++          >
++            {EDIT_LOCALES.map((loc) => {
++              const active = loc.code === activeLocale;
++              const t = texts[loc.code];
++              const filled = !!(
++                t.title.trim() ||
++                t.description.trim() ||
++                t.highlight.trim() ||
++                t.stats.some((x) => x.trim()) ||
++                t.buttonText.trim() ||
++                t.buttonUrl.trim()
++              );
++              return (
++                <button
++                  key={loc.code}
++                  type="button"
++                  role="tab"
++                  aria-selected={active}
++                  onClick={() => setActiveLocale(loc.code)}
++                  className={
++                    "inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-medium whitespace-nowrap transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-300)] " +
++                    (active
++                      ? "bg-[var(--color-stone-900)] text-white"
++                      : "text-[var(--color-stone-600)] hover:bg-[var(--color-sand-50)] hover:text-[var(--color-stone-900)]")
++                  }
++                >
++                  {loc.label}
++                  {loc.code !== "tr" && filled && (
++                    <span
++                      aria-hidden="true"
++                      className={"w-1.5 h-1.5 rounded-full " + (active ? "bg-white/80" : "bg-emerald-500")}
++                    />
++                  )}
++                </button>
++              );
++            })}
++          </div>
++          <p className="text-[12px] text-[var(--color-stone-500)] leading-relaxed">
++            Vurgu metni, başlık, açıklama, alt bilgiler ve buton metni/URL&apos;i her dil için ayrı
++            girilir. English/Deutsch&apos;ta boş bırakılan alan Türkçe gösterilir. Görsel, durum,
++            buton göster/gizle, gösterim alanı, tarih ve süre tüm dillerde ortaktır.
++          </p>
++        </div>
++
+         {/* İÇERİK */}
+         <SettingsSection
+-          title="İçerik"
++          title={`İçerik · ${activeLabel}`}
+           description="Tüm metinler düz metin olarak gösterilir (HTML kabul edilmez)."
+         >
+           <UploadField
+@@ -217,33 +369,43 @@ export default function SettingsPopupPage() {
+             slug={POPUP_IMAGE_SLUG}
+             version={updatedAt}
+             disabled={loading || !!loadError}
+-            hint="Yatay, en az 1600px genişlikte görsel önerilir. WebP'ye çevrilip R2'ye yüklenir (site-assets/popup/popup.webp). Kaldırıp kaydederseniz dosya R2'den de silinir."
++            hint="Tüm dillerde ortak. Yatay, en az 1600px genişlikte görsel önerilir. WebP'ye çevrilip R2'ye yüklenir (site-assets/popup/popup.webp). Kaldırıp kaydederseniz dosya R2'den de silinir."
+           />
+           <TextField
+             label="Büyük vurgu metni"
+             value={highlight}
+             onChange={(v) => setHighlight(v.slice(0, POPUP_LIMITS.highlight))}
+-            placeholder="20"
+-            hint="Görselin üzerinde büyük puntoyla gösterilir (örn. yıl sayısı). Boş bırakılabilir."
++            placeholder={isTr ? "20" : texts.tr.highlight.trim() || "20"}
++            hint={
++              trHint(texts.tr.highlight) ??
++              "Görselin üzerinde büyük puntoyla gösterilir (örn. yıl sayısı). Boş bırakılabilir."
++            }
+             disabled={loading || !!loadError}
+           />
+           <TextField
+             label="Başlık"
+             value={title}
+             onChange={(v) => setTitle(v.slice(0, POPUP_LIMITS.title))}
+-            placeholder="2006'dan bu yana tatilinizin yanındayız."
++            placeholder={isTr ? "2006'dan bu yana tatilinizin yanındayız." : NON_TR_PLACEHOLDER}
++            hint={trHint(texts.tr.title)}
+             disabled={loading || !!loadError}
+           />
+           <TextAreaField
+             label="Açıklama (opsiyonel)"
+             value={description}
+             onChange={(v) => setDescription(v.slice(0, POPUP_LIMITS.description))}
++            placeholder={isTr ? undefined : NON_TR_PLACEHOLDER}
++            hint={trHint(texts.tr.description)}
+             rows={3}
+             disabled={loading || !!loadError}
+           />
+           <FieldShell
+             label="Alt bilgi satırları (en fazla 4)"
+-            hint="Örn. '300.000+ misafir', '4.9 misafir puanı', 'TÜRSAB 9117'."
++            hint={
++              isTr
++                ? "Örn. '300.000+ misafir', '4.9 misafir puanı', 'TÜRSAB 9117'."
++                : "Bu dilde hiç satır yoksa Türkçe satırlar gösterilir."
++            }
+           >
+             <div className="space-y-2">
+               {stats.map((s, i) => (
+@@ -281,7 +443,10 @@ export default function SettingsPopupPage() {
+         </SettingsSection>
+ 
+         {/* BUTON */}
+-        <SettingsSection title="Buton" description="Popup'ın altındaki yönlendirme butonu.">
++        <SettingsSection
++          title={`Buton · ${activeLabel}`}
++          description="Popup'taki yönlendirme butonu. Göster/gizle tüm dillerde ortaktır; metin ve URL seçili dile aittir."
++        >
+           <ToggleField
+             label="Butonu göster"
+             checked={showButton}
+@@ -292,18 +457,23 @@ export default function SettingsPopupPage() {
+             label="Buton metni"
+             value={buttonText}
+             onChange={(v) => setButtonText(v.slice(0, POPUP_LIMITS.buttonText))}
+-            placeholder="Villaları inceleyin"
++            placeholder={isTr ? "Villaları inceleyin" : NON_TR_PLACEHOLDER}
++            hint={trHint(texts.tr.buttonText)}
+             disabled={loading || !!loadError || !showButton}
+           />
+           <FieldShell
+             label="Buton URL'i"
+-            hint="Site içi için '/' ile başlayın (örn. /kiralik-villalar). Harici bağlantılar https:// ile başlamalı ve yeni sekmede açılır."
++            hint={
++              isTr
++                ? "Site içi için '/' ile başlayın (örn. /kiralik-villalar). Harici bağlantılar https:// ile başlamalı ve yeni sekmede açılır."
++                : `Boşsa Türkçe URL kullanılır. Bu dilin sayfası için örn. /${activeLocale}/kiralik-villalar.`
++            }
+           >
+             <input
+               className="input"
+               value={buttonUrl}
+               onChange={(e) => setButtonUrl(e.target.value.slice(0, POPUP_LIMITS.buttonUrl))}
+-              placeholder="/kiralik-villalar"
++              placeholder={isTr ? "/kiralik-villalar" : texts.tr.buttonUrl.trim() || "/en/kiralik-villalar"}
+               disabled={loading || !!loadError || !showButton}
+               aria-invalid={urlInvalid}
+             />
+@@ -401,8 +571,8 @@ export default function SettingsPopupPage() {
+ 
+         {/* ÖNİZLEME */}
+         <SettingsSection
+-          title="Önizleme"
+-          description="Ziyaretçinin göreceği pencere (kaydedilmemiş değişiklikler dahil)."
++          title={`Önizleme · ${activeLabel}`}
++          description="Ziyaretçinin bu dilde göreceği pencere (kaydedilmemiş değişiklikler dahil)."
+         >
+           {hasPreviewContent ? (
+             <div className="rounded-3xl bg-black/60 p-4 sm:p-6">
+@@ -411,10 +581,10 @@ export default function SettingsPopupPage() {
+                   preview
+                   popup={{
+                     imageUrl: previewImage,
+-                    title: title.trim() || null,
+-                    description: description.trim() || null,
+-                    highlight: highlight.trim() || null,
+-                    stats: cleanStats,
++                    title: previewText.title,
++                    description: previewText.description,
++                    highlight: previewText.highlight,
++                    stats: previewText.stats,
+                     button: previewButton,
+                   }}
+                 />
+@@ -431,7 +601,7 @@ export default function SettingsPopupPage() {
+           <SaveButton
+             loading={saving}
+             saved={saved}
+-            disabled={loading || !!loadError || urlInvalid}
++            disabled={loading || !!loadError || invalidUrlLocales.length > 0}
+             label="Değişiklikleri kaydet"
+           />
+         </div>
+diff --git a/app/components/layout/site-popup/SitePopupLoader.tsx b/app/components/layout/site-popup/SitePopupLoader.tsx
+index 386b87b..c872ae9 100644
+--- a/app/components/layout/site-popup/SitePopupLoader.tsx
++++ b/app/components/layout/site-popup/SitePopupLoader.tsx
+@@ -1,12 +1,13 @@
+ "use client";
+ 
+-import { useCallback, useEffect, useState } from "react";
++import { useCallback, useEffect, useMemo, useState } from "react";
+ import dynamic from "next/dynamic";
+ import { usePathname } from "next/navigation";
+ 
+ import {
+   isPopupHomePath,
+   isWithinPopupWindow,
++  localizeSitePopup,
+   popupDismissMs,
+   type PublicSitePopup,
+ } from "@/lib/site-popup";
+@@ -82,6 +83,10 @@ export default function SitePopupLoader({ popup }: { popup: PublicSitePopup }) {
+   const [closedHere, setClosedHere] = useState(false);
+ 
+   const inScope = popup.scope === "all" || isPopupHomePath(pathname);
++  /* İçerik dili: URL prefix'i (/en, /de; diğerleri TR). Çeviri yoksa
++     veya alan boşsa Türkçe (server'da uygulanmış fallback). */
++  const locale = localeOf(pathname);
++  const content = useMemo(() => localizeSitePopup(popup, locale), [popup, locale]);
+ 
+   useEffect(() => {
+     if (closedHere || open || !inScope) return;
+@@ -101,10 +106,10 @@ export default function SitePopupLoader({ popup }: { popup: PublicSitePopup }) {
+ 
+   return (
+     <SitePopupDialog
+-      popup={popup}
++      popup={content}
+       onClose={close}
+       onCta={close}
+-      closeLabel={CLOSE_LABELS[localeOf(pathname)]}
++      closeLabel={CLOSE_LABELS[locale]}
+     />
+   );
+ }
+diff --git a/app/services/site-popup.service.ts b/app/services/site-popup.service.ts
+index 3a83b1b..adec8d4 100644
+--- a/app/services/site-popup.service.ts
++++ b/app/services/site-popup.service.ts
+@@ -1,11 +1,16 @@
+ import "server-only";
+ 
+-import { sitePopupRepository, type SitePopupWritable } from "@/lib/db/site-popup.repository.server";
++import {
++  sitePopupRepository,
++  type SitePopupTranslationWritable,
++  type SitePopupWritable,
++} from "@/lib/db/site-popup.repository.server";
+ import { removeServer } from "@/lib/storage/server";
+ import { SITE_ASSETS_BUCKET_NAME, resolveAssetUrlVersioned } from "@/lib/storage.helpers";
+ import {
+   POPUP_IMAGE_FOLDER,
+   POPUP_LIMITS,
++  POPUP_TRANSLATION_LOCALES,
+   cleanPopupText,
+   isPopupDismissDuration,
+   isPopupDisplayScope,
+@@ -16,8 +21,10 @@ import {
+   toPublicSitePopup,
+   type PopupDismissDuration,
+   type PopupDisplayScope,
++  type PopupTranslationLocale,
+   type PublicSitePopup,
+   type SitePopupRow,
++  type SitePopupTranslationRow,
+ } from "@/lib/site-popup";
+ 
+ /* ===============================================================
+@@ -34,6 +41,16 @@ import {
+      projeksiyonu döner (bkz. lib/site-popup.ts > toPublicSitePopup).
+    =============================================================== */
+ 
++/** Tek dilin düzenlenebilir metinleri (admin formu). */
++export type SitePopupTextValues = {
++  title: string;
++  description: string;
++  highlight: string;
++  stats: string[];
++  buttonText: string;
++  buttonUrl: string;
++};
++
+ export type SitePopupAdminValues = {
+   isEnabled: boolean;
+   imagePath: string | null;
+@@ -49,12 +66,29 @@ export type SitePopupAdminValues = {
+   startDate: string;
+   endDate: string;
+   updatedAt: string | null;
++  /** EN/DE (migration 096). Boş alan → public'te Türkçe değer. */
++  translations: Record<PopupTranslationLocale, SitePopupTextValues>;
+ };
+ 
+ export type SitePopupSaveResult =
+   | { ok: true; values: SitePopupAdminValues }
+   | { ok: false; error: string };
+ 
++const LOCALE_LABELS: Record<PopupTranslationLocale, string> = { en: "English", de: "Deutsch" };
++
++const EMPTY_TEXT: SitePopupTextValues = {
++  title: "",
++  description: "",
++  highlight: "",
++  stats: [],
++  buttonText: "",
++  buttonUrl: "",
++};
++
++function emptyTranslations(): Record<PopupTranslationLocale, SitePopupTextValues> {
++  return { en: { ...EMPTY_TEXT, stats: [] }, de: { ...EMPTY_TEXT, stats: [] } };
++}
++
+ const IMAGE_PATH_RE = new RegExp(`^${POPUP_IMAGE_FOLDER}/[a-z0-9-]{1,64}\\.webp$`);
+ 
+ export const SITE_POPUP_DEFAULTS: SitePopupAdminValues = {
+@@ -72,10 +106,32 @@ export const SITE_POPUP_DEFAULTS: SitePopupAdminValues = {
+   startDate: "",
+   endDate: "",
+   updatedAt: null,
++  translations: emptyTranslations(),
+ };
+ 
+-function toAdminValues(row: SitePopupRow | null): SitePopupAdminValues {
+-  if (!row) return { ...SITE_POPUP_DEFAULTS };
++function toAdminTranslations(
++  rows: readonly SitePopupTranslationRow[] | null | undefined
++): Record<PopupTranslationLocale, SitePopupTextValues> {
++  const out = emptyTranslations();
++  for (const r of rows || []) {
++    if (r.locale !== "en" && r.locale !== "de") continue;
++    out[r.locale] = {
++      title: r.title || "",
++      description: r.description || "",
++      highlight: r.highlight_text || "",
++      stats: normalizePopupStats(r.stats),
++      buttonText: r.button_text || "",
++      buttonUrl: r.button_url || "",
++    };
++  }
++  return out;
++}
++
++function toAdminValues(
++  row: SitePopupRow | null,
++  translationRows: readonly SitePopupTranslationRow[] | null = null
++): SitePopupAdminValues {
++  if (!row) return { ...SITE_POPUP_DEFAULTS, translations: emptyTranslations() };
+   return {
+     isEnabled: row.is_enabled === true,
+     imagePath: row.image_path || null,
+@@ -91,6 +147,7 @@ function toAdminValues(row: SitePopupRow | null): SitePopupAdminValues {
+     startDate: popupIsoToDate(row.starts_at, "start"),
+     endDate: popupIsoToDate(row.ends_at, "end"),
+     updatedAt: row.updated_at || null,
++    translations: toAdminTranslations(translationRows),
+   };
+ }
+ 
+@@ -100,7 +157,58 @@ export async function getSitePopupForAdmin(): Promise<SitePopupAdminValues | nul
+     console.error("[site-popup.admin.read] FAILED", error.message);
+     return null;
+   }
+-  return toAdminValues((data as SitePopupRow | null) ?? null);
++  const tr = await sitePopupRepository.findTranslations();
++  if (tr.error) {
++    /* Migration 096 uygulanmadıysa admin açıkça hata görür (çeviriler
++       sessizce boş görünüp üzerine yazılmasın). */
++    console.error("[site-popup.admin.read] TRANSLATIONS_FAILED", tr.error.message);
++    return null;
++  }
++  return toAdminValues(
++    (data as SitePopupRow | null) ?? null,
++    (tr.data as SitePopupTranslationRow[] | null) ?? []
++  );
++}
++
++/** EN/DE girişini doğrular; `translations` anahtarı hiç yoksa null
++ *  (→ çevirilere dokunulmaz; eski istemcilerle geriye uyumlu). */
++function parseTranslations(
++  raw: unknown,
++  showButton: boolean,
++  trButtonUrl: string
++):
++  | { ok: true; values: Record<PopupTranslationLocale, SitePopupTranslationWritable> | null }
++  | { ok: false; error: string } {
++  if (raw === undefined) return { ok: true, values: null };
++  const obj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
++  const values = {} as Record<PopupTranslationLocale, SitePopupTranslationWritable>;
++  for (const locale of POPUP_TRANSLATION_LOCALES) {
++    const t = (obj[locale] && typeof obj[locale] === "object" ? obj[locale] : {}) as Record<
++      string,
++      unknown
++    >;
++    const buttonText = cleanPopupText(t.buttonText, POPUP_LIMITS.buttonText);
++    const buttonUrl = typeof t.buttonUrl === "string" ? t.buttonUrl.trim() : "";
++    if (buttonUrl && !isSafePopupUrl(buttonUrl)) {
++      return {
++        ok: false,
++        error: `${LOCALE_LABELS[locale]}: buton URL'i '/' ile başlayan bir site adresi veya https:// ile başlayan bir bağlantı olmalı`,
++      };
++    }
++    /* Buton metni bu dilde yazıldıysa URL bu dilden ya da Türkçeden gelmeli. */
++    if (showButton && buttonText && !buttonUrl && !trButtonUrl) {
++      return { ok: false, error: `${LOCALE_LABELS[locale]}: buton URL'i zorunlu` };
++    }
++    values[locale] = {
++      title: cleanPopupText(t.title, POPUP_LIMITS.title),
++      description: cleanPopupText(t.description, POPUP_LIMITS.description, { multiline: true }),
++      highlight_text: cleanPopupText(t.highlight, POPUP_LIMITS.highlight),
++      stats: normalizePopupStats(t.stats),
++      button_text: buttonText,
++      button_url: buttonUrl || null,
++    };
++  }
++  return { ok: true, values };
+ }
+ 
+ export async function saveSitePopup(input: unknown): Promise<SitePopupSaveResult> {
+@@ -150,6 +258,10 @@ export async function saveSitePopup(input: unknown): Promise<SitePopupSaveResult
+     return { ok: false, error: "Popup'ı açmak için en az bir görsel veya başlık ekleyin" };
+   }
+ 
++  const parsedTranslations = parseTranslations(v.translations, showButton, buttonUrlRaw);
++  if (!parsedTranslations.ok) return parsedTranslations;
++  const translations = parsedTranslations.values;
++
+   /* Önceki görsel — kaldırıldıysa R2 nesnesi silinecek. */
+   const prev = await sitePopupRepository.find();
+   if (prev.error) {
+@@ -175,6 +287,21 @@ export async function saveSitePopup(input: unknown): Promise<SitePopupSaveResult
+     updated_at: new Date().toISOString(),
+   };
+ 
++  /* EN/DE önce yazılır; ana satır (updated_at = içerik sürümü) en son
++     güncellenir → çeviri yazımı başarısızsa sürüm değişmez, hata döner. */
++  if (translations) {
++    for (const locale of POPUP_TRANSLATION_LOCALES) {
++      const res = await sitePopupRepository.upsertTranslation(locale, translations[locale]);
++      if (res.error) {
++        console.error("[site-popup.save] TRANSLATION_FAILED", {
++          locale,
++          error: res.error.message,
++        });
++        return { ok: false, error: "Çeviriler kaydedilemedi (migration 096 uygulanmış mı?)" };
++      }
++    }
++  }
++
+   const { data, error } = await sitePopupRepository.update(payload);
+   if (error || !data) {
+     console.error("[site-popup.save] FAILED", error?.message || "row missing (migration 095?)");
+@@ -193,7 +320,19 @@ export async function saveSitePopup(input: unknown): Promise<SitePopupSaveResult
+     }
+   }
+ 
+-  return { ok: true, values: toAdminValues(data as SitePopupRow) };
++  let savedTranslations: SitePopupTranslationRow[] = [];
++  if (translations) {
++    savedTranslations = POPUP_TRANSLATION_LOCALES.map((locale) => ({
++      popup_id: 1,
++      locale,
++      ...translations[locale],
++    }));
++  } else {
++    const tr = await sitePopupRepository.findTranslations();
++    savedTranslations = (tr.data as SitePopupTranslationRow[] | null) ?? [];
++  }
++
++  return { ok: true, values: toAdminValues(data as SitePopupRow, savedTranslations) };
+ }
+ 
+ /** Public projeksiyon (cache'li sarmalayıcı: lib/site-popup.cache.ts). */
+@@ -205,8 +344,18 @@ export async function getPublicSitePopup(): Promise<PublicSitePopup | null> {
+     console.error("[site-popup.public.read] FAILED", error.message);
+     return null;
+   }
++  const row = (data as SitePopupRow | null) ?? null;
++  /* Kapalıysa çeviri sorgusu hiç atılmaz. */
++  if (!row || row.is_enabled !== true) return null;
++  const tr = await sitePopupRepository.findTranslations();
++  if (tr.error) {
++    /* Migration 096 yoksa / hata → popup Türkçe gösterilir; site etkilenmez. */
++    console.error("[site-popup.public.read] TRANSLATIONS_FAILED", tr.error.message);
++  }
+   return toPublicSitePopup(
+-    (data as SitePopupRow | null) ?? null,
+-    (path, version) => resolveAssetUrlVersioned(path, version)
++    row,
++    (path, version) => resolveAssetUrlVersioned(path, version),
++    Date.now(),
++    tr.error ? [] : ((tr.data as SitePopupTranslationRow[] | null) ?? [])
+   );
+ }
+diff --git a/db/migrations/096_site_popup_translations.sql b/db/migrations/096_site_popup_translations.sql
+new file mode 100644
+index 0000000..739a2d9
+--- /dev/null
++++ b/db/migrations/096_site_popup_translations.sql
+@@ -0,0 +1,101 @@
++-- ===============================================================
++-- 096 — site_popup_translations (AÇILIŞ POPUP'I — EN/DE İÇERİK)
++-- ===============================================================
++-- AMAÇ:
++--   Açılış popup'ının (migration 095) metin içeriğinin İngilizce ve
++--   Almanca karşılıkları. Admin: Ayarlar > Açılış Popup > dil sekmeleri.
++--
++-- ŞEMA GEREKÇESİ — projedeki mevcut çeviri deseni (082/083/086/088/089):
++--   <parent>_id + locale + dedike çevrilebilir kolonlar + CHECK + UNIQUE.
++--   JSONB/EAV yerine dedike kolon: çevrilebilir alan listesi şemanın
++--   kendisiyle sınırlanır; uzunluk CHECK'leri 095 ile birebir aynıdır.
++--
++-- TR CANONICAL = public.site_popup SATIRININ KENDİSİ:
++--   Mevcut Türkçe içerik (title/description/highlight_text/stats/
++--   button_text/button_url) YERİNDE kalır; bu migration site_popup'a
++--   HİÇ DOKUNMAZ (kolon/satır/constraint değişmez), taşıma/backfill
++--   GEREKMEZ ve veri kaybı olmaz. Bu tabloda TR satırı TUTULMAZ
++--   (CHECK ile yasak — 083 ile aynı gerekçe: iki doğruluk kaynağı olmasın).
++--
++-- DİL-BAĞIMSIZ ALANLAR çevrilmez (site_popup'ta tek kopya):
++--   is_enabled, image_path (R2 görseli), show_button, display_scope,
++--   dismiss_duration, starts_at, ends_at.
++--
++-- FALLBACK (uygulama katmanı, lib/site-popup.ts):
++--   EN/DE alanı boş/NULL → aynı alanın Türkçe değeri gösterilir.
++--   Satır hiç yoksa → popup tamamen Türkçe gösterilir.
++--
++-- YENİ DİL: locale CHECK'ine eklenir (082/083 ile aynı yöntem).
++--
++-- BAĞIMLILIK: public.site_popup (095) + public.trg_touch_updated_at() (082).
++-- İDEMPOTENT: CREATE TABLE IF NOT EXISTS + DROP/CREATE TRIGGER.
++-- ===============================================================
++
++BEGIN;
++
++DO $$
++BEGIN
++  IF to_regclass('public.site_popup') IS NULL THEN
++    RAISE EXCEPTION 'Migration 096, 095_site_popup.sql''e bağlıdır. Önce 095''i uygulayın.';
++  END IF;
++  IF NOT EXISTS (
++    SELECT 1
++    FROM pg_proc p
++    JOIN pg_namespace n ON n.oid = p.pronamespace
++    WHERE n.nspname = 'public'
++      AND p.proname = 'trg_touch_updated_at'
++  ) THEN
++    RAISE EXCEPTION
++      'Migration 096, 082_translation_tables.sql''in public.trg_touch_updated_at() fonksiyonuna bağlıdır. Önce 082''yi uygulayın.';
++  END IF;
++END
++$$;
++
++CREATE TABLE IF NOT EXISTS public.site_popup_translations (
++  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
++  popup_id        smallint    NOT NULL REFERENCES public.site_popup (id) ON DELETE CASCADE,
++  locale          text        NOT NULL,
++  title           text,
++  description     text,
++  highlight_text  text,
++  stats           jsonb       NOT NULL DEFAULT '[]'::jsonb,
++  button_text     text,
++  button_url      text,
++  created_at      timestamptz NOT NULL DEFAULT now(),
++  updated_at      timestamptz NOT NULL DEFAULT now(),
++
++  CONSTRAINT site_popup_translations_locale_check   CHECK (locale IN ('en', 'de')),
++  CONSTRAINT site_popup_translations_popup_locale_key UNIQUE (popup_id, locale),
++  CONSTRAINT site_popup_translations_stats_is_array CHECK (jsonb_typeof(stats) = 'array' AND jsonb_array_length(stats) <= 4),
++  CONSTRAINT site_popup_translations_title_len      CHECK (title IS NULL OR char_length(title) <= 200),
++  CONSTRAINT site_popup_translations_description_len CHECK (description IS NULL OR char_length(description) <= 600),
++  CONSTRAINT site_popup_translations_highlight_len  CHECK (highlight_text IS NULL OR char_length(highlight_text) <= 24),
++  CONSTRAINT site_popup_translations_button_text_len CHECK (button_text IS NULL OR char_length(button_text) <= 60),
++  CONSTRAINT site_popup_translations_button_url_len CHECK (button_url IS NULL OR char_length(button_url) <= 500)
++);
++
++COMMENT ON TABLE public.site_popup_translations IS
++  'Açılış popup''ı (site_popup) metinlerinin EN/DE çevirileri. TR canonical kaynak '
++  'site_popup satırıdır — bu tabloda TR satırı tutulmaz (CHECK). Boş/NULL alan public '
++  'tarafta Türkçe değere düşer. Görsel/tarih/kapsam/süre alanları çevrilmez.';
++
++DROP TRIGGER IF EXISTS site_popup_translations_touch_updated_at ON public.site_popup_translations;
++CREATE TRIGGER site_popup_translations_touch_updated_at
++  BEFORE UPDATE ON public.site_popup_translations
++  FOR EACH ROW
++  EXECUTE FUNCTION public.trg_touch_updated_at();
++
++COMMIT;
++
++-- ===============================================================
++-- UYGULAMA (production, manuel — YALNIZ AÇIK ONAY SONRASI):
++--   psql "$DATABASE_URL" --single-transaction -f db/migrations/096_site_popup_translations.sql
++--
++-- DOĞRULAMA:
++--   SELECT count(*) FROM public.site_popup_translations;          -- 0 (boş başlar)
++--   SELECT title, button_text FROM public.site_popup WHERE id = 1; -- TR içerik aynen
++--
++-- ROLLBACK:
++--   BEGIN; DROP TABLE IF EXISTS public.site_popup_translations; COMMIT;
++--   (site_popup'a dokunulmadığı için TR içerik etkilenmez.)
++-- ===============================================================
+diff --git a/lib/db/site-popup.repository.server.ts b/lib/db/site-popup.repository.server.ts
+index af54b37..d2016c7 100644
+--- a/lib/db/site-popup.repository.server.ts
++++ b/lib/db/site-popup.repository.server.ts
+@@ -1,7 +1,11 @@
+ import "server-only";
+ 
+ import { dbAdminNative as dbAdmin } from "@/lib/db/native";
+-import type { SitePopupRow } from "@/lib/site-popup";
++import type {
++  PopupTranslationLocale,
++  SitePopupRow,
++  SitePopupTranslationRow,
++} from "@/lib/site-popup";
+ 
+ /* ===============================================================
+    🛡️ SITE POPUP REPOSITORY (server-only) — migration 095
+@@ -14,6 +18,8 @@ import type { SitePopupRow } from "@/lib/site-popup";
+ 
+ const TABLE = "site_popup";
+ const SINGLETON_ID = 1;
++/* Migration 096 — EN/DE içerik (TR canonical = site_popup satırı). */
++const TRANSLATIONS_TABLE = "site_popup_translations";
+ 
+ export type SitePopupWritable = Pick<
+   SitePopupRow,
+@@ -32,6 +38,11 @@ export type SitePopupWritable = Pick<
+   | "updated_at"
+ > & { stats: string[] };
+ 
++export type SitePopupTranslationWritable = Pick<
++  SitePopupTranslationRow,
++  "title" | "description" | "highlight_text" | "button_text" | "button_url"
++> & { stats: string[] };
++
+ export const sitePopupRepository = {
+   async find() {
+     return dbAdmin
+@@ -49,4 +60,32 @@ export const sitePopupRepository = {
+       .select("*")
+       .maybeSingle();
+   },
++
++  /** EN/DE çeviri satırları (0..2). */
++  async findTranslations() {
++    return dbAdmin
++      .from<SitePopupTranslationRow>(TRANSLATIONS_TABLE)
++      .select("popup_id, locale, title, description, highlight_text, stats, button_text, button_url")
++      .eq("popup_id", SINGLETON_ID);
++  },
++
++  /** Tek dilin TAM durumunu yazar — UNIQUE (popup_id, locale) upsert.
++   *  Payload isimle kurulur (spread YOK); locale tipi yalnız "en"|"de". */
++  async upsertTranslation(locale: PopupTranslationLocale, values: SitePopupTranslationWritable) {
++    return dbAdmin
++      .from<SitePopupTranslationRow>(TRANSLATIONS_TABLE)
++      .upsert(
++        {
++          popup_id: SINGLETON_ID,
++          locale,
++          title: values.title,
++          description: values.description,
++          highlight_text: values.highlight_text,
++          stats: values.stats,
++          button_text: values.button_text,
++          button_url: values.button_url,
++        } as unknown as Record<string, unknown>,
++        { onConflict: "popup_id,locale" }
++      );
++  },
+ };
+diff --git a/lib/site-popup.ts b/lib/site-popup.ts
+index 73e083a..abe0cca 100644
+--- a/lib/site-popup.ts
++++ b/lib/site-popup.ts
+@@ -76,8 +76,98 @@ export type PublicSitePopup = {
+   dismiss: PopupDismissDuration;
+   startsAt: string | null;
+   endsAt: string | null;
++  /** EN/DE içerik (migration 096) — Türkçe fallback'i SERVER'da
++   *  uygulanmış hâli. Yalnız çevirisi olan diller bulunur; yoksa
++   *  o dilde yukarıdaki Türkçe alanlar gösterilir. */
++  translations: Partial<Record<PopupTranslationLocale, PopupContent>>;
+ };
+ 
++/* ---------------- ÇOKLU DİL (migration 096) ----------------
++   TR canonical = site_popup satırı. EN/DE `site_popup_translations`
++   tablosunda; boş alan → aynı alanın Türkçe değeri (alan bazında
++   fallback — projedeki settings/villa çevirileriyle aynı kural). */
++
++export const POPUP_TRANSLATION_LOCALES = ["en", "de"] as const;
++export type PopupTranslationLocale = (typeof POPUP_TRANSLATION_LOCALES)[number];
++
++export function isPopupTranslationLocale(v: unknown): v is PopupTranslationLocale {
++  return typeof v === "string" && (POPUP_TRANSLATION_LOCALES as readonly string[]).includes(v);
++}
++
++/** DB satırı (migration 096). */
++export type SitePopupTranslationRow = {
++  popup_id: number;
++  locale: string;
++  title: string | null;
++  description: string | null;
++  highlight_text: string | null;
++  stats: unknown;
++  button_text: string | null;
++  button_url: string | null;
++};
++
++/** Popup'ın dile bağlı görünür içeriği. */
++export type PopupContent = Pick<
++  PublicSitePopup,
++  "title" | "description" | "highlight" | "stats" | "button"
++>;
++
++/** Dile bağlı ham (temizlenmiş) metin alanları. */
++export type PopupTextFields = {
++  title: string | null;
++  description: string | null;
++  highlight: string | null;
++  stats: string[];
++  buttonText: string | null;
++  buttonUrl: string | null;
++};
++
++/** Alan bazında fallback: çeviri alanı boşsa Türkçe (base) değer. */
++export function mergePopupText(
++  base: PopupTextFields,
++  t: Partial<PopupTextFields> | null | undefined
++): PopupTextFields {
++  if (!t) return base;
++  return {
++    title: t.title || base.title,
++    description: t.description || base.description,
++    highlight: t.highlight || base.highlight,
++    stats: t.stats && t.stats.length > 0 ? t.stats : base.stats,
++    buttonText: t.buttonText || base.buttonText,
++    buttonUrl: t.buttonUrl || base.buttonUrl,
++  };
++}
++
++/** Çeviride en az bir dolu alan var mı? */
++export function hasPopupText(t: Partial<PopupTextFields> | null | undefined): boolean {
++  return !!(
++    t &&
++    (t.title || t.description || t.highlight || (t.stats && t.stats.length) || t.buttonText || t.buttonUrl)
++  );
++}
++
++/** Buton projeksiyonu — gösterilmiyorsa, metin yoksa veya URL güvenli
++ *  değilse null. */
++export function popupButton(
++  text: string | null,
++  url: string | null,
++  show: boolean
++): PublicSitePopup["button"] {
++  const u = (url || "").trim();
++  return show && text && isSafePopupUrl(u)
++    ? { text, url: u, external: !u.startsWith("/") }
++    : null;
++}
++
++/** Ziyaretçinin diline göre içerik: EN/DE için çeviri (fallback'i
++ *  uygulanmış) varsa onu, yoksa Türkçe içeriği döner. Dil-bağımsız
++ *  alanlar (görsel, sürüm, kapsam, tarih, süre) AYNEN kalır. */
++export function localizeSitePopup(popup: PublicSitePopup, locale: string): PublicSitePopup {
++  if (!isPopupTranslationLocale(locale)) return popup;
++  const content = popup.translations?.[locale];
++  return content ? { ...popup, ...content } : popup;
++}
++
+ /** Düz metin temizliği: HTML etiketleri + kontrol karakterleri atılır,
+  *  baş/son boşluk kırpılır, uzunluk sınırlanır. Boş → null. */
+ export function cleanPopupText(
+@@ -203,7 +293,8 @@ export function normalizePopupStats(value: unknown): string[] {
+ export function toPublicSitePopup(
+   row: SitePopupRow | null | undefined,
+   resolveImageUrl: (path: string, version: string) => string | null,
+-  nowMs: number = Date.now()
++  nowMs: number = Date.now(),
++  translationRows: readonly SitePopupTranslationRow[] | null | undefined = null
+ ): PublicSitePopup | null {
+   if (!row || row.is_enabled !== true) return null;
+   if (row.ends_at && Number.isFinite(Date.parse(row.ends_at)) && nowMs >= Date.parse(row.ends_at)) {
+@@ -217,10 +308,8 @@ export function toPublicSitePopup(
+   const stats = normalizePopupStats(row.stats);
+   const buttonText = cleanPopupText(row.button_text, POPUP_LIMITS.buttonText);
+   const buttonUrl = (row.button_url || "").trim();
+-  const button =
+-    row.show_button !== false && buttonText && isSafePopupUrl(buttonUrl)
+-      ? { text: buttonText, url: buttonUrl, external: !buttonUrl.startsWith("/") }
+-      : null;
++  const showButton = row.show_button !== false;
++  const button = popupButton(buttonText, buttonUrl, showButton);
+ 
+   if (!imageUrl && !title && !description && !highlight && stats.length === 0 && !button) {
+     return null;
+@@ -238,5 +327,45 @@ export function toPublicSitePopup(
+     dismiss: isPopupDismissDuration(row.dismiss_duration) ? row.dismiss_duration : "session",
+     startsAt: row.starts_at,
+     endsAt: row.ends_at,
++    translations: buildPopupTranslations(
++      { title, description, highlight, stats, buttonText, buttonUrl: buttonUrl || null },
++      showButton,
++      translationRows
++    ),
++  };
++}
++
++/** Çeviri satırı → temizlenmiş metin alanları (güvensiz URL → null). */
++export function popupTranslationText(t: SitePopupTranslationRow): PopupTextFields {
++  const url = (t.button_url || "").trim();
++  return {
++    title: cleanPopupText(t.title, POPUP_LIMITS.title),
++    description: cleanPopupText(t.description, POPUP_LIMITS.description, { multiline: true }),
++    highlight: cleanPopupText(t.highlight_text, POPUP_LIMITS.highlight),
++    stats: normalizePopupStats(t.stats),
++    buttonText: cleanPopupText(t.button_text, POPUP_LIMITS.buttonText),
++    buttonUrl: isSafePopupUrl(url) ? url : null,
+   };
+ }
++
++function buildPopupTranslations(
++  base: PopupTextFields,
++  showButton: boolean,
++  rows: readonly SitePopupTranslationRow[] | null | undefined
++): PublicSitePopup["translations"] {
++  const out: PublicSitePopup["translations"] = {};
++  for (const r of rows || []) {
++    if (!isPopupTranslationLocale(r.locale)) continue;
++    const t = popupTranslationText(r);
++    if (!hasPopupText(t)) continue;
++    const m = mergePopupText(base, t);
++    out[r.locale] = {
++      title: m.title,
++      description: m.description,
++      highlight: m.highlight,
++      stats: m.stats,
++      button: popupButton(m.buttonText, m.buttonUrl, showButton),
++    };
++  }
++  return out;
++}
+diff --git a/tests/unit/site-popup.test.tsx b/tests/unit/site-popup.test.tsx
+index 8e27ea4..aa14bb6 100644
+--- a/tests/unit/site-popup.test.tsx
++++ b/tests/unit/site-popup.test.tsx
+@@ -14,13 +14,18 @@ import {
+   popupIsoToDate,
+   popupDismissMs,
+   toPublicSitePopup,
++  localizeSitePopup,
++  mergePopupText,
+   type PublicSitePopup,
+   type SitePopupRow,
++  type SitePopupTranslationRow,
+ } from "@/lib/site-popup";
+ 
+ /* ---------------- mocks (servis + action + loader) ---------------- */
+ const repoFind = vi.fn();
+ const repoUpdate = vi.fn();
++const repoFindTranslations = vi.fn();
++const repoUpsertTranslation = vi.fn();
+ const removeServer = vi.fn();
+ const authorizeAdminSession = vi.fn();
+ const callerHasPermission = vi.fn();
+@@ -32,6 +37,8 @@ vi.mock("@/lib/db/site-popup.repository.server", () => ({
+   sitePopupRepository: {
+     find: (...a: unknown[]) => repoFind(...a),
+     update: (...a: unknown[]) => repoUpdate(...a),
++    findTranslations: (...a: unknown[]) => repoFindTranslations(...a),
++    upsertTranslation: (...a: unknown[]) => repoUpsertTranslation(...a),
+   },
+ }));
+ vi.mock("@/lib/storage/server", () => ({ removeServer: (...a: unknown[]) => removeServer(...a) }));
+@@ -79,6 +86,19 @@ function row(over: Partial<SitePopupRow> = {}): SitePopupRow {
+   };
+ }
+ const resolve = (p: string, v: string) => `https://cdn.test/${p}?v=${v}`;
++function tRow(locale: string, over: Partial<SitePopupTranslationRow> = {}): SitePopupTranslationRow {
++  return {
++    popup_id: 1,
++    locale,
++    title: null,
++    description: null,
++    highlight_text: null,
++    stats: [],
++    button_text: null,
++    button_url: null,
++    ...over,
++  };
++}
+ 
+ /* ================================================================ */
+ describe("saf yardımcılar", () => {
+@@ -153,6 +173,7 @@ describe("toPublicSitePopup (public projeksiyon)", () => {
+       dismiss: "session",
+       startsAt: null,
+       endsAt: null,
++      translations: {},
+     });
+     expect(Object.keys(p)).not.toContain("id");
+     expect(Object.keys(p)).not.toContain("image_path");
+@@ -209,6 +230,8 @@ describe("saveSitePopup (servis doğrulaması)", () => {
+     vi.spyOn(console, "error").mockImplementation(() => {});
+     vi.spyOn(console, "warn").mockImplementation(() => {});
+     repoFind.mockResolvedValue({ data: row(), error: null });
++    repoFindTranslations.mockResolvedValue({ data: [], error: null });
++    repoUpsertTranslation.mockResolvedValue({ data: null, error: null });
+     repoUpdate.mockImplementation(async (values: Record<string, unknown>) => ({
+       data: { ...row(), ...values },
+       error: null,
+@@ -282,6 +305,8 @@ describe("server action yetkisi", () => {
+   beforeEach(() => {
+     vi.clearAllMocks();
+     repoFind.mockResolvedValue({ data: row(), error: null });
++    repoFindTranslations.mockResolvedValue({ data: [], error: null });
++    repoUpsertTranslation.mockResolvedValue({ data: null, error: null });
+     repoUpdate.mockResolvedValue({ data: row(), error: null });
+   });
+ 
+@@ -427,3 +452,266 @@ describe("SitePopupLoader (public davranış)", () => {
+     expect(screen.queryByRole("dialog")).toBeNull();
+   });
+ });
++
++/* ================================================================
++   🌐 ÇOKLU DİL (migration 096) — TR canonical + EN/DE, alan bazında
++   Türkçe fallback; locale URL prefix'inden (/en, /de).
++   ================================================================ */
++describe("çoklu dil — saf yardımcılar", () => {
++  const EN = tRow("en", {
++    title: "Since 2006 we have been with you.",
++    description: "The finest villas, in one place.",
++    stats: ["300,000+ guests"],
++    button_text: "Explore All Villas",
++    button_url: "/en/kiralik-villalar",
++  });
++
++  it("toPublicSitePopup: EN içerik + boş alanlar (vurgu) Türkçe'ye düşer; TR alanlar aynen", () => {
++    const p = toPublicSitePopup(row(), resolve, NOW, [EN])!;
++    expect(p.title).toBe("2006'dan bu yana tatilinizin yanındayız.");
++    expect(p.translations.en).toEqual({
++      title: "Since 2006 we have been with you.",
++      description: "The finest villas, in one place.",
++      highlight: "20",
++      stats: ["300,000+ guests"],
++      button: { text: "Explore All Villas", url: "/en/kiralik-villalar", external: false },
++    });
++    expect(p.translations.de).toBeUndefined();
++  });
++
++  it("DE kısmi: yalnız buton metni → URL/başlık/alt bilgiler Türkçe; tamamen boş satır → yok sayılır", () => {
++    const p = toPublicSitePopup(
++      row(),
++      resolve,
++      NOW,
++      [tRow("de", { button_text: "Alle Villen entdecken" }), tRow("en")]
++    )!;
++    expect(p.translations.en).toBeUndefined();
++    expect(p.translations.de?.title).toBe("2006'dan bu yana tatilinizin yanındayız.");
++    expect(p.translations.de?.stats).toEqual(["300.000+ misafir", "4.9 misafir puanı", "TÜRSAB 9117"]);
++    expect(p.translations.de?.button).toEqual({
++      text: "Alle Villen entdecken",
++      url: "/kiralik-villalar",
++      external: false,
++    });
++  });
++
++  it("çeviride HTML temizlenir, güvensiz URL yok sayılır (TR URL'e düşer), 'tr'/bilinmeyen locale satırı alınmaz", () => {
++    const p = toPublicSitePopup(row(), resolve, NOW, [
++      tRow("en", { title: "<img src=x onerror=alert(1)>Hello", button_text: "Go", button_url: "javascript:alert(1)" }),
++      tRow("tr", { title: "HACK" }),
++      tRow("fr", { title: "Bonjour" }),
++    ])!;
++    expect(p.translations.en?.title).toBe("Hello");
++    expect(p.translations.en?.button?.url).toBe("/kiralik-villalar");
++    expect(Object.keys(p.translations)).toEqual(["en"]);
++    expect(p.title).not.toBe("HACK");
++  });
++
++  it("buton gizliyse çeviride de buton yok", () => {
++    const p = toPublicSitePopup(row({ show_button: false }), resolve, NOW, [EN])!;
++    expect(p.button).toBeNull();
++    expect(p.translations.en?.button).toBeNull();
++  });
++
++  it("localizeSitePopup: tr/bilinmeyen → aynen; en → çeviri; çevirisi olmayan de → Türkçe; dil-bağımsız alanlar korunur", () => {
++    const p = toPublicSitePopup(row(), resolve, NOW, [EN])!;
++    expect(localizeSitePopup(p, "tr")).toBe(p);
++    expect(localizeSitePopup(p, "xx")).toBe(p);
++    expect(localizeSitePopup(p, "de")).toBe(p);
++    const en = localizeSitePopup(p, "en");
++    expect(en.title).toBe("Since 2006 we have been with you.");
++    expect(en.imageUrl).toBe(p.imageUrl);
++    expect(en.version).toBe(p.version);
++    expect(en.scope).toBe(p.scope);
++    expect(en.dismiss).toBe(p.dismiss);
++  });
++
++  it("mergePopupText: boş string/boş dizi → Türkçe değer", () => {
++    const base = { title: "T", description: "D", highlight: "20", stats: ["a"], buttonText: "B", buttonUrl: "/x" };
++    expect(mergePopupText(base, { title: "", stats: [], buttonText: "EN" })).toEqual({ ...base, buttonText: "EN" });
++    expect(mergePopupText(base, null)).toBe(base);
++  });
++});
++
++describe("çoklu dil — servis", () => {
++  const base = {
++    isEnabled: true,
++    imagePath: "popup/popup.webp",
++    title: "Başlık",
++    description: "",
++    highlight: "20",
++    stats: ["a"],
++    buttonText: "Villaları inceleyin",
++    buttonUrl: "/kiralik-villalar",
++    showButton: true,
++    scope: "home",
++    dismiss: "1d",
++    startDate: "",
++    endDate: "",
++  };
++  const translations = {
++    en: { title: "<b>Title</b>", description: "", highlight: "", stats: [" x ", ""], buttonText: "Explore All Villas", buttonUrl: "/en/kiralik-villalar" },
++    de: { title: "", description: "", highlight: "", stats: [], buttonText: "", buttonUrl: "" },
++  };
++
++  beforeEach(() => {
++    vi.clearAllMocks();
++    vi.spyOn(console, "error").mockImplementation(() => {});
++    vi.spyOn(console, "warn").mockImplementation(() => {});
++    repoFind.mockResolvedValue({ data: row(), error: null });
++    repoFindTranslations.mockResolvedValue({ data: [], error: null });
++    repoUpsertTranslation.mockResolvedValue({ data: null, error: null });
++    repoUpdate.mockImplementation(async (values: Record<string, unknown>) => ({
++      data: { ...row(), ...values },
++      error: null,
++    }));
++  });
++
++  it("EN/DE her kayıtta tam durumuyla yazılır (isimli alanlar, temizlenmiş); TR site_popup'a gider", async () => {
++    const res = await saveSitePopup({ ...base, translations: { ...translations, fr: { title: "x" } } });
++    expect(res.ok).toBe(true);
++    expect(repoUpsertTranslation).toHaveBeenCalledTimes(2);
++    const [[l1, v1], [l2, v2]] = repoUpsertTranslation.mock.calls as [string, Record<string, unknown>][];
++    expect([l1, l2]).toEqual(["en", "de"]);
++    expect(Object.keys(v1).sort()).toEqual(
++      ["button_text", "button_url", "description", "highlight_text", "stats", "title"].sort()
++    );
++    expect(v1).toEqual({
++      title: "Title",
++      description: null,
++      highlight_text: null,
++      stats: ["x"],
++      button_text: "Explore All Villas",
++      button_url: "/en/kiralik-villalar",
++    });
++    expect(v2).toEqual({
++      title: null, description: null, highlight_text: null, stats: [], button_text: null, button_url: null,
++    });
++    expect((repoUpdate.mock.calls[0][0] as Record<string, unknown>).title).toBe("Başlık");
++    expect(res.ok && res.values.translations.en.title).toBe("Title");
++    expect(res.ok && res.values.translations.de.title).toBe("");
++  });
++
++  it("translations anahtarı yoksa çevirilere DOKUNULMAZ (geriye uyum)", async () => {
++    const res = await saveSitePopup(base);
++    expect(res.ok).toBe(true);
++    expect(repoUpsertTranslation).not.toHaveBeenCalled();
++  });
++
++  it("EN'de güvensiz URL / URL'siz buton (TR URL de yoksa) → RED, hiçbir şey yazılmaz", async () => {
++    for (const bad of [
++      { translations: { ...translations, en: { ...translations.en, buttonUrl: "javascript:alert(1)" } } },
++      { translations: { ...translations, de: { ...translations.de, buttonUrl: "//evil.com" } } },
++      { buttonText: "", buttonUrl: "", translations: { ...translations, en: { ...translations.en, buttonUrl: "" } } },
++    ]) {
++      const res = await saveSitePopup({ ...base, ...bad });
++      expect(res.ok, JSON.stringify(bad)).toBe(false);
++    }
++    expect(repoUpsertTranslation).not.toHaveBeenCalled();
++    expect(repoUpdate).not.toHaveBeenCalled();
++  });
++
++  it("EN buton metni var, EN URL boş → TR URL kullanılacağı için kabul", async () => {
++    const res = await saveSitePopup({
++      ...base,
++      translations: { ...translations, en: { ...translations.en, buttonUrl: "" } },
++    });
++    expect(res.ok).toBe(true);
++  });
++
++  it("çeviri yazımı başarısız → hata; ana satır (sürüm) güncellenmez", async () => {
++    repoUpsertTranslation.mockResolvedValueOnce({ data: null, error: { message: "relation does not exist" } });
++    const res = await saveSitePopup({ ...base, translations });
++    expect(res.ok).toBe(false);
++    expect(repoUpdate).not.toHaveBeenCalled();
++  });
++
++  it("public: kapalıysa çeviri sorgusu atılmaz; çeviri okuma hatası → Türkçe popup (site etkilenmez)", async () => {
++    repoFind.mockResolvedValueOnce({ data: row({ is_enabled: false }), error: null });
++    expect(await getPublicSitePopup()).toBeNull();
++    expect(repoFindTranslations).not.toHaveBeenCalled();
++
++    repoFindTranslations.mockResolvedValueOnce({ data: null, error: { message: "relation does not exist" } });
++    const p = await getPublicSitePopup();
++    expect(p?.title).toBe("2006'dan bu yana tatilinizin yanındayız.");
++    expect(p?.translations).toEqual({});
++
++    repoFindTranslations.mockResolvedValueOnce({
++      data: [tRow("en", { title: "Hello" })],
++      error: null,
++    });
++    expect((await getPublicSitePopup())?.translations.en?.title).toBe("Hello");
++  });
++
++  it("admin okuma: çeviri tablosu okunamazsa null (çeviriler sessizce boş görünüp ezilmesin)", async () => {
++    requirePermission.mockResolvedValue(undefined);
++    repoFindTranslations.mockResolvedValueOnce({ data: null, error: { message: "relation does not exist" } });
++    expect(await loadSitePopupAction()).toBeNull();
++    repoFindTranslations.mockResolvedValueOnce({
++      data: [tRow("de", { title: "Hallo", stats: ["a", 5, "<b>b</b>"] })],
++      error: null,
++    });
++    const v = await loadSitePopupAction();
++    expect(v?.translations.de).toEqual({
++      title: "Hallo", description: "", highlight: "", stats: ["a", "b"], buttonText: "", buttonUrl: "",
++    });
++    expect(v?.translations.en.title).toBe("");
++  });
++});
++
++describe("çoklu dil — SitePopupLoader", () => {
++  const popup = toPublicSitePopup(row({ dismiss_duration: "1d" }), resolve, NOW, [
++    tRow("en", { title: "Since 2006 we have been with you.", button_text: "Explore All Villas", button_url: "/en/kiralik-villalar" }),
++  ])!;
++
++  beforeEach(() => {
++    vi.useFakeTimers();
++    vi.setSystemTime(NOW);
++    window.localStorage.clear();
++    window.sessionStorage.clear();
++  });
++  afterEach(() => vi.useRealTimers());
++
++  const openNow = async () => {
++    await act(async () => {
++      vi.advanceTimersByTime(1000);
++    });
++  };
++
++  it("/en → İngilizce içerik (+ Türkçe vurgu fallback)", async () => {
++    pathname = "/en";
++    render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    expect(screen.getByRole("heading", { name: "Since 2006 we have been with you." })).toBeTruthy();
++    expect(screen.getByRole("link", { name: "Explore All Villas" }).getAttribute("href")).toBe("/en/kiralik-villalar");
++    expect(screen.getByText("20")).toBeTruthy();
++  });
++
++  it("/de (çeviri yok) → Türkçe içerik; / → Türkçe içerik", async () => {
++    pathname = "/de";
++    const { unmount } = render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    expect(screen.getByRole("heading", { name: "2006'dan bu yana tatilinizin yanındayız." })).toBeTruthy();
++    expect(screen.getByRole("button", { name: "Schließen" })).toBeTruthy();
++    unmount();
++    window.localStorage.clear();
++    pathname = "/";
++    render(<SitePopupLoader popup={popup} />);
++    await openNow();
++    expect(screen.getByRole("link", { name: "Villaları inceleyin" })).toBeTruthy();
++  });
++
++  it("kapsam 'all': /en/kiralik-villalar → İngilizce; /energy gibi yol TR sayılır", async () => {
++    pathname = "/en/kiralik-villalar";
++    const { unmount } = render(<SitePopupLoader popup={{ ...popup, scope: "all" }} />);
++    await openNow();
++    expect(screen.getByRole("heading", { name: "Since 2006 we have been with you." })).toBeTruthy();
++    unmount();
++    window.localStorage.clear();
++    pathname = "/energy";
++    render(<SitePopupLoader popup={{ ...popup, scope: "all" }} />);
++    await openNow();
++    expect(screen.getByRole("heading", { name: "2006'dan bu yana tatilinizin yanındayız." })).toBeTruthy();
++  });
++});

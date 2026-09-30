@@ -1,0 +1,3394 @@
+diff --git a/app/(admin)/maki-admin/activity-logs/layout.tsx b/app/(admin)/maki-admin/activity-logs/layout.tsx
+new file mode 100644
+index 0000000..02ebb96
+--- /dev/null
++++ b/app/(admin)/maki-admin/activity-logs/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/activity-logs/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="activity_logs">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/blog/layout.tsx b/app/(admin)/maki-admin/blog/layout.tsx
+new file mode 100644
+index 0000000..3077a0c
+--- /dev/null
++++ b/app/(admin)/maki-admin/blog/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/blog/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="blog">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/discount-collection/layout.tsx b/app/(admin)/maki-admin/discount-collection/layout.tsx
+new file mode 100644
+index 0000000..a98c754
+--- /dev/null
++++ b/app/(admin)/maki-admin/discount-collection/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/discount-collection/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="discount_collection">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/external-reservations/layout.tsx b/app/(admin)/maki-admin/external-reservations/layout.tsx
+new file mode 100644
+index 0000000..c115caa
+--- /dev/null
++++ b/app/(admin)/maki-admin/external-reservations/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/external-reservations/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="external_calendars">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/faqs/layout.tsx b/app/(admin)/maki-admin/faqs/layout.tsx
+new file mode 100644
+index 0000000..7431d4e
+--- /dev/null
++++ b/app/(admin)/maki-admin/faqs/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/faqs/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="faqs">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/features/layout.tsx b/app/(admin)/maki-admin/features/layout.tsx
+new file mode 100644
+index 0000000..f2a2172
+--- /dev/null
++++ b/app/(admin)/maki-admin/features/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/features/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="features">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/homepage-collection/layout.tsx b/app/(admin)/maki-admin/homepage-collection/layout.tsx
+new file mode 100644
+index 0000000..a2fb0ae
+--- /dev/null
++++ b/app/(admin)/maki-admin/homepage-collection/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/homepage-collection/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="homepage_collection">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/locations/layout.tsx b/app/(admin)/maki-admin/locations/layout.tsx
+new file mode 100644
+index 0000000..041085b
+--- /dev/null
++++ b/app/(admin)/maki-admin/locations/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/locations/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="locations">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/maki-finans/layout.tsx b/app/(admin)/maki-admin/maki-finans/layout.tsx
+new file mode 100644
+index 0000000..8e7668b
+--- /dev/null
++++ b/app/(admin)/maki-admin/maki-finans/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/maki-finans/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="finance">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/manual-reservations/ekle/page.tsx b/app/(admin)/maki-admin/manual-reservations/ekle/page.tsx
+index 366f306..2498282 100644
+--- a/app/(admin)/maki-admin/manual-reservations/ekle/page.tsx
++++ b/app/(admin)/maki-admin/manual-reservations/ekle/page.tsx
+@@ -6,6 +6,7 @@ import ManualReservationForm from "./ManualReservationForm";
+ import { villaAdminRepository as villaRepository } from "@/lib/db/villa.repository.server";
+ import { authorizeAdminSession } from "@/lib/admin-route-auth";
+ import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++import { adminPermissionGate } from "@/app/components/admin/AdminSectionGuard";
+ 
+ async function getVillas() {
+   const { data, error } = await villaRepository.findAllIdTitleSlug();
+@@ -29,6 +30,11 @@ export default async function Page({
+   const auth = await authorizeAdminSession();
+   if (!auth.ok) return <AdminPageSessionRefresh />;
+ 
++  /* 🛡️ Yetki ("manual_reservations") — VERİDEN ÖNCE. Bölüm layout'u sayfanın
++     server render'ını durdurmadığı için kontrol burada da yapılır. */
++  const denied = await adminPermissionGate(auth.caller.id, "manual_reservations");
++  if (denied) return denied;
++
+   const villas = await getVillas();
+ 
+   const sp = (await searchParams) || {};
+diff --git a/app/(admin)/maki-admin/manual-reservations/layout.tsx b/app/(admin)/maki-admin/manual-reservations/layout.tsx
+new file mode 100644
+index 0000000..b8a77fa
+--- /dev/null
++++ b/app/(admin)/maki-admin/manual-reservations/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/manual-reservations/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="manual_reservations">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/menu/layout.tsx b/app/(admin)/maki-admin/menu/layout.tsx
+new file mode 100644
+index 0000000..830b4a9
+--- /dev/null
++++ b/app/(admin)/maki-admin/menu/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/menu/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="menu">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/messages/layout.tsx b/app/(admin)/maki-admin/messages/layout.tsx
+new file mode 100644
+index 0000000..5eda61a
+--- /dev/null
++++ b/app/(admin)/maki-admin/messages/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/messages/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="messages">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/offer-requests/layout.tsx b/app/(admin)/maki-admin/offer-requests/layout.tsx
+new file mode 100644
+index 0000000..c4069e1
+--- /dev/null
++++ b/app/(admin)/maki-admin/offer-requests/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/offer-requests/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="offer_requests">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/page.tsx b/app/(admin)/maki-admin/page.tsx
+index 8436255..7b54b22 100644
+--- a/app/(admin)/maki-admin/page.tsx
++++ b/app/(admin)/maki-admin/page.tsx
+@@ -11,6 +11,7 @@ import UpcomingOperations from "@/app/components/admin/dashboard/UpcomingOperati
+ import HideableSection from "@/app/components/admin/dashboard/HideableSection";
+ import { authorizeAdminSession } from "@/lib/admin-route-auth";
+ import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++import { adminPermissionGate } from "@/app/components/admin/AdminSectionGuard";
+ 
+ export default async function AdminHome() {
+   /* 🛡️ SEC-01 — AUTH ÖNCE, VERİ SONRA. Middleware yalnız optimistic
+@@ -20,6 +21,12 @@ export default async function AdminHome() {
+   const auth = await authorizeAdminSession();
+   if (!auth.ok) return <AdminPageSessionRefresh />;
+ 
++  /* 🛡️ Yetki ("dashboard") — VERİDEN ÖNCE. Yetkisiz admin (login sonrası
++     herkes buraya gelir) menü sırasındaki ilk izinli bölüme yönlendirilir;
++     rezervasyon/misafir verisi hiç sorgulanmaz. */
++  const denied = await adminPermissionGate(auth.caller.id, "dashboard");
++  if (denied) return denied;
++
+   /* Dashboard data fetch — yalnız operasyon odaklı sectionlar için
+      gerçek veri çekilir. Eski statik KPI counts (toplam villa,
+      toplam rezervasyon, tahmini gelir) UI cleanup'ı sonrası
+diff --git a/app/(admin)/maki-admin/pages/layout.tsx b/app/(admin)/maki-admin/pages/layout.tsx
+new file mode 100644
+index 0000000..822d60f
+--- /dev/null
++++ b/app/(admin)/maki-admin/pages/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/pages/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="pages">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/payment-accounts/layout.tsx b/app/(admin)/maki-admin/payment-accounts/layout.tsx
+new file mode 100644
+index 0000000..22ed41b
+--- /dev/null
++++ b/app/(admin)/maki-admin/payment-accounts/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/payment-accounts/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need={["payment_accounts", "settings"]}>{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/payment-methods/layout.tsx b/app/(admin)/maki-admin/payment-methods/layout.tsx
+new file mode 100644
+index 0000000..7a4da3f
+--- /dev/null
++++ b/app/(admin)/maki-admin/payment-methods/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/payment-methods/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="payment_methods">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/price-includes/layout.tsx b/app/(admin)/maki-admin/price-includes/layout.tsx
+new file mode 100644
+index 0000000..da4c4a4
+--- /dev/null
++++ b/app/(admin)/maki-admin/price-includes/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/price-includes/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="price_includes">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/property-owners/layout.tsx b/app/(admin)/maki-admin/property-owners/layout.tsx
+new file mode 100644
+index 0000000..12cca18
+--- /dev/null
++++ b/app/(admin)/maki-admin/property-owners/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/property-owners/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="property_owners">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/reservations/layout.tsx b/app/(admin)/maki-admin/reservations/layout.tsx
+new file mode 100644
+index 0000000..f7e6088
+--- /dev/null
++++ b/app/(admin)/maki-admin/reservations/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/reservations/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="reservations">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/reviews/layout.tsx b/app/(admin)/maki-admin/reviews/layout.tsx
+new file mode 100644
+index 0000000..6b5cc41
+--- /dev/null
++++ b/app/(admin)/maki-admin/reviews/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/reviews/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="reviews">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/rules/layout.tsx b/app/(admin)/maki-admin/rules/layout.tsx
+new file mode 100644
+index 0000000..6765e99
+--- /dev/null
++++ b/app/(admin)/maki-admin/rules/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/rules/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="rules">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/settings/ceviriler/page.tsx b/app/(admin)/maki-admin/settings/ceviriler/page.tsx
+index 2afe60b..5c84dca 100644
+--- a/app/(admin)/maki-admin/settings/ceviriler/page.tsx
++++ b/app/(admin)/maki-admin/settings/ceviriler/page.tsx
+@@ -10,6 +10,7 @@ import { getSettingsTranslations } from "@/app/services/settings-translation.ser
+ import type { SettingsTranslationsByLocale } from "@/lib/i18n/settings-translations.types";
+ import { authorizeAdminSession } from "@/lib/admin-route-auth";
+ import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++import { adminPermissionGate } from "@/app/components/admin/AdminSectionGuard";
+ 
+ /* ===============================================================
+    🛡️ ADMIN > SETTINGS > ÇEVİRİLER — server wrapper
+@@ -52,6 +53,11 @@ export default async function SettingsCevirilerPage() {
+   const auth = await authorizeAdminSession();
+   if (!auth.ok) return <AdminPageSessionRefresh />;
+ 
++  /* 🛡️ Yetki ("settings") — VERİDEN ÖNCE. Bölüm layout'u sayfanın
++     server render'ını durdurmadığı için kontrol burada da yapılır. */
++  const denied = await adminPermissionGate(auth.caller.id, "settings");
++  if (denied) return denied;
++
+   const [settings, translationsResult] = await Promise.all([
+     getPublicSettings().catch(() => null),
+     getSettingsTranslations().catch(() => null),
+diff --git a/app/(admin)/maki-admin/settings/layout.tsx b/app/(admin)/maki-admin/settings/layout.tsx
+index 6915ea7..bdb3d1d 100644
+--- a/app/(admin)/maki-admin/settings/layout.tsx
++++ b/app/(admin)/maki-admin/settings/layout.tsx
+@@ -1,3 +1,5 @@
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
+ import SettingsNav from "./_components/SettingsNav";
+ 
+ /* ===============================================================
+@@ -17,12 +19,16 @@ export default function SettingsLayout({
+ }: {
+   children: React.ReactNode;
+ }) {
++  /* 🛡️ Admin yetki kapısı — /maki-admin/settings/* ("settings");
++     yetkisiz admin alt menüyü de görmez. */
+   return (
+-    <div className="w-full">
+-      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] xl:grid-cols-[240px_1fr] gap-6 lg:gap-10">
+-        <SettingsNav />
+-        <div className="min-w-0">{children}</div>
++    <AdminSectionGuard need="settings">
++      <div className="w-full">
++        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] xl:grid-cols-[240px_1fr] gap-6 lg:gap-10">
++          <SettingsNav />
++          <div className="min-w-0">{children}</div>
++        </div>
+       </div>
+-    </div>
++    </AdminSectionGuard>
+   );
+ }
+diff --git a/app/(admin)/maki-admin/system-logs/layout.tsx b/app/(admin)/maki-admin/system-logs/layout.tsx
+new file mode 100644
+index 0000000..62eee72
+--- /dev/null
++++ b/app/(admin)/maki-admin/system-logs/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/system-logs/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="system_logs">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/types/layout.tsx b/app/(admin)/maki-admin/types/layout.tsx
+new file mode 100644
+index 0000000..1a6c07c
+--- /dev/null
++++ b/app/(admin)/maki-admin/types/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/types/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="villa_types">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/users/layout.tsx b/app/(admin)/maki-admin/users/layout.tsx
+new file mode 100644
+index 0000000..0b749ae
+--- /dev/null
++++ b/app/(admin)/maki-admin/users/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/users/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="users">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/villa-listesi/layout.tsx b/app/(admin)/maki-admin/villa-listesi/layout.tsx
+new file mode 100644
+index 0000000..6c201bf
+--- /dev/null
++++ b/app/(admin)/maki-admin/villa-listesi/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/villa-listesi/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="villa_lists">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/villa-listesi/page.tsx b/app/(admin)/maki-admin/villa-listesi/page.tsx
+index 5b4efca..f4a416d 100644
+--- a/app/(admin)/maki-admin/villa-listesi/page.tsx
++++ b/app/(admin)/maki-admin/villa-listesi/page.tsx
+@@ -7,6 +7,7 @@ import { villaTypeRepository } from "@/lib/db/villa-type.repository";
+ import { resolveVillaImageUrl } from "@/lib/storage.helpers";
+ import { authorizeAdminSession } from "@/lib/admin-route-auth";
+ import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++import { adminPermissionGate } from "@/app/components/admin/AdminSectionGuard";
+ 
+ import VillaListesiClient, {
+   type VillaListesiRow,
+@@ -88,6 +89,11 @@ export default async function VillaListesiPage() {
+   const auth = await authorizeAdminSession();
+   if (!auth.ok) return <AdminPageSessionRefresh />;
+ 
++  /* 🛡️ Yetki ("villa_lists") — VERİDEN ÖNCE. Bölüm layout'u sayfanın
++     server render'ını durdurmadığı için kontrol burada da yapılır. */
++  const denied = await adminPermissionGate(auth.caller.id, "villa_lists");
++  if (denied) return denied;
++
+   /* Active villas + locations + categories + type relations paralel
+      fetch. SELECT pattern /arama ve villaRepository.listPublic ile
+      birebir aynı (yıldız + embed). */
+diff --git a/app/(admin)/maki-admin/villas/layout.tsx b/app/(admin)/maki-admin/villas/layout.tsx
+new file mode 100644
+index 0000000..5d34a3a
+--- /dev/null
++++ b/app/(admin)/maki-admin/villas/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/villas/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="villas">{children}</AdminSectionGuard>;
++}
+diff --git a/app/(admin)/maki-admin/villas/page.tsx b/app/(admin)/maki-admin/villas/page.tsx
+index ad72b77..ec2856d 100644
+--- a/app/(admin)/maki-admin/villas/page.tsx
++++ b/app/(admin)/maki-admin/villas/page.tsx
+@@ -4,6 +4,7 @@ import { Plus, Home, Trash as TrashBin, ArrowDownUp } from "lucide-react";
+ import VillaOperationsList from "./_components/VillaOperationsList";
+ import { authorizeAdminSession } from "@/lib/admin-route-auth";
+ import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++import { adminPermissionGate } from "@/app/components/admin/AdminSectionGuard";
+ 
+ /* 🛡️ FORCE-DYNAMIC — production statik cache problemi çözümü.
+    `searchParams` dinamik API olduğu için Next.js 16'da bu sayfa
+@@ -81,6 +82,11 @@ export default async function VillasPage({
+   const auth = await authorizeAdminSession();
+   if (!auth.ok) return <AdminPageSessionRefresh />;
+ 
++  /* 🛡️ Yetki ("villas") — VERİDEN ÖNCE. Bölüm layout'u sayfanın
++     server render'ını durdurmadığı için kontrol burada da yapılır. */
++  const denied = await adminPermissionGate(auth.caller.id, "villas");
++  if (denied) return denied;
++
+   const sp = (await searchParams) || {};
+   const page = parsePage(sp.page);
+   const pageSize = parsePageSize(sp.pageSize);
+diff --git a/app/(admin)/maki-admin/villas/siralama/page.tsx b/app/(admin)/maki-admin/villas/siralama/page.tsx
+index 56333d3..c0d1d25 100644
+--- a/app/(admin)/maki-admin/villas/siralama/page.tsx
++++ b/app/(admin)/maki-admin/villas/siralama/page.tsx
+@@ -5,6 +5,7 @@ import { getVillasForSortOrder } from "@/app/services/villa.service";
+ import VillaSortPanel from "./_components/VillaSortPanel";
+ import { authorizeAdminSession } from "@/lib/admin-route-auth";
+ import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++import { adminPermissionGate } from "@/app/components/admin/AdminSectionGuard";
+ 
+ /* ===============================================================
+    🛡️ ADMIN — VILLA SIRALA (drag-drop only)
+@@ -44,6 +45,11 @@ export default async function VillaSiralaPage() {
+   const auth = await authorizeAdminSession();
+   if (!auth.ok) return <AdminPageSessionRefresh />;
+ 
++  /* 🛡️ Yetki ("villas") — VERİDEN ÖNCE. Bölüm layout'u sayfanın
++     server render'ını durdurmadığı için kontrol burada da yapılır. */
++  const denied = await adminPermissionGate(auth.caller.id, "villas");
++  if (denied) return denied;
++
+   // 🛡️ Admin listing: pasif villalar dahil; soft-deleted hariç.
+   //    Minimal projection — panel yalnız id + title okuyor.
+   const villas = await getVillasForSortOrder();
+diff --git a/app/(admin)/maki-admin/webmaster/layout.tsx b/app/(admin)/maki-admin/webmaster/layout.tsx
+new file mode 100644
+index 0000000..6e740ba
+--- /dev/null
++++ b/app/(admin)/maki-admin/webmaster/layout.tsx
+@@ -0,0 +1,9 @@
++import type { ReactNode } from "react";
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++
++/* 🛡️ Admin yetki kapısı — /maki-admin/webmaster/* (alt ve dinamik route'lar
++   dahil). İzin haritası: lib/auth/admin-permission-map.ts */
++export default function Layout({ children }: { children: ReactNode }) {
++  return <AdminSectionGuard need="webmaster">{children}</AdminSectionGuard>;
++}
+diff --git a/app/api/admin-users/[id]/route.ts b/app/api/admin-users/[id]/route.ts
+index 44ebdf7..cc83244 100644
+--- a/app/api/admin-users/[id]/route.ts
++++ b/app/api/admin-users/[id]/route.ts
+@@ -171,6 +171,16 @@ export async function DELETE(
+     }
+     const caller = auth.caller;
+ 
++    /* 🛡️ Admin yetki — başka admini silmek `users` izni ister (PATCH ile
++       aynı SEC-03 deseni). İzin yoksa 403; hedef admin okunmaz/silinmez. */
++    if (!(await callerHasPermission(caller.id, "users"))) {
++      console.error("[admin-users.delete] FORBIDDEN", { callerId: caller.id });
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
++
+     /* ---------- INPUT ---------- */
+     const targetId = (id || "").toString().trim();
+     if (!targetId) {
+diff --git a/app/api/admin-users/route.ts b/app/api/admin-users/route.ts
+index f1f7517..1422c5e 100644
+--- a/app/api/admin-users/route.ts
++++ b/app/api/admin-users/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ import { adminUserPanelServerRepository } from "@/lib/db/admin-user-panel.repository.server";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ /* ===============================================================
+    🔥 GET /api/admin-users  (Migration AU-P1 — panel LIST boundary)
+@@ -38,6 +42,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (users) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "users"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   /* ---------- LIST (native, RLS-free) ---------- */
+   const { data, error } =
+     await adminUserPanelServerRepository.findAllForList();
+diff --git a/app/api/admin/blog/[id]/route.ts b/app/api/admin/blog/[id]/route.ts
+index 6319f9b..29089bd 100644
+--- a/app/api/admin/blog/[id]/route.ts
++++ b/app/api/admin/blog/[id]/route.ts
+@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
+ import { revalidatePath } from "next/cache";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { blogServerRepository } from "@/lib/db/blog.repository.server";
+ import { sanitizeHtml } from "@/lib/html-sanitize";
+ import { removeServer } from "@/lib/storage/server";
+@@ -39,6 +43,15 @@ export async function GET(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (blog) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "blog"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await params;
+   const { data, error } = await blogServerRepository.findById(id);
+ 
+@@ -83,6 +96,15 @@ export async function PATCH(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (blog) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "blog"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await params;
+ 
+   let body: BlogPatchInput;
+@@ -169,6 +191,15 @@ export async function DELETE(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (blog) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "blog"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await params;
+ 
+   /* 🛡️ ORPHAN COVER CLEANUP — DB silmeden önce cover_image'ı oku;
+diff --git a/app/api/admin/blog/route.ts b/app/api/admin/blog/route.ts
+index 88bd493..b5f5696 100644
+--- a/app/api/admin/blog/route.ts
++++ b/app/api/admin/blog/route.ts
+@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
+ import { revalidatePath } from "next/cache";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { blogServerRepository } from "@/lib/db/blog.repository.server";
+ import { sanitizeHtml } from "@/lib/html-sanitize";
+ 
+@@ -30,6 +34,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (blog) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "blog"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { data, error } = await blogServerRepository.listAll();
+ 
+   if (error) {
+@@ -73,6 +86,15 @@ export async function POST(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (blog) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "blog"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let body: BlogInsertInput;
+   try {
+     body = (await req.json()) as BlogInsertInput;
+diff --git a/app/api/admin/exchange-rates/current/route.ts b/app/api/admin/exchange-rates/current/route.ts
+index f66ef60..e77d770 100644
+--- a/app/api/admin/exchange-rates/current/route.ts
++++ b/app/api/admin/exchange-rates/current/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { exchangeRateServerRepository } from "@/lib/db/exchange-rate.repository.server";
+ 
+ /* ===============================================================
+@@ -40,6 +44,15 @@ export async function GET(req: Request) {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (settings) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "settings"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { data, error } =
+     await exchangeRateServerRepository.findCodeRateUpdated();
+ 
+diff --git a/app/api/admin/exchange-rates/refresh/route.ts b/app/api/admin/exchange-rates/refresh/route.ts
+index 8a362b2..e74886a 100644
+--- a/app/api/admin/exchange-rates/refresh/route.ts
++++ b/app/api/admin/exchange-rates/refresh/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { exchangeRateServerRepository } from "@/lib/db/exchange-rate.repository.server";
+ import { fetchTcmbRates } from "@/lib/exchange-rate.tcmb";
+ import {
+@@ -52,6 +56,15 @@ export async function POST(req: Request) {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (settings) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "settings"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   /* 🛡️ FAZ 55B — BEFORE SNAPSHOT (activity log diff için)
+      TCMB fetch'inden ÖNCE mevcut DB rate'lerini çek. Hata olursa
+      before null kalır (logger fail-safe; ana operation etkilenmez). */
+diff --git a/app/api/admin/external-calendars/events/[id]/deactivate/route.ts b/app/api/admin/external-calendars/events/[id]/deactivate/route.ts
+index e2f8450..856bd28 100644
+--- a/app/api/admin/external-calendars/events/[id]/deactivate/route.ts
++++ b/app/api/admin/external-calendars/events/[id]/deactivate/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { externalCalendarEventServerRepository } from "@/lib/db/external-calendar-event.repository.server";
+ import { externalCalendarSourceServerRepository } from "@/lib/db/external-calendar-source.repository.server";
+ import { villaAdminRepository } from "@/lib/db/villa.repository.server";
+@@ -52,6 +56,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (external_calendars) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "external_calendars"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await context.params;
+   const eventId = (id || "").toString().trim();
+   if (!eventId) {
+diff --git a/app/api/admin/external-calendars/sources/[id]/purge-inactive/route.ts b/app/api/admin/external-calendars/sources/[id]/purge-inactive/route.ts
+index c8b329b..2c13c53 100644
+--- a/app/api/admin/external-calendars/sources/[id]/purge-inactive/route.ts
++++ b/app/api/admin/external-calendars/sources/[id]/purge-inactive/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { externalCalendarSourceServerRepository } from "@/lib/db/external-calendar-source.repository.server";
+ import { externalCalendarEventServerRepository } from "@/lib/db/external-calendar-event.repository.server";
+ import {
+@@ -61,6 +65,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (external_calendars) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "external_calendars"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await context.params;
+   const sourceId = (id || "").toString().trim();
+   if (!sourceId) {
+diff --git a/app/api/admin/external-calendars/sync/route.ts b/app/api/admin/external-calendars/sync/route.ts
+index 5911da4..5a172ae 100644
+--- a/app/api/admin/external-calendars/sync/route.ts
++++ b/app/api/admin/external-calendars/sync/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import {
+   syncExternalCalendarSource,
+   type SyncSourceResult,
+@@ -49,6 +53,15 @@ export async function POST(req: Request) {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (external_calendars) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "external_calendars"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let body: unknown = null;
+   try {
+     body = await req.json();
+diff --git a/app/api/admin/mail-logs/cleanup/route.ts b/app/api/admin/mail-logs/cleanup/route.ts
+index 2e49962..1d479ec 100644
+--- a/app/api/admin/mail-logs/cleanup/route.ts
++++ b/app/api/admin/mail-logs/cleanup/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { mailLogServerRepository } from "@/lib/db/mail-log.repository.server";
+ import {
+   extractAdminContextFromRequest,
+@@ -56,6 +60,15 @@ export async function POST(req: Request) {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (system_logs) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "system_logs"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   /* Parse body (defansif) */
+   let body: unknown = null;
+   try {
+diff --git a/app/api/admin/mail-logs/stats/route.ts b/app/api/admin/mail-logs/stats/route.ts
+index 2a701fc..a1c2e82 100644
+--- a/app/api/admin/mail-logs/stats/route.ts
++++ b/app/api/admin/mail-logs/stats/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { mailLogServerRepository } from "@/lib/db/mail-log.repository.server";
+ 
+ /* ===============================================================
+@@ -37,6 +41,15 @@ export async function GET(req: Request) {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (system_logs) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "system_logs"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const [totalRes, failedRes, latestRes] = await Promise.all([
+     mailLogServerRepository.countAll(),
+     mailLogServerRepository.countByStatus("failed"),
+diff --git a/app/api/admin/manual-reservations/[id]/route.ts b/app/api/admin/manual-reservations/[id]/route.ts
+index 4b11f2b..f177622 100644
+--- a/app/api/admin/manual-reservations/[id]/route.ts
++++ b/app/api/admin/manual-reservations/[id]/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { manualReservationServerRepository } from "@/lib/db/manual-reservation.repository.server";
+ 
+ /* ===============================================================
+@@ -47,6 +51,15 @@ export async function GET(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (manual_reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "manual_reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id || typeof id !== "string" || id.trim().length === 0) {
+     return NextResponse.json(
+diff --git a/app/api/admin/manual-reservations/route.ts b/app/api/admin/manual-reservations/route.ts
+index eaaac7b..f4db66f 100644
+--- a/app/api/admin/manual-reservations/route.ts
++++ b/app/api/admin/manual-reservations/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { manualReservationServerRepository } from "@/lib/db/manual-reservation.repository.server";
+ 
+ /* ===============================================================
+@@ -61,6 +65,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (manual_reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "manual_reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   /* 🧹 Migration 059 — geçmiş manuel blok cleanup (FAIL-SAFE).
+      Fonksiyon kendi içinde atomik 24h throttle uygular → her açılışta
+      değil, 24 saatte bir kez çalışır. Hata olursa SADECE loglanır;
+diff --git a/app/api/admin/menu/route.ts b/app/api/admin/menu/route.ts
+index 7015865..5046a86 100644
+--- a/app/api/admin/menu/route.ts
++++ b/app/api/admin/menu/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { menuRepository } from "@/lib/db/menu.repository";
+ import { menuServerRepository } from "@/lib/db/menu.repository.server";
+ import { pagesServerRepository } from "@/lib/db/pages.repository.server";
+@@ -38,6 +42,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (menu) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "menu"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   /* 4-source paralel fetch (menu list ekleme — admin/menu/page tree
+      builder bunu kullanır; menu/new/page yalnız pages/types/locations
+      okur ve menu alanını yok sayar). Eski client davranışında 4
+@@ -75,6 +88,15 @@ export async function POST(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (menu) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "menu"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const body = (await req.json().catch(() => ({}))) as Partial<
+     MenuInsertPayload
+   >;
+@@ -142,6 +164,15 @@ export async function PATCH(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (menu) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "menu"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+@@ -194,6 +225,15 @@ export async function DELETE(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (menu) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "menu"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+diff --git a/app/api/admin/pages/[id]/route.ts b/app/api/admin/pages/[id]/route.ts
+index ccfbcfa..9cf5fe1 100644
+--- a/app/api/admin/pages/[id]/route.ts
++++ b/app/api/admin/pages/[id]/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { pagesServerRepository } from "@/lib/db/pages.repository.server";
+ 
+ /* ===============================================================
+@@ -47,6 +51,15 @@ export async function GET(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (pages) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "pages"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+@@ -112,6 +125,15 @@ export async function PATCH(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (pages) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "pages"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/pages/route.ts b/app/api/admin/pages/route.ts
+index a8d268f..2b35355 100644
+--- a/app/api/admin/pages/route.ts
++++ b/app/api/admin/pages/route.ts
+@@ -1,6 +1,13 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
++import {
++  PAGE_LIST_READERS,
++} from "@/lib/auth/admin-permission-map";
+ import { pagesServerRepository } from "@/lib/db/pages.repository.server";
+ /* 🛡️ Sayfa silmede orphan cover temizliği — server-side storage abstraction
+    (removeServer write-driver'a göre R2'ye gider; provider seçme
+@@ -44,6 +51,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (PAGE_LIST_READERS) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, PAGE_LIST_READERS))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { data, error } = await pagesServerRepository.listAll();
+ 
+   if (error) {
+@@ -74,6 +90,15 @@ export async function POST(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (pages) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "pages"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let payload: unknown;
+   try {
+     payload = await req.json();
+@@ -106,6 +131,15 @@ export async function DELETE(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (pages) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "pages"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+@@ -166,6 +200,15 @@ export async function PATCH(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (pages) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "pages"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+diff --git a/app/api/admin/reservations/[id]/route.ts b/app/api/admin/reservations/[id]/route.ts
+index e418df5..f761183 100644
+--- a/app/api/admin/reservations/[id]/route.ts
++++ b/app/api/admin/reservations/[id]/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import {
+   getReservationById,
+   updateReservationFull,
+@@ -39,6 +43,15 @@ export async function GET(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+@@ -74,6 +87,15 @@ export async function PATCH(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+@@ -118,6 +140,15 @@ export async function DELETE(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/reservations/[id]/share-link/route.ts b/app/api/admin/reservations/[id]/share-link/route.ts
+index b98deee..bb6d2d0 100644
+--- a/app/api/admin/reservations/[id]/share-link/route.ts
++++ b/app/api/admin/reservations/[id]/share-link/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { reservationShareRepository } from "@/lib/db/reservation-share.repository.server";
+ import {
+   generateShareToken,
+@@ -34,6 +38,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+@@ -106,6 +119,15 @@ export async function DELETE(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/reservations/route.ts b/app/api/admin/reservations/route.ts
+index 1215497..ba415be 100644
+--- a/app/api/admin/reservations/route.ts
++++ b/app/api/admin/reservations/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import {
+   createReservation,
+   updateReservationStatus,
+@@ -50,6 +54,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { data, error } =
+     await reservationServerRepository.findAllForAdminList();
+ 
+@@ -80,6 +93,15 @@ export async function POST(req: Request): Promise<Response> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let body: ReservationCreateInput;
+   try {
+     body = (await req.json()) as ReservationCreateInput;
+@@ -128,6 +150,15 @@ export async function PATCH(req: Request): Promise<Response> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+@@ -181,6 +212,15 @@ export async function DELETE(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+diff --git a/app/api/admin/settings/route.ts b/app/api/admin/settings/route.ts
+index db7144c..a8d0ad2 100644
+--- a/app/api/admin/settings/route.ts
++++ b/app/api/admin/settings/route.ts
+@@ -34,6 +34,24 @@ export async function GET(req: Request): Promise<NextResponse> {
+       );
+     }
+ 
++    /* 🛡️ Admin yetki — TAM ayar satırı (secret alanlar dahil: ör.
++       settings/entegrasyonlar `resend_api_key`'i okuyup PUT ile GERİ
++       yazar → kırpılamaz) YALNIZ `settings` izniyle döner.
++       Diğer tek tüketici rezervasyon ekranları (reservations/ekle ve
++       reservations/[id]) bu endpoint'ten YALNIZ `prepayment_rate` okur →
++       `reservations` izni olan admine yalnız bu alan döner (secret YOK).
++       İkisi de yoksa 403; settings satırı hiç okunmaz. */
++    const canReadFull = await callerHasPermission(auth.caller.id, "settings");
++    if (
++      !canReadFull &&
++      !(await callerHasPermission(auth.caller.id, "reservations"))
++    ) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
++
+     const { data, error } =
+       await settingsServerRepository.findSingletonStrict();
+ 
+@@ -45,6 +63,14 @@ export async function GET(req: Request): Promise<NextResponse> {
+       );
+     }
+ 
++    if (!canReadFull) {
++      const row = (data || {}) as { prepayment_rate?: number | null };
++      return NextResponse.json({
++        ok: true,
++        settings: { prepayment_rate: row.prepayment_rate ?? null },
++      });
++    }
++
+     return NextResponse.json({ ok: true, settings: data });
+   } catch (err) {
+     /* 🛡️ SON KAPI — authorizeAdminCaller (verifyToken/dbAdmin)
+@@ -84,8 +110,8 @@ export async function PUT(req: Request): Promise<NextResponse> {
+     }
+ 
+     /* 🛡️ SEC-03 (Faz 1) — ayar yazma `settings` izni ister. İzin yoksa
+-       body okunmaz, settings satırı okunmaz/güncellenmez. (GET bu fazda
+-       DEĞİŞMEDİ — SEC-04 kapsamında ele alınacak.) */
++       body okunmaz, settings satırı okunmaz/güncellenmez. (GET için
++       bkz. yukarıdaki izin/projeksiyon kuralı.) */
+     if (!(await callerHasPermission(auth.caller.id, "settings"))) {
+       return NextResponse.json(
+         { ok: false, error: FORBIDDEN_MESSAGE },
+diff --git a/app/api/admin/storage/remove/route.ts b/app/api/admin/storage/remove/route.ts
+index 99553dc..b4ba2a2 100644
+--- a/app/api/admin/storage/remove/route.ts
++++ b/app/api/admin/storage/remove/route.ts
+@@ -1,6 +1,11 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
++import { storagePermissionFor } from "@/lib/auth/admin-permission-map";
+ import { s3StorageProvider } from "@/lib/storage/s3-storage.provider";
+ import { STORAGE_BUCKETS } from "@/lib/storage/storage.constants";
+ 
+@@ -68,6 +73,26 @@ export async function POST(req: Request): Promise<Response> {
+       { status: 400 }
+     );
+   }
++
++  /* 🛡️ Admin yetki — bucket + yol öneki → mevcut izin anahtarı
++     (lib/auth/admin-permission-map.ts > storagePermissionFor; önekler
++     mevcut upload çağrılarından). TÜM yollar için izin gerekir; biri
++     bile izinsizse 403 ve R2'ye hiçbir silme yapılmaz. */
++  const needs = new Map(
++    paths.map((p) => {
++      const need = storagePermissionFor(bucket, p);
++      return [JSON.stringify(need), need] as const;
++    })
++  );
++  for (const need of needs.values()) {
++    if (!need || !(await callerHasPermission(auth.caller.id, need))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
++  }
++
+   if (paths.length === 0) {
+     /* İdempotent: silinecek bir şey yok → success. */
+     return NextResponse.json({ ok: true, failed: [], attempts: 0 });
+diff --git a/app/api/admin/storage/upload/route.ts b/app/api/admin/storage/upload/route.ts
+index cbf399c..a9b2314 100644
+--- a/app/api/admin/storage/upload/route.ts
++++ b/app/api/admin/storage/upload/route.ts
+@@ -1,6 +1,11 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
++import { storagePermissionFor } from "@/lib/auth/admin-permission-map";
+ import { s3StorageProvider } from "@/lib/storage/s3-storage.provider";
+ import { STORAGE_BUCKETS } from "@/lib/storage/storage.constants";
+ 
+@@ -97,6 +102,25 @@ export async function POST(req: Request): Promise<Response> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki — bucket + yol öneki → mevcut izin anahtarı
++     (lib/auth/admin-permission-map.ts > storagePermissionFor; önekler
++     mevcut upload çağrılarından). TÜM yollar için izin gerekir; biri
++     bile izinsizse 403 ve R2'ye hiçbir yazma yapılmaz. */
++  const needs = new Map(
++    [path].map((p) => {
++      const need = storagePermissionFor(bucket, p);
++      return [JSON.stringify(need), need] as const;
++    })
++  );
++  for (const need of needs.values()) {
++    if (!need || !(await callerHasPermission(auth.caller.id, need))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
++  }
++
+   /* 4) S3 UPLOAD (R2) */
+   const blob = fileEntry as Blob;
+   const arrayBuffer = await blob.arrayBuffer();
+diff --git a/app/api/admin/taxonomies/route.ts b/app/api/admin/taxonomies/route.ts
+index ae5f0c4..2d1fb41 100644
+--- a/app/api/admin/taxonomies/route.ts
++++ b/app/api/admin/taxonomies/route.ts
+@@ -1,6 +1,13 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
++import {
++  TAXONOMY_READERS,
++} from "@/lib/auth/admin-permission-map";
+ import { taxonomyServerRepository } from "@/lib/db/taxonomy.repository.server";
+ 
+ /* ===============================================================
+@@ -37,6 +44,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (TAXONOMY_READERS) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, TAXONOMY_READERS))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   /* 🛡️ FAZ 2 — rule_items + price_include_items query shape'i
+      villas/ekle/page.tsx legacy eski sağlayıcı çağrılarıyla BYTE-IDENTICAL:
+        .select("id, title").order("created_at", { ascending: true })
+diff --git a/app/api/admin/villa-locations/route.ts b/app/api/admin/villa-locations/route.ts
+index 159755a..554938b 100644
+--- a/app/api/admin/villa-locations/route.ts
++++ b/app/api/admin/villa-locations/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { villaLocationServerRepository } from "@/lib/db/villa-location.repository.server";
+ 
+ /* ===============================================================
+@@ -31,6 +35,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (locations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "locations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { data, error } = await villaLocationServerRepository.listAll();
+ 
+   if (error) {
+@@ -53,6 +66,15 @@ export async function POST(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (locations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "locations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const body = (await req.json().catch(() => ({}))) as {
+     name?: unknown;
+     slug?: unknown;
+@@ -88,6 +110,15 @@ export async function PATCH(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (locations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "locations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+@@ -189,6 +220,15 @@ export async function DELETE(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (locations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "locations"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let id = "";
+   try {
+     id = (new URL(req.url).searchParams.get("id") || "").trim();
+diff --git a/app/api/admin/villa-zip/[id]/revoke/route.ts b/app/api/admin/villa-zip/[id]/revoke/route.ts
+index 3eae979..8c2046e 100644
+--- a/app/api/admin/villa-zip/[id]/revoke/route.ts
++++ b/app/api/admin/villa-zip/[id]/revoke/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { villaZipRepository } from "@/lib/db/villa-zip.repository.server";
+ 
+ /* ===============================================================
+@@ -25,6 +29,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id || typeof id !== "string") {
+     return NextResponse.json(
+diff --git a/app/api/admin/villa-zip/route.ts b/app/api/admin/villa-zip/route.ts
+index 7ecffd6..b7b4b11 100644
+--- a/app/api/admin/villa-zip/route.ts
++++ b/app/api/admin/villa-zip/route.ts
+@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
+ import { randomBytes } from "node:crypto";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { villaZipRepository } from "@/lib/db/villa-zip.repository.server";
+ 
+ /* ===============================================================
+@@ -29,6 +33,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let villaId = "";
+   try {
+     villaId = (new URL(req.url).searchParams.get("villa_id") || "").trim();
+@@ -70,6 +83,15 @@ export async function POST(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const body = (await req.json().catch(() => ({}))) as {
+     villa_id?: unknown;
+     duration_hours?: unknown;
+diff --git a/app/api/admin/villas/[id]/active/route.ts b/app/api/admin/villas/[id]/active/route.ts
+index b58762e..7958c3f 100644
+--- a/app/api/admin/villas/[id]/active/route.ts
++++ b/app/api/admin/villas/[id]/active/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { setVillaActive } from "@/app/services/villa-admin.service";
+ 
+ /* ===============================================================
+@@ -26,6 +30,15 @@ export async function PATCH(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/clone/route.ts b/app/api/admin/villas/[id]/clone/route.ts
+index 6bfde23..c98a95c 100644
+--- a/app/api/admin/villas/[id]/clone/route.ts
++++ b/app/api/admin/villas/[id]/clone/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { cloneVilla } from "@/app/services/villa-admin/clone.service";
+ 
+ /* ===============================================================
+@@ -38,6 +42,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/full/route.ts b/app/api/admin/villas/[id]/full/route.ts
+index d107bf6..3636aa2 100644
+--- a/app/api/admin/villas/[id]/full/route.ts
++++ b/app/api/admin/villas/[id]/full/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { updateVillaFull } from "@/app/services/villa-admin.service";
+ import { invalidateVillasCache } from "@/lib/villas-cache-invalidation.server";
+ import type { VillaUpdatePayload } from "@/app/services/villa-admin/types";
+@@ -49,6 +53,15 @@ export async function PUT(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/hard-delete/route.ts b/app/api/admin/villas/[id]/hard-delete/route.ts
+index 593a600..f749de6 100644
+--- a/app/api/admin/villas/[id]/hard-delete/route.ts
++++ b/app/api/admin/villas/[id]/hard-delete/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { hardDeleteVilla } from "@/app/services/villa-admin.service";
+ 
+ /* ===============================================================
+@@ -45,6 +49,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/prices/route.ts b/app/api/admin/villas/[id]/prices/route.ts
+index ff5b255..673b31c 100644
+--- a/app/api/admin/villas/[id]/prices/route.ts
++++ b/app/api/admin/villas/[id]/prices/route.ts
+@@ -1,6 +1,13 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
++import {
++  VILLA_DETAIL_READERS,
++} from "@/lib/auth/admin-permission-map";
+ import { villaAdminRepository } from "@/lib/db/villa.repository.server";
+ /* 🛡️ PUBLIC ile ORTAK indirim okuma servisi (DiscountRange[] döner). */
+ import { getVillaDiscounts } from "@/app/services/villa-discount.service";
+@@ -43,6 +50,15 @@ export async function GET(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (VILLA_DETAIL_READERS) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, VILLA_DETAIL_READERS))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/private-token/route.ts b/app/api/admin/villas/[id]/private-token/route.ts
+index 8fa3ed0..d750a2b 100644
+--- a/app/api/admin/villas/[id]/private-token/route.ts
++++ b/app/api/admin/villas/[id]/private-token/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { generatePrivateAccessToken } from "@/app/services/villa-admin.service";
+ 
+ /* ===============================================================
+@@ -37,6 +41,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/restore/route.ts b/app/api/admin/villas/[id]/restore/route.ts
+index d1f6687..a70603d 100644
+--- a/app/api/admin/villas/[id]/restore/route.ts
++++ b/app/api/admin/villas/[id]/restore/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { restoreVilla } from "@/app/services/villa-admin.service";
+ 
+ /* ===============================================================
+@@ -40,6 +44,15 @@ export async function POST(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/route.ts b/app/api/admin/villas/[id]/route.ts
+index 6384055..bbd58cb 100644
+--- a/app/api/admin/villas/[id]/route.ts
++++ b/app/api/admin/villas/[id]/route.ts
+@@ -1,6 +1,13 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
++import {
++  VILLA_DETAIL_READERS,
++} from "@/lib/auth/admin-permission-map";
+ import { villaAdminRepository } from "@/lib/db/villa.repository.server";
+ 
+ /* ===============================================================
+@@ -30,6 +37,15 @@ export async function GET(
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (VILLA_DETAIL_READERS) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, VILLA_DETAIL_READERS))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/[id]/soft-delete/route.ts b/app/api/admin/villas/[id]/soft-delete/route.ts
+index 94ea4bc..115a9ec 100644
+--- a/app/api/admin/villas/[id]/soft-delete/route.ts
++++ b/app/api/admin/villas/[id]/soft-delete/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { softDeleteVilla } from "@/app/services/villa-admin.service";
+ 
+ /* ===============================================================
+@@ -26,6 +30,15 @@ export async function POST(
+       { status: auth.status }
+     );
+   }
++
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
+   const { id } = await ctx.params;
+   if (!id) {
+     return NextResponse.json(
+diff --git a/app/api/admin/villas/route.ts b/app/api/admin/villas/route.ts
+index acc5b28..cff3893 100644
+--- a/app/api/admin/villas/route.ts
++++ b/app/api/admin/villas/route.ts
+@@ -1,6 +1,13 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
++import {
++  VILLA_SELECT_LIST_READERS,
++} from "@/lib/auth/admin-permission-map";
+ import { villaAdminRepository } from "@/lib/db/villa.repository.server";
+ import { villaDiscountRepository } from "@/lib/db/villa-discount.repository.server";
+ import { createVillaFull } from "@/app/services/villa-admin.service";
+@@ -31,6 +38,15 @@ export async function GET(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (VILLA_SELECT_LIST_READERS) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, VILLA_SELECT_LIST_READERS))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   /* Query params:
+        - activeOnly=1 → `.eq("is_active", true).is("deleted_at", null)
+                          .order("title", asc)` (homepage-collection consumer)
+@@ -109,6 +125,15 @@ export async function POST(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   let body: VillaFormPayload;
+   try {
+     body = (await req.json()) as VillaFormPayload;
+diff --git a/app/api/admin/villas/sort-orders/route.ts b/app/api/admin/villas/sort-orders/route.ts
+index 9050963..bdb134e 100644
+--- a/app/api/admin/villas/sort-orders/route.ts
++++ b/app/api/admin/villas/sort-orders/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ 
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ import { setVillaSortOrders } from "@/app/services/villa-admin.service";
+ import type { VillaSortOrderUpdate } from "@/app/services/villa-admin/types";
+ 
+@@ -34,6 +38,15 @@ export async function POST(req: Request): Promise<NextResponse> {
+     );
+   }
+ 
++  /* 🛡️ Admin yetki (villas) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "villas"))) {
++    return NextResponse.json(
++      { ok: false, error: FORBIDDEN_MESSAGE },
++      { status: 403 }
++    );
++  }
++
+   const body = (await req.json().catch(() => ({}))) as {
+     updates?: unknown;
+   };
+diff --git a/app/api/mail/bank-transfer-payment/route.ts b/app/api/mail/bank-transfer-payment/route.ts
+index 0e493fb..15a4bf4 100644
+--- a/app/api/mail/bank-transfer-payment/route.ts
++++ b/app/api/mail/bank-transfer-payment/route.ts
+@@ -5,6 +5,10 @@ import { sendMail } from "@/app/lib/mail/send";
+ import { renderBankTransferPaymentEmail } from "@/app/lib/mail/templates/BankTransferPaymentEmail";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ import {
+   getPaymentDisplayValues,
+@@ -103,6 +107,15 @@ export async function POST(req: Request) {
+         { status: auth.status }
+       );
+     }
++
++    /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
+     console.info(
+       "[mail.bank_transfer_payment.auth] ADMIN_VERIFIED",
+       { callerId: auth.caller.id }
+diff --git a/app/api/mail/payment-confirmed/route.ts b/app/api/mail/payment-confirmed/route.ts
+index 9fe1e65..92a6daf 100644
+--- a/app/api/mail/payment-confirmed/route.ts
++++ b/app/api/mail/payment-confirmed/route.ts
+@@ -6,6 +6,10 @@ import { sendMail } from "@/app/lib/mail/send";
+ import { renderPaymentConfirmedEmail } from "@/app/lib/mail/templates/PaymentConfirmedEmail";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ import {
+   getPaymentDisplayValues,
+@@ -79,6 +83,15 @@ export async function POST(req: Request) {
+         { status: auth.status }
+       );
+     }
++
++    /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
+     console.info("[mail.payment_confirmed.auth] ADMIN_VERIFIED", {
+       callerId: auth.caller.id,
+     });
+diff --git a/app/api/mail/payment-link/route.ts b/app/api/mail/payment-link/route.ts
+index f0c41ef..855c156 100644
+--- a/app/api/mail/payment-link/route.ts
++++ b/app/api/mail/payment-link/route.ts
+@@ -5,6 +5,10 @@ import { sendMail } from "@/app/lib/mail/send";
+ import { renderPaymentLinkEmail } from "@/app/lib/mail/templates/PaymentLinkEmail";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ import {
+   getPaymentDisplayValues,
+@@ -80,6 +84,15 @@ export async function POST(req: Request) {
+         { status: auth.status }
+       );
+     }
++
++    /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
+     console.info("[mail.payment_link.auth] ADMIN_VERIFIED", {
+       callerId: auth.caller.id,
+     });
+diff --git a/app/api/mail/reservation-approved/route.ts b/app/api/mail/reservation-approved/route.ts
+index 2e87ac4..180db16 100644
+--- a/app/api/mail/reservation-approved/route.ts
++++ b/app/api/mail/reservation-approved/route.ts
+@@ -5,6 +5,10 @@ import { sendMail } from "@/app/lib/mail/send";
+ import { renderReservationApprovedEmail } from "@/app/lib/mail/templates/ReservationApprovedEmail";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ import {
+   getPaymentDisplayValues,
+@@ -59,6 +63,15 @@ export async function POST(req: Request) {
+         { status: auth.status }
+       );
+     }
++
++    /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
+     console.info("[mail.reservation_approved.auth] ADMIN_VERIFIED", {
+       callerId: auth.caller.id,
+     });
+diff --git a/app/api/mail/reservation-cancelled/route.ts b/app/api/mail/reservation-cancelled/route.ts
+index 4e0812a..86d056d 100644
+--- a/app/api/mail/reservation-cancelled/route.ts
++++ b/app/api/mail/reservation-cancelled/route.ts
+@@ -5,6 +5,10 @@ import { sendMail } from "@/app/lib/mail/send";
+ import { renderReservationCancelledEmail } from "@/app/lib/mail/templates/ReservationCancelledEmail";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ import {
+   getPaymentDisplayValues,
+@@ -53,6 +57,15 @@ export async function POST(req: Request) {
+         { status: auth.status }
+       );
+     }
++
++    /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
+     console.info(
+       "[mail.reservation_cancelled.auth] ADMIN_VERIFIED",
+       { callerId: auth.caller.id }
+diff --git a/app/api/mail/test/route.ts b/app/api/mail/test/route.ts
+index cbaff15..6eccbcc 100644
+--- a/app/api/mail/test/route.ts
++++ b/app/api/mail/test/route.ts
+@@ -4,6 +4,10 @@ import { applyRateLimit } from "@/lib/rate-limit";
+ import { renderTestEmail } from "@/app/lib/mail/templates/TestEmail";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ /* ===============================================================
+    🔥 POST /api/mail/test
+@@ -72,6 +76,15 @@ export async function POST(req: Request) {
+         { status: auth.status }
+       );
+     }
++
++    /* 🛡️ Admin yetki (["settings", "system_logs"]) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, ["settings", "system_logs"]))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
+     console.info("[mail.test.auth] ADMIN_VERIFIED", {
+       callerId: auth.caller.id,
+     });
+diff --git a/app/api/mail/voucher/route.ts b/app/api/mail/voucher/route.ts
+index 02f2cca..38171cb 100644
+--- a/app/api/mail/voucher/route.ts
++++ b/app/api/mail/voucher/route.ts
+@@ -3,6 +3,10 @@ import { sendMail } from "@/app/lib/mail/send";
+ import { applyRateLimit } from "@/lib/rate-limit";
+ import { buildVoucherContent } from "@/app/lib/voucher/build";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ /* ===============================================================
+    🔥 POST /api/mail/voucher
+@@ -41,6 +45,15 @@ export async function POST(req: Request) {
+         { status: auth.status }
+       );
+     }
++
++    /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
+     console.info("[mail.voucher.auth] ADMIN_VERIFIED", {
+       callerId: auth.caller.id,
+     });
+diff --git a/app/api/mail/western-union-payment/route.ts b/app/api/mail/western-union-payment/route.ts
+index 291f9d7..e0ee56d 100644
+--- a/app/api/mail/western-union-payment/route.ts
++++ b/app/api/mail/western-union-payment/route.ts
+@@ -5,6 +5,10 @@ import { sendMail } from "@/app/lib/mail/send";
+ import { renderWesternUnionPaymentEmail } from "@/app/lib/mail/templates/WesternUnionPaymentEmail";
+ import { getMailConfig } from "@/app/lib/mail/client";
+ import { authorizeAdminCaller } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ import {
+   getPaymentDisplayValues,
+@@ -85,6 +89,15 @@ export async function POST(req: Request) {
+       );
+     }
+ 
++    /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++       okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++    if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++      return NextResponse.json(
++        { ok: false, error: FORBIDDEN_MESSAGE },
++        { status: 403 }
++      );
++    }
++
+     const body = await req.json().catch(() => ({}));
+     const reservationId = (body?.reservationId || "").toString().trim();
+ 
+diff --git a/app/api/voucher/[id]/route.ts b/app/api/voucher/[id]/route.ts
+index 88834c5..9b4aef4 100644
+--- a/app/api/voucher/[id]/route.ts
++++ b/app/api/voucher/[id]/route.ts
+@@ -1,6 +1,10 @@
+ import { NextResponse } from "next/server";
+ import { buildVoucherContent } from "@/app/lib/voucher/build";
+ import { authorizeAdminCallerFlex } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  FORBIDDEN_MESSAGE,
++} from "@/lib/auth/action-authz";
+ 
+ /* ===============================================================
+    🔥 GET /api/voucher/[id]
+@@ -55,6 +59,19 @@ export async function GET(
+       }
+     );
+   }
++
++  /* 🛡️ Admin yetki (reservations) — izin yoksa 403; hiçbir veri
++     okunmaz/değiştirilmez (lib/auth/admin-permission-map.ts). */
++  if (!(await callerHasPermission(auth.caller.id, "reservations"))) {
++    return new NextResponse(`Yetkisiz erişim: ${FORBIDDEN_MESSAGE}`, {
++      status: 403,
++      headers: {
++        "Content-Type": "text/plain; charset=utf-8",
++        "Cache-Control": "no-store",
++        "Referrer-Policy": "no-referrer",
++      },
++    });
++  }
+   console.info("[voucher.html.auth] ADMIN_VERIFIED", {
+     callerId: auth.caller.id,
+     reservationId: id,
+diff --git a/app/components/admin/AdminSectionGuard.tsx b/app/components/admin/AdminSectionGuard.tsx
+new file mode 100644
+index 0000000..8f635d3
+--- /dev/null
++++ b/app/components/admin/AdminSectionGuard.tsx
+@@ -0,0 +1,80 @@
++import "server-only";
++
++import type { ReactNode } from "react";
++import { redirect } from "next/navigation";
++
++import { authorizeAdminSession } from "@/lib/admin-route-auth";
++import {
++  callerHasPermission,
++  getCallerPermissions,
++  type PermissionRequirement,
++} from "@/lib/auth/action-authz";
++import { firstAllowedAdminHref } from "@/lib/auth/admin-permission-map";
++import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++
++/* ===============================================================
++   🛡️ ADMIN SAYFA YETKİ KAPISI (server) — URL ile doğrudan erişim
++   ===============================================================
++   Mevcut altyapı AYNEN kullanılır, yeni auth/permission sistemi YOK:
++     1) Oturum: `authorizeAdminSession()` (SEC-01 ile aynı; doğrulanamazsa
++        mevcut `AdminPageSessionRefresh` fallback'i — veri üretilmez).
++     2) Yetki:  `callerHasPermission()` (DB `sidebar_permissions`,
++        fail-closed). JWT `perms` claim'i KULLANILMAZ.
++     3) Yetkisiz: menü sırasındaki ilk izinli bölüme `redirect()`
++        (Next 307); hiç izinli bölüm yoksa yalnız bilgi kartı —
++        bölümün içeriği / verisi render EDİLMEZ.
++
++   Kullanım:
++     • Bölüm layout'u:  <AdminSectionGuard need="villas">{children}</…>
++       (bölüme her girişte server'da çalışır; client sayfa kabukları
++       hiç mount olmaz → API/action çağrısı da yapılmaz).
++     • Veri çeken Server Component sayfası: layout sayfanın render'ını
++       DURDURMAZ (Next dokümanı: "a layout does not control whether the
++       rest of the route renders") → bu sayfalar ayrıca veri çekmeden
++       ÖNCE `adminPermissionGate(auth.caller.id, need)` çağırır.
++   =============================================================== */
++
++function AdminNoAccess() {
++  return (
++    <div className="card-premium p-6 md:p-8 max-w-xl">
++      <p className="eyebrow">Yetki</p>
++      <h1 className="font-display text-2xl text-[var(--color-stone-900)] mt-2 tracking-[-0.02em]">
++        Bu bölüme erişim yetkiniz yok
++      </h1>
++      <p className="text-sm text-[var(--color-stone-500)] mt-2">
++        Hesabınıza tanımlı bir yönetim bölümü bulunmuyor. Yetki için yöneticinizle
++        iletişime geçin.
++      </p>
++    </div>
++  );
++}
++
++/**
++ * Oturumu ZATEN doğrulanmış admin için yetki kapısı.
++ * İzin varsa `null` döner (sayfa devam eder); yoksa ilk izinli bölüme
++ * yönlendirir (throw) veya bilgi kartını döndürür.
++ */
++export async function adminPermissionGate(
++  adminId: string,
++  need: PermissionRequirement
++): Promise<ReactNode | null> {
++  if (await callerHasPermission(adminId, need)) return null;
++  const fallback = firstAllowedAdminHref(await getCallerPermissions(adminId));
++  if (fallback) redirect(fallback);
++  return <AdminNoAccess />;
++}
++
++/** Bölüm layout'u için: önce oturum, sonra yetki, sonra içerik. */
++export default async function AdminSectionGuard({
++  need,
++  children,
++}: {
++  need: PermissionRequirement;
++  children: ReactNode;
++}) {
++  const auth = await authorizeAdminSession();
++  if (!auth.ok) return <AdminPageSessionRefresh />;
++  const denied = await adminPermissionGate(auth.caller.id, need);
++  if (denied) return denied;
++  return <>{children}</>;
++}
+diff --git a/lib/auth/action-authz.ts b/lib/auth/action-authz.ts
+index ec996ca..c326816 100644
+--- a/lib/auth/action-authz.ts
++++ b/lib/auth/action-authz.ts
+@@ -128,6 +128,15 @@ export async function requirePermission(
+   return caller;
+ }
+ 
++/** Aktif adminin izin kümesi (DB, fail-closed — `loadPermissions` ile
++ *  AYNI kaynak). Yalnız "ilk erişilebilir bölüme yönlendir" gibi karar
++ *  DIŞI ihtiyaçlar için; yetki kararı için `requirePermission` /
++ *  `callerHasPermission` kullanılır. */
++export async function getCallerPermissions(adminId: string): Promise<string[]> {
++  if (!adminId) return [];
++  return loadPermissions(adminId);
++}
++
+ /** Throw ETMEYEN varyant — `authorizeAdminSession()` guard'ı ZATEN olan
+  *  ve `{ ok:false, error }` döndüren mevcut action'lar için; o
+  *  action'ların dönüş şekli korunur. */
+diff --git a/lib/auth/admin-permission-map.ts b/lib/auth/admin-permission-map.ts
+new file mode 100644
+index 0000000..47dddf4
+--- /dev/null
++++ b/lib/auth/admin-permission-map.ts
+@@ -0,0 +1,151 @@
++/* ===============================================================
++   🛡️ ADMIN ROUTE → PERMISSION HARİTASI (tek kaynak, saf / client-safe)
++   ===============================================================
++   Yetki MODELİ DEĞİŞMEDİ: karar her zaman `admin_users.sidebar_permissions`
++   (DB) üzerinden `callerHasPermission` / `requirePermission` ile verilir
++   (lib/auth/action-authz). Bu dosya yalnız "hangi bölüm / endpoint hangi
++   mevcut anahtarı ister" sorusunu TEK yerde toplar.
++
++   • Sayfa bölümleri: `maki-admin/layout.tsx` menüsündeki `permissionKey`
++     değerleriyle BİREBİR aynı ve AYNI SIRADA (tests/unit/
++     admin-route-permissions.test.ts bunu kaynak koddan doğrular).
++   • Dizi = "herhangi biri yeterli" (OR) — `requirePermission` semantiği.
++   • Yeni anahtar / rol / süper-admin kavramı YOK.
++   =============================================================== */
++
++import type { PermissionRequirement } from "@/lib/auth/action-authz";
++
++export type AdminSection = { href: string; need: PermissionRequirement };
++
++/** Menü sırasıyla admin bölümleri (ilk izinli bölüm = varsayılan açılış). */
++export const ADMIN_SECTIONS: readonly AdminSection[] = [
++  { href: "/maki-admin", need: "dashboard" },
++  { href: "/maki-admin/villas", need: "villas" },
++  { href: "/maki-admin/types", need: "villa_types" },
++  { href: "/maki-admin/features", need: "features" },
++  { href: "/maki-admin/rules", need: "rules" },
++  { href: "/maki-admin/price-includes", need: "price_includes" },
++  { href: "/maki-admin/locations", need: "locations" },
++  { href: "/maki-admin/villa-listesi", need: "villa_lists" },
++  { href: "/maki-admin/property-owners", need: "property_owners" },
++  { href: "/maki-admin/reservations", need: "reservations" },
++  { href: "/maki-admin/manual-reservations", need: "manual_reservations" },
++  { href: "/maki-admin/external-reservations", need: "external_calendars" },
++  { href: "/maki-admin/offer-requests", need: "offer_requests" },
++  { href: "/maki-admin/payment-methods", need: "payment_methods" },
++  /* Menü anahtarı "payment_accounts"; sayfanın TÜM action'ları zaten
++     ["payment_accounts","settings"] ister (payment-account.action.ts) →
++     sayfa da aynı OR kümesiyle korunur (erişim daralmaz). */
++  { href: "/maki-admin/payment-accounts", need: ["payment_accounts", "settings"] },
++  { href: "/maki-admin/maki-finans", need: "finance" },
++  { href: "/maki-admin/pages", need: "pages" },
++  { href: "/maki-admin/blog", need: "blog" },
++  { href: "/maki-admin/menu", need: "menu" },
++  { href: "/maki-admin/homepage-collection", need: "homepage_collection" },
++  { href: "/maki-admin/discount-collection", need: "discount_collection" },
++  { href: "/maki-admin/messages", need: "messages" },
++  { href: "/maki-admin/faqs", need: "faqs" },
++  { href: "/maki-admin/reviews", need: "reviews" },
++  { href: "/maki-admin/settings", need: "settings" },
++  { href: "/maki-admin/webmaster", need: "webmaster" },
++  { href: "/maki-admin/system-logs", need: "system_logs" },
++  { href: "/maki-admin/activity-logs", need: "activity_logs" },
++  { href: "/maki-admin/users", need: "users" },
++];
++
++function has(granted: readonly string[], need: PermissionRequirement): boolean {
++  const req = Array.isArray(need) ? need : [need];
++  return req.some((k) => granted.includes(k));
++}
++
++/** Yolu koruyan bölüm (en uzun önek). `/maki-admin/login` ve bilinmeyen
++ *  yollar için null. */
++export function adminSectionForPath(pathname: string): AdminSection | null {
++  const p = (pathname || "").replace(/\/+$/, "") || "/";
++  if (p === "/maki-admin/login") return null;
++  let best: AdminSection | null = null;
++  for (const s of ADMIN_SECTIONS) {
++    const match = s.href === "/maki-admin" ? p === "/maki-admin" : p === s.href || p.startsWith(s.href + "/");
++    if (match && (!best || s.href.length > best.href.length)) best = s;
++  }
++  return best;
++}
++
++/** İzinlere göre menü sırasındaki ilk erişilebilir bölüm (yoksa null). */
++export function firstAllowedAdminHref(granted: readonly string[]): string | null {
++  return ADMIN_SECTIONS.find((s) => has(granted, s.need))?.href ?? null;
++}
++
++/* ---------------------------------------------------------------
++   PAYLAŞILAN API OKUMALARI — birden çok bölümün MEŞRU kullandığı
++   endpoint'ler (kullanım kaynak koddan doğrulandı; bkz. route yorumları).
++--------------------------------------------------------------- */
++
++/** GET /api/admin/villas (villa seçim listesi): villas (ekle/düzenle),
++ *  reservations (ekle, [id]), manual_reservations ([id]),
++ *  homepage_collection, discount_collection, reviews (manuel yorum). */
++export const VILLA_SELECT_LIST_READERS: PermissionRequirement = [
++  "villas",
++  "reservations",
++  "manual_reservations",
++  "homepage_collection",
++  "discount_collection",
++  "reviews",
++];
++
++/** GET /api/admin/villas/[id] ve /prices: villas (takvim, sıralama)
++ *  + reservations (ekle, [id] fiyat hesaplama). */
++export const VILLA_DETAIL_READERS: PermissionRequirement = ["villas", "reservations"];
++
++/** GET /api/admin/taxonomies: villas (ekle) + offer_requests (filtre). */
++export const TAXONOMY_READERS: PermissionRequirement = ["villas", "offer_requests"];
++
++/** GET /api/admin/pages: pages + menu (menüye sayfa bağlama listesi). */
++export const PAGE_LIST_READERS: PermissionRequirement = ["pages", "menu"];
++
++/* ---------------------------------------------------------------
++   STORAGE (upload/remove) — bucket + yol öneki → izin
++   Önekler mevcut upload çağrılarından çıkarıldı:
++     villa-images  villas/…         AdminGallery (buildVillaImagePath)
++                   descriptions/…   RichTextEditor (villa formu + blog)
++     site-assets   category-covers/ types (buildCategoryCoverPath)
++                   location-covers/ locations (buildLocationCoverPath)
++                   page-covers/     pages (buildPageCoverPath + section)
++                   blog/            BlogPostForm kapak
++                   branding/        webmaster (admin-branding)
++                   logo/ favicon/ watermark/ hero/ seo/ popup/  settings
++   Bilinmeyen önek: villa-images → villas, site-assets → settings
++   (bucket'ın mevcut sahibi; yeni bir yol açılmaz).
++--------------------------------------------------------------- */
++const STORAGE_PREFIX_PERMISSIONS: Record<string, Array<[string, PermissionRequirement]>> = {
++  "tatilinyeri-villa-images": [
++    ["villas/", "villas"],
++    ["descriptions/", ["villas", "blog"]],
++  ],
++  "tatilinyeri-site-assets": [
++    ["category-covers/", "villa_types"],
++    ["location-covers/", "locations"],
++    ["page-covers/", "pages"],
++    ["blog/", "blog"],
++    ["branding/", "webmaster"],
++    ["logo/", "settings"],
++    ["favicon/", "settings"],
++    ["watermark/", "settings"],
++    ["hero/", "settings"],
++    ["seo/", "settings"],
++    ["popup/", "settings"],
++  ],
++};
++const STORAGE_BUCKET_DEFAULT: Record<string, PermissionRequirement> = {
++  "tatilinyeri-villa-images": "villas",
++  "tatilinyeri-site-assets": "settings",
++};
++
++/** Bu bucket/yol için gereken izin; bucket tanınmıyorsa null. */
++export function storagePermissionFor(bucket: string, path: string): PermissionRequirement | null {
++  const rules = STORAGE_PREFIX_PERMISSIONS[bucket];
++  if (!rules) return null;
++  const p = (path || "").replace(/^\/+/, "");
++  for (const [prefix, need] of rules) if (p.startsWith(prefix)) return need;
++  return STORAGE_BUCKET_DEFAULT[bucket] ?? null;
++}
+diff --git a/tests/unit/admin-api-permission.test.ts b/tests/unit/admin-api-permission.test.ts
+new file mode 100644
+index 0000000..0cd5437
+--- /dev/null
++++ b/tests/unit/admin-api-permission.test.ts
+@@ -0,0 +1,427 @@
++// @vitest-environment node
++/* ===============================================================
++   🛡️ ADMIN YETKİ (H-01) — API + sayfa kapısı regresyon kilidi
++   ===============================================================
++   Mevcut altyapı: authorizeAdminCaller/Session (oturum) +
++   callerHasPermission (DB `sidebar_permissions`). Burada:
++     A) İzin haritası (menüyle birebir, OR kümeleri, storage önekleri)
++     B) Davranış: yalnız `villas` izni olan admin kritik endpoint'lerde
++        403 alır ve HİÇBİR veri fonksiyonu çağrılmaz; izinli admin aynı
++        endpoint'te mevcut akışa geçer.
++     C) Kayıt taraması: her admin API handler'ı (bilinçli istisnalar
++        hariç) auth'tan SONRA, veriden ÖNCE izin kontrolü içerir; her
++        admin bölüm klasörü doğru izinle korunur.
++   =============================================================== */
++import { describe, it, expect, vi, beforeEach } from "vitest";
++import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
++import { join } from "node:path";
++
++const h = vi.hoisted(() => {
++  const log: string[] = [];
++  const state = { perms: [] as string[], auth: null as unknown };
++  const dataProxy = (name: string) =>
++    new Proxy(
++      {},
++      {
++        get: (_t, prop) =>
++          typeof prop === "string"
++            ? async () => {
++                log.push(`${name}.${prop}`);
++                return { data: [], error: null, count: 0 };
++              }
++            : undefined,
++      }
++    );
++  const fn = (name: string, value: unknown = { ok: true }) =>
++    async () => {
++      log.push(name);
++      return value;
++    };
++  return { log, state, dataProxy, fn };
++});
++
++const CALLER = { id: "caller-1", authUserId: "caller-1", email: "c@test.local", is_active: true };
++
++vi.mock("@/lib/admin-route-auth", () => ({
++  authorizeAdminCaller: async () => h.state.auth,
++  authorizeAdminCallerFlex: async () => h.state.auth,
++  authorizeAdminSession: async () => h.state.auth,
++}));
++vi.mock("@/lib/db/admin-user.repository.server", () => {
++  const perm = {
++    findByIdForSession: async (id: string) => {
++      h.log.push("perm");
++      return { data: { id, is_active: true, sidebar_permissions: h.state.perms }, error: null };
++    },
++  };
++  return {
++    adminUserServerRepository: new Proxy(perm, {
++      get: (t, p) =>
++        p in t
++          ? (t as Record<string, unknown>)[p as string]
++          : async () => {
++              h.log.push(`adminUserRepo.${String(p)}`);
++              return { data: { id: "target", email: "t@test.local", auth_user_id: null }, error: null };
++            },
++    }),
++  };
++});
++vi.mock("@/lib/db/admin-user-panel.repository.server", () => ({
++  adminUserPanelServerRepository: h.dataProxy("adminUserPanelRepo"),
++}));
++vi.mock("@/lib/db/reservation.repository.server", () => ({
++  reservationServerRepository: h.dataProxy("reservationRepo"),
++}));
++vi.mock("@/app/services/reservation.service", () => ({
++  createReservation: h.fn("createReservation"),
++  updateReservationStatus: h.fn("updateReservationStatus"),
++  getReservationById: h.fn("getReservationById", null),
++  updateReservationFull: h.fn("updateReservationFull"),
++  deleteReservation: h.fn("deleteReservation"),
++}));
++vi.mock("@/lib/db/villa.repository.server", () => ({
++  villaAdminRepository: h.dataProxy("villaRepo"),
++}));
++vi.mock("@/app/services/villa-admin.service", () => ({
++  hardDeleteVilla: h.fn("hardDeleteVilla"),
++  createVillaFull: h.fn("createVillaFull"),
++}));
++vi.mock("@/lib/storage/s3-storage.provider", () => ({
++  s3StorageProvider: {
++    upload: async (bucket: string, path: string) => {
++      h.log.push(`s3.upload:${bucket}/${path}`);
++      return { ok: true, path };
++    },
++    remove: async (bucket: string, paths: string[]) => {
++      h.log.push(`s3.remove:${bucket}/${paths.join(",")}`);
++      return { ok: true, failed: [], attempts: 1 };
++    },
++  },
++}));
++vi.mock("@/app/lib/voucher/build", () => ({
++  buildVoucherContent: h.fn("buildVoucherContent", null),
++}));
++vi.mock("@/app/services/admin-activity-log.service", () => ({
++  extractAdminContextFromRequest: () => ({}),
++  insertAdminActivityLog: h.fn("auditInsert"),
++}));
++vi.mock("@/lib/auth", () => ({
++  adminAuthProvider: h.dataProxy("adminAuthProvider"),
++}));
++vi.mock("@/lib/auth/server", () => ({
++  adminAuthProvider: h.dataProxy("adminAuthProvider"),
++}));
++
++import {
++  ADMIN_SECTIONS,
++  adminSectionForPath,
++  firstAllowedAdminHref,
++  storagePermissionFor,
++} from "@/lib/auth/admin-permission-map";
++
++import { GET as listAdmins } from "@/app/api/admin-users/route";
++import { DELETE as deleteAdmin } from "@/app/api/admin-users/[id]/route";
++import * as reservationsRoute from "@/app/api/admin/reservations/route";
++import * as reservationRoute from "@/app/api/admin/reservations/[id]/route";
++import { GET as villaDetail } from "@/app/api/admin/villas/[id]/route";
++import { POST as hardDelete } from "@/app/api/admin/villas/[id]/hard-delete/route";
++import { POST as upload } from "@/app/api/admin/storage/upload/route";
++import { POST as remove } from "@/app/api/admin/storage/remove/route";
++import { GET as voucher } from "@/app/api/voucher/[id]/route";
++
++const VILLA_BUCKET = "tatilinyeri-villa-images";
++const ASSET_BUCKET = "tatilinyeri-site-assets";
++const idCtx = (id = "x1") => ({ params: Promise.resolve({ id }) });
++const json = (url: string, method: string, body?: unknown) =>
++  new Request(url, {
++    method,
++    headers: { "content-type": "application/json" },
++    body: body === undefined ? undefined : JSON.stringify(body),
++  });
++function uploadReq(bucket: string, path: string) {
++  const fd = new FormData();
++  fd.append("file", new Blob([new Uint8Array([1, 2, 3])], { type: "image/webp" }), "a.webp");
++  fd.append("bucket", bucket);
++  fd.append("path", path);
++  return new Request("http://x/api/admin/storage/upload", { method: "POST", body: fd });
++}
++const dataCalls = () => h.log.filter((l) => l !== "perm");
++
++beforeEach(() => {
++  h.log.length = 0;
++  h.state.auth = { ok: true, caller: CALLER };
++  h.state.perms = [];
++});
++
++/* ================================================================
++   A) İZİN HARİTASI
++   ================================================================ */
++describe("A) izin haritası", () => {
++  it("menü (maki-admin/layout.tsx) ile birebir aynı href/izin ve sıra", () => {
++    const src = readFileSync(join(process.cwd(), "app/(admin)/maki-admin/layout.tsx"), "utf8");
++    const menu = src.slice(src.indexOf("const menuGroups"), src.indexOf("];", src.indexOf("const menuGroups")));
++    const items = [...menu.matchAll(/href:\s*"([^"]+)"[\s\S]*?permissionKey:\s*"([^"]+)"/g)].map((m) => [m[1], m[2]]);
++    const seen = new Set<string>();
++    const topLevel = items.filter(([href]) => {
++      const sec = adminSectionForPath(href)!;
++      if (seen.has(sec.href)) return false;
++      seen.add(sec.href);
++      return true;
++    });
++    expect(topLevel.map(([href]) => href)).toEqual(ADMIN_SECTIONS.map((s) => s.href));
++    for (const [href, key] of items) {
++      const need = adminSectionForPath(href)!.need;
++      expect(Array.isArray(need) ? need : [need], href).toContain(key);
++    }
++  });
++
++  it("alt ve dinamik yollar üst bölümün iznini alır; login korunmaz", () => {
++    expect(adminSectionForPath("/maki-admin/settings/popup")?.need).toBe("settings");
++    expect(adminSectionForPath("/maki-admin/villas/abc/galeri")?.need).toBe("villas");
++    expect(adminSectionForPath("/maki-admin/reservations/123")?.need).toBe("reservations");
++    expect(adminSectionForPath("/maki-admin/blog/new")?.need).toBe("blog");
++    expect(adminSectionForPath("/maki-admin")?.need).toBe("dashboard");
++    expect(adminSectionForPath("/maki-admin/login")).toBeNull();
++  });
++
++  it("ilk izinli bölüm menü sırasıyla seçilir", () => {
++    expect(firstAllowedAdminHref(["users", "villas"])).toBe("/maki-admin/villas");
++    expect(firstAllowedAdminHref(["dashboard", "users"])).toBe("/maki-admin");
++    expect(firstAllowedAdminHref(["payment_accounts"])).toBe("/maki-admin/payment-accounts");
++    expect(firstAllowedAdminHref([])).toBeNull();
++  });
++
++  it("storage: bucket + yol öneki → izin", () => {
++    expect(storagePermissionFor(VILLA_BUCKET, "villas/x__1/gallery-0001.webp")).toBe("villas");
++    expect(storagePermissionFor(VILLA_BUCKET, "descriptions/u.webp")).toEqual(["villas", "blog"]);
++    expect(storagePermissionFor(ASSET_BUCKET, "branding/admin-logo.webp")).toBe("webmaster");
++    expect(storagePermissionFor(ASSET_BUCKET, "popup/popup.webp")).toBe("settings");
++    expect(storagePermissionFor(ASSET_BUCKET, "category-covers/a.webp")).toBe("villa_types");
++    expect(storagePermissionFor(ASSET_BUCKET, "location-covers/a.webp")).toBe("locations");
++    expect(storagePermissionFor(ASSET_BUCKET, "page-covers/a-section-1.webp")).toBe("pages");
++    expect(storagePermissionFor(ASSET_BUCKET, "blog/a.webp")).toBe("blog");
++    expect(storagePermissionFor(ASSET_BUCKET, "other/a.webp")).toBe("settings");
++    expect(storagePermissionFor("evil-bucket", "x")).toBeNull();
++  });
++});
++
++/* ================================================================
++   B) DAVRANIŞ — yalnız `villas` izni olan admin vs izinli admin
++   ================================================================ */
++describe("B) yetkisiz admin → 403, veri fonksiyonu ÇAĞRILMAZ", () => {
++  beforeEach(() => {
++    h.state.perms = ["villas"];
++  });
++
++  const cases: Array<[string, () => Promise<Response>]> = [
++    ["GET /api/admin-users", () => listAdmins(new Request("http://x/api/admin-users"))],
++    ["DELETE /api/admin-users/[id]", () => deleteAdmin(new Request("http://x", { method: "DELETE" }), idCtx("victim"))],
++    ["GET /api/admin/reservations", () => reservationsRoute.GET(new Request("http://x/api/admin/reservations"))],
++    ["POST /api/admin/reservations", () => reservationsRoute.POST(json("http://x/api/admin/reservations", "POST", {}))],
++    ["PATCH /api/admin/reservations", () => reservationsRoute.PATCH(json("http://x/api/admin/reservations", "PATCH", { id: "r1", status: "confirmed" }))],
++    ["DELETE /api/admin/reservations", () => reservationsRoute.DELETE(new Request("http://x/api/admin/reservations?id=r1", { method: "DELETE" }))],
++    ["GET /api/admin/reservations/[id]", () => reservationRoute.GET(new Request("http://x"), idCtx())],
++    ["PATCH /api/admin/reservations/[id]", () => reservationRoute.PATCH(json("http://x", "PATCH", {}), idCtx())],
++    ["DELETE /api/admin/reservations/[id]", () => reservationRoute.DELETE(new Request("http://x", { method: "DELETE" }), idCtx())],
++    ["POST storage/upload (site-assets/branding)", () => upload(uploadReq(ASSET_BUCKET, "branding/admin-logo.webp"))],
++    ["POST storage/upload (site-assets/popup)", () => upload(uploadReq(ASSET_BUCKET, "popup/popup.webp"))],
++    ["POST storage/remove (site-assets/logo)", () => remove(json("http://x", "POST", { bucket: ASSET_BUCKET, paths: ["logo/logo.webp"] }))],
++  ];
++
++  for (const [name, run] of cases) {
++    it(name, async () => {
++      const res = await run();
++      expect(res.status).toBe(403);
++      const body = await res.json();
++      expect(body).toEqual({ ok: false, error: "Yetkisiz: bu işlem için izniniz yok" });
++      expect(dataCalls()).toEqual([]);
++    });
++  }
++
++  it("storage/remove: izinli + izinsiz yol karışık → 403, HİÇBİR yol silinmez", async () => {
++    h.state.perms = ["settings"];
++    const res = await remove(
++      json("http://x", "POST", { bucket: ASSET_BUCKET, paths: ["hero/a.webp", "blog/b.webp"] })
++    );
++    expect(res.status).toBe(403);
++    expect(dataCalls()).toEqual([]);
++  });
++
++  it("GET /api/voucher/[id] → 403 text/plain (mevcut hata biçimi), voucher üretilmez", async () => {
++    const res = await voucher(new Request("http://x/api/voucher/r1"), idCtx("r1"));
++    expect(res.status).toBe(403);
++    expect(res.headers.get("content-type")).toContain("text/plain");
++    expect(dataCalls()).toEqual([]);
++  });
++
++  it("POST /api/admin/villas/[id]/hard-delete — reservations-only admin → 403", async () => {
++    h.state.perms = ["reservations"];
++    const res = await hardDelete(new Request("http://x", { method: "POST" }), idCtx());
++    expect(res.status).toBe(403);
++    expect(dataCalls()).toEqual([]);
++  });
++
++  it("GET /api/admin/villas/[id] — blog-only admin → 403", async () => {
++    h.state.perms = ["blog"];
++    const res = await villaDetail(new Request("http://x"), idCtx());
++    expect(res.status).toBe(403);
++    expect(dataCalls()).toEqual([]);
++  });
++
++  it("oturum yoksa mevcut 401 davranışı aynen (izin sorgusu bile yapılmaz)", async () => {
++    h.state.auth = { ok: false, status: 401, error: "Oturum bulunamadı" };
++    const res = await listAdmins(new Request("http://x/api/admin-users"));
++    expect(res.status).toBe(401);
++    expect(h.log).toEqual([]);
++  });
++});
++
++describe("B) izinli admin → mevcut akışa geçer", () => {
++  it("users izni → admin listesi okunur / silme akışına girilir", async () => {
++    h.state.perms = ["users"];
++    const res = await listAdmins(new Request("http://x/api/admin-users"));
++    expect(res.status).toBe(200);
++    expect(dataCalls()).toContain("adminUserPanelRepo.findAllForList");
++    h.log.length = 0;
++    await deleteAdmin(new Request("http://x", { method: "DELETE" }), idCtx("victim"));
++    expect(dataCalls().some((c) => c.startsWith("adminUserRepo."))).toBe(true);
++  });
++
++  it("reservations izni → rezervasyon listesi okunur", async () => {
++    h.state.perms = ["reservations"];
++    const res = await reservationsRoute.GET(new Request("http://x/api/admin/reservations"));
++    expect(res.status).toBe(200);
++    expect(dataCalls()).toContain("reservationRepo.findAllForAdminList");
++  });
++
++  it("OR: reservations-only admin villa detayını okuyabilir (rezervasyon formu)", async () => {
++    h.state.perms = ["reservations"];
++    await villaDetail(new Request("http://x"), idCtx());
++    expect(dataCalls().some((c) => c.startsWith("villaRepo."))).toBe(true);
++  });
++
++  it("villas izni → hard-delete servisine geçer", async () => {
++    h.state.perms = ["villas"];
++    await hardDelete(new Request("http://x", { method: "POST" }), idCtx());
++    expect(dataCalls()).toContain("hardDeleteVilla");
++  });
++
++  it("storage: villas → villa görseli; blog → açıklama görseli; settings → popup; webmaster → branding", async () => {
++    for (const [perms, bucket, path] of [
++      [["villas"], VILLA_BUCKET, "villas/x__1/gallery-0001.webp"],
++      [["blog"], VILLA_BUCKET, "descriptions/u.webp"],
++      [["settings"], ASSET_BUCKET, "popup/popup.webp"],
++      [["webmaster"], ASSET_BUCKET, "branding/admin-logo.webp"],
++    ] as const) {
++      h.state.perms = [...perms];
++      h.log.length = 0;
++      const res = await upload(uploadReq(bucket, path));
++      expect(res.status, path).toBe(200);
++      expect(dataCalls()).toEqual([`s3.upload:${bucket}/${path}`]);
++    }
++    h.state.perms = ["villas"];
++    h.log.length = 0;
++    const res = await remove(json("http://x", "POST", { bucket: VILLA_BUCKET, paths: ["villas/a/1.webp", "villas/a/2.webp"] }));
++    expect(res.status).toBe(200);
++    expect(dataCalls()).toEqual([`s3.remove:${VILLA_BUCKET}/villas/a/1.webp,villas/a/2.webp`]);
++  });
++});
++
++/* ================================================================
++   C) KAYIT TARAMASI
++   ================================================================ */
++function walk(dir: string, file: string): string[] {
++  const out: string[] = [];
++  for (const e of readdirSync(dir)) {
++    const f = join(dir, e);
++    if (statSync(f).isDirectory()) out.push(...walk(f, file));
++    else if (e === file) out.push(f);
++  }
++  return out;
++}
++
++describe("C) her admin API handler'ı izin kontrolü içerir", () => {
++  const root = join(process.cwd(), "app/api");
++  const files = walk(root, "route.ts").filter((f) => {
++    const rel = f.slice(root.length);
++    return (
++      rel.startsWith("/admin/") ||
++      rel.startsWith("/admin-users") ||
++      (rel.startsWith("/mail/") && !rel.startsWith("/mail/reservation-request")) ||
++      rel.startsWith("/voucher/")
++    );
++  });
++  /* Bilinçli istisnalar: yalnız ÇAĞIRANIN KENDİ hesabı (2FA) ve kendi
++     işlem kaydı (activity-logs/log — her admin kendi eylemini loglar). */
++  const EXCEPTIONS = new Set([
++    "/admin/2fa/enroll/start/route.ts",
++    "/admin/2fa/enroll/confirm/route.ts",
++    "/admin/2fa/disable/route.ts",
++    "/admin/2fa/recovery-codes/regenerate/route.ts",
++    "/admin/activity-logs/log/route.ts",
++  ]);
++
++  it("taranan dosya sayısı (55 admin API dosyası)", () => {
++    expect(files.length).toBe(55);
++  });
++
++  for (const f of files) {
++    const rel = f.slice(root.length);
++    const src = readFileSync(f, "utf8");
++    const handlers = [...src.matchAll(/export (?:async )?function (GET|POST|PUT|PATCH|DELETE)\s*\(/g)];
++    for (let i = 0; i < handlers.length; i++) {
++      const body = src.slice(handlers[i].index!, handlers[i + 1]?.index ?? src.length);
++      it(`${handlers[i][1]} ${rel.replace("/route.ts", "")}`, () => {
++        if (EXCEPTIONS.has(rel)) {
++          expect(body).not.toMatch(/callerHasPermission|requirePermission/);
++          return;
++        }
++        const authIdx = body.search(/authorizeAdmin(Caller|CallerFlex|Session)\(/);
++        const permIdx = body.indexOf("callerHasPermission(");
++        expect(authIdx).toBeGreaterThanOrEqual(0);
++        expect(permIdx).toBeGreaterThan(authIdx);
++        /* Veri erişimi (repository / servis / S3) izinden SONRA. Storage
++           route'ları bucket/yol için gövdeyi izinden önce ayrıştırır
++           (veri erişimi değil). */
++        const dataIdx = body.search(/Repository\.|s3StorageProvider\.|buildVoucherContent\(|hardDeleteVilla\(/);
++        if (dataIdx >= 0) expect(dataIdx).toBeGreaterThan(permIdx);
++        if (!rel.startsWith("/admin/storage/")) {
++          const bodyIdx = body.search(/req\.(json|formData)\(/);
++          if (bodyIdx >= 0) expect(bodyIdx).toBeGreaterThan(permIdx);
++        }
++      });
++    }
++  }
++});
++
++describe("C) her admin bölüm klasörü sunucu yetki kapısıyla korunur", () => {
++  const base = join(process.cwd(), "app/(admin)/maki-admin");
++  const folders = readdirSync(base).filter(
++    (e) => statSync(join(base, e)).isDirectory() && walk(join(base, e), "page.tsx").length > 0 && e !== "login"
++  );
++
++  it("bölüm listesi haritayla aynı", () => {
++    expect(folders.map((f) => `/maki-admin/${f}`).sort()).toEqual(
++      ADMIN_SECTIONS.filter((s) => s.href !== "/maki-admin").map((s) => s.href).sort()
++    );
++  });
++
++  for (const f of folders) {
++    it(`/maki-admin/${f}/layout.tsx`, () => {
++      const p = join(base, f, "layout.tsx");
++      expect(existsSync(p)).toBe(true);
++      const src = readFileSync(p, "utf8");
++      expect(src).not.toMatch(/^\s*["']use client["']/m);
++      const need = adminSectionForPath(`/maki-admin/${f}`)!.need;
++      const lit = Array.isArray(need) ? `need={[${need.map((n) => `"${n}"`).join(", ")}]}` : `need="${need}"`;
++      expect(src).toContain(`<AdminSectionGuard ${lit}>`);
++    });
++  }
++
++  it("dashboard sayfası veriden önce 'dashboard' izni ister", () => {
++    const src = readFileSync(join(base, "page.tsx"), "utf8");
++    const gate = src.indexOf('adminPermissionGate(auth.caller.id, "dashboard")');
++    expect(gate).toBeGreaterThan(src.indexOf("await authorizeAdminSession()"));
++    expect(gate).toBeLessThan(src.indexOf("findRecentForDashboard("));
++  });
++});
+diff --git a/tests/unit/admin-section-guard.test.tsx b/tests/unit/admin-section-guard.test.tsx
+new file mode 100644
+index 0000000..39eb060
+--- /dev/null
++++ b/tests/unit/admin-section-guard.test.tsx
+@@ -0,0 +1,82 @@
++/* ===============================================================
++   🛡️ AdminSectionGuard — bölüm layout'u yetki kapısı
++   Sıra: oturum → izin → içerik. Yetkisiz: ilk izinli bölüme redirect;
++   hiç izin yoksa bilgi kartı; children (bölüm içeriği) render EDİLMEZ.
++   =============================================================== */
++import { describe, it, expect, vi, beforeEach } from "vitest";
++import { isValidElement, type ReactElement } from "react";
++import { renderToStaticMarkup } from "react-dom/server";
++
++const h = vi.hoisted(() => ({
++  auth: null as unknown,
++  perms: [] as string[],
++  redirect: vi.fn((url: string) => {
++    throw new Error(`NEXT_REDIRECT:${url}`);
++  }),
++}));
++
++vi.mock("@/lib/admin-route-auth", () => ({ authorizeAdminSession: async () => h.auth }));
++vi.mock("@/lib/db/admin-user.repository.server", () => ({
++  adminUserServerRepository: {
++    findByIdForSession: async (id: string) => ({
++      data: { id, is_active: true, sidebar_permissions: h.perms },
++      error: null,
++    }),
++  },
++}));
++vi.mock("next/navigation", () => ({ redirect: h.redirect }));
++vi.mock("@/app/components/admin/AdminPageSessionRefresh", () => ({
++  default: function AdminPageSessionRefresh() {
++    return null;
++  },
++}));
++
++import AdminSectionGuard from "@/app/components/admin/AdminSectionGuard";
++import AdminPageSessionRefresh from "@/app/components/admin/AdminPageSessionRefresh";
++
++const OK = { ok: true, caller: { id: "a1", authUserId: "a1", email: "a@t", is_active: true } };
++const CHILD = <p>GİZLİ-İÇERİK</p>;
++
++beforeEach(() => {
++  h.redirect.mockClear();
++  h.perms = [];
++  h.auth = OK;
++});
++
++describe("AdminSectionGuard", () => {
++  it("oturum yok → mevcut SEC-01 fallback'i; izin sorgusu/children yok", async () => {
++    h.auth = { ok: false, status: 401, error: "x" };
++    const el = (await AdminSectionGuard({ need: "settings", children: CHILD })) as ReactElement;
++    expect(el.type).toBe(AdminPageSessionRefresh);
++  });
++
++  it("izinli → children aynen", async () => {
++    h.perms = ["settings"];
++    const el = (await AdminSectionGuard({ need: "settings", children: CHILD })) as ReactElement;
++    expect(renderToStaticMarkup(el)).toContain("GİZLİ-İÇERİK");
++    expect(h.redirect).not.toHaveBeenCalled();
++  });
++
++  it("OR kümesi: herhangi biri yeterli", async () => {
++    h.perms = ["settings"];
++    const el = (await AdminSectionGuard({ need: ["payment_accounts", "settings"], children: CHILD })) as ReactElement;
++    expect(renderToStaticMarkup(el)).toContain("GİZLİ-İÇERİK");
++  });
++
++  it("yetkisiz → menü sırasındaki ilk izinli bölüme redirect, children render edilmez", async () => {
++    h.perms = ["users", "villas"];
++    await expect(AdminSectionGuard({ need: "settings", children: CHILD })).rejects.toThrow(
++      "NEXT_REDIRECT:/maki-admin/villas"
++    );
++  });
++
++  it("hiç izin yok → bilgi kartı (redirect döngüsü yok), children yok", async () => {
++    h.perms = [];
++    const el = await AdminSectionGuard({ need: "settings", children: CHILD });
++    expect(isValidElement(el)).toBe(true);
++    const html = renderToStaticMarkup(el as ReactElement);
++    expect(html).toContain("erişim yetkiniz yok");
++    expect(html).not.toContain("GİZLİ-İÇERİK");
++    expect(h.redirect).not.toHaveBeenCalled();
++  });
++});
+diff --git a/tests/unit/sec01-admin-page-auth.test.tsx b/tests/unit/sec01-admin-page-auth.test.tsx
+index 280772b..07fcb5e 100644
+--- a/tests/unit/sec01-admin-page-auth.test.tsx
++++ b/tests/unit/sec01-admin-page-auth.test.tsx
+@@ -77,13 +77,28 @@ const h = vi.hoisted(() => {
+     },
+     routerRefresh: vi.fn(),
+     adminState: { admin: null as unknown },
++    /* 🛡️ Sayfa yetki kapısı (AdminSectionGuard > callerHasPermission)
++       izinleri mevcut repository'den okur → DB yerine bu durum. */
++    perms: { current: [] as string[] },
++    redirect: vi.fn(),
+   };
+ });
+-const { callLog, authResult, routerRefresh, adminState } = h;
++const { callLog, authResult, routerRefresh, adminState, perms } = h;
+ 
+ vi.mock("@/lib/admin-route-auth", () => ({
+   authorizeAdminSession: h.authorizeAdminSession,
+ }));
++vi.mock("@/lib/db/admin-user.repository.server", () => ({
++  adminUserServerRepository: {
++    findByIdForSession: vi.fn(async (id: string) => {
++      h.callLog.push("perm");
++      return {
++        data: { id, is_active: true, sidebar_permissions: h.perms.current },
++        error: null,
++      };
++    }),
++  },
++}));
+ 
+ /* ---------------- veri modülleri (sayfaların kullandıkları) ---------------- */
+ vi.mock("@/lib/db/reservation.repository.server", () => ({
+@@ -118,7 +133,7 @@ vi.mock("@/app/(admin)/maki-admin/settings/ceviriler/SettingsTranslationsPage",
+ vi.mock("next/navigation", () => ({
+   useRouter: () => ({ refresh: h.routerRefresh, replace: vi.fn(), push: vi.fn() }),
+   usePathname: () => "/maki-admin",
+-  redirect: vi.fn(),
++  redirect: h.redirect,
+ }));
+ 
+ vi.mock("@/app/components/admin/AdminSessionGuard", () => ({
+@@ -146,29 +161,36 @@ type PageCase = {
+ 
+ const noParams = { searchParams: Promise.resolve({}) };
+ 
+-const PAGES: PageCase[] = [
++type PageCaseWithNeed = PageCase & { need: string };
++
++const PAGES: PageCaseWithNeed[] = [
+   {
+     name: "/maki-admin (dashboard)",
++    need: "dashboard",
+     run: () => DashboardPage(),
+     dataCalls: ["findRecentForDashboard", "getDailyReservationCounts", "getOperationsSnapshot"],
+   },
+   {
+     name: "/maki-admin/villas",
++    need: "villas",
+     run: () => VillasPage(noParams as never),
+     dataCalls: ["getVillasForAdminPage"],
+   },
+   {
+     name: "/maki-admin/manual-reservations/ekle",
++    need: "manual_reservations",
+     run: () => ManualReservationAddPage(noParams as never),
+     dataCalls: ["findAllIdTitleSlug"],
+   },
+   {
+     name: "/maki-admin/villas/siralama",
++    need: "villas",
+     run: () => VillaSortPage(),
+     dataCalls: ["getVillasForSortOrder"],
+   },
+   {
+     name: "/maki-admin/villa-listesi",
++    need: "villa_lists",
+     run: () => VillaListesiPage(),
+     dataCalls: [
+       "findActiveCuratorCards",
+@@ -179,6 +201,7 @@ const PAGES: PageCase[] = [
+   },
+   {
+     name: "/maki-admin/settings/ceviriler",
++    need: "settings",
+     run: () => SettingsCevirilerPage(),
+     dataCalls: ["getPublicSettings", "getSettingsTranslations"],
+   },
+@@ -223,6 +246,7 @@ describe("SEC-01 — geçerli oturumda sıra AUTH → DATA", () => {
+   for (const page of PAGES) {
+     it(`${page.name}`, async () => {
+       authResult.current = OK;
++      perms.current = [page.need];
+       const el = (await page.run()) as { type?: unknown };
+ 
+       expect(callLog[0]).toBe("auth");
+@@ -236,6 +260,42 @@ describe("SEC-01 — geçerli oturumda sıra AUTH → DATA", () => {
+   }
+ });
+ 
++/* ---------------------------------------------------------------
++   🛡️ ADMIN YETKİ — oturum geçerli ama bölüm izni YOK → veri ÜRETİLMEZ;
++   ilk izinli bölüme yönlendirilir; hiç izin yoksa bilgi kartı.
++--------------------------------------------------------------- */
++describe("Admin yetki — izin yoksa server page veri ÜRETMEZ (AUTH → PERM → DATA)", () => {
++  for (const page of PAGES) {
++    it(`${page.name} — başka bölüm izni olan admin`, async () => {
++      authResult.current = OK;
++      perms.current = page.need === "blog" ? ["pages"] : ["blog"];
++      const el = (await page.run()) as { type?: unknown };
++      for (const fn of page.dataCalls) expect(callLog).not.toContain(fn);
++      expect(callLog.filter((c) => c !== "auth" && c !== "perm")).toEqual([]);
++      expect(h.redirect).toHaveBeenCalledWith("/maki-admin/blog");
++      expect(el?.type).not.toBe(AdminPageSessionRefresh);
++    });
++
++    it(`${page.name} — hiç izni olmayan admin`, async () => {
++      authResult.current = OK;
++      perms.current = [];
++      await page.run();
++      for (const fn of page.dataCalls) expect(callLog).not.toContain(fn);
++      expect(h.redirect).not.toHaveBeenCalled();
++    });
++
++    it(`${page.name} — yetkili admin: izin kontrolü veriden ÖNCE`, async () => {
++      authResult.current = OK;
++      perms.current = [page.need];
++      await page.run();
++      const firstData = Math.min(...page.dataCalls.map((fn) => callLog.indexOf(fn)));
++      expect(callLog.indexOf("perm")).toBeGreaterThan(callLog.indexOf("auth"));
++      expect(callLog.indexOf("perm")).toBeLessThan(firstData);
++      expect(h.redirect).not.toHaveBeenCalled();
++    });
++  }
++});
++
+ /* ---------------------------------------------------------------
+    KAYIT TARAMASI — veri modülü import eden her server admin sayfası
+    gate'i içermeli.
+@@ -267,6 +327,8 @@ describe("SEC-01 — kayıt taraması: veri çeken server admin sayfaları gate'
+       const src = readFileSync(p, "utf8");
+       expect(src).toContain("await authorizeAdminSession()");
+       expect(src).toMatch(/if \(!auth\.ok\) return <AdminPageSessionRefresh \/>;/);
++      /* 🛡️ Admin yetki: oturumdan SONRA, veriden ÖNCE izin kapısı. */
++      expect(src).toMatch(/const denied = await adminPermissionGate\(auth\.caller\.id, "[a-z_]+"\);\s*if \(denied\) return denied;/);
+     });
+   }
+ });
+diff --git a/tests/unit/sec03-admin-api-permission.test.ts b/tests/unit/sec03-admin-api-permission.test.ts
+index 6811d3f..11616b3 100644
+--- a/tests/unit/sec03-admin-api-permission.test.ts
++++ b/tests/unit/sec03-admin-api-permission.test.ts
+@@ -352,12 +352,29 @@ describe("SEC-03 Faz 1 — D/G) doğru izinli admin → mevcut başarılı yanı
+ });
+ 
+ describe("SEC-03 Faz 1 — kapsam dışı davranışlar DEĞİŞMEDİ", () => {
+-  it("GET /api/admin/settings — izinsiz (yalnız reservations) admin hâlâ okuyabilir (SEC-04'e bırakıldı)", async () => {
+-    setCaller(["reservations"]);
++  /* 🛡️ Admin yetki (SEC-04) — önceki "izinsiz admin de okuyabilir"
++     davranışı BİLİNÇLİ OLARAK kapatıldı: tam satır yalnız `settings`
++     iznine; rezervasyon ekranlarının tek ihtiyacı `prepayment_rate`
++     `reservations` iznine dar projeksiyonla; diğerleri 403. */
++  it("GET /api/admin/settings — `settings` izni → tam satır (mevcut yanıt birebir)", async () => {
++    setCaller(["settings"]);
+     const res = await getSettings(new Request("http://x/api/admin/settings"));
+     expect(res.status).toBe(200);
+     expect(await res.json()).toEqual({ ok: true, settings: { id: "s1", site_name: "X" } });
+-    expect(h.log).not.toContain("perm-lookup");
++  });
++
++  it("GET /api/admin/settings — yalnız `reservations` → yalnız prepayment_rate (secret/diğer alan YOK)", async () => {
++    setCaller(["reservations"]);
++    const res = await getSettings(new Request("http://x/api/admin/settings"));
++    expect(res.status).toBe(200);
++    expect(await res.json()).toEqual({ ok: true, settings: { prepayment_rate: null } });
++  });
++
++  it("GET /api/admin/settings — ne `settings` ne `reservations` → 403, satır OKUNMAZ", async () => {
++    setCaller(["villas"]);
++    const res = await getSettings(new Request("http://x/api/admin/settings"));
++    expect(res.status).toBe(403);
++    expect(h.log).not.toContain("settingsFindStrict");
+   });
+ 
+   it("H) kendi 2FA route'ları (enroll/start, enroll/confirm, disable, recovery-codes) izin kontrolü İÇERMEZ", () => {
+diff --git a/tests/unit/villa-admin-helpers/villas-route.has-discount-filter.test.ts b/tests/unit/villa-admin-helpers/villas-route.has-discount-filter.test.ts
+index b12b9ad..0c658ff 100644
+--- a/tests/unit/villa-admin-helpers/villas-route.has-discount-filter.test.ts
++++ b/tests/unit/villa-admin-helpers/villas-route.has-discount-filter.test.ts
+@@ -44,6 +44,19 @@ vi.mock("@/app/services/villa-admin.service", () => ({
+   createVillaFull: (...args: unknown[]) => createVillaFullMock(...args),
+ }));
+ 
++/* 🛡️ Admin yetki — route artık `callerHasPermission` (DB izin kümesi)
++   ister; bu dosya filtre davranışını test eder → çağıran admin'e villa
++   listesi okuma izni ("villas") verilir. İzin senaryoları:
++   tests/unit/admin-api-permission.test.ts. */
++vi.mock("@/lib/db/admin-user.repository.server", () => ({
++  adminUserServerRepository: {
++    findByIdForSession: async (id: string) => ({
++      data: { id, is_active: true, sidebar_permissions: ["villas"] },
++      error: null,
++    }),
++  },
++}));
++
+ const ALL_VILLAS = [
+   { id: "v1", title: "Villa Bir", slug: "villa-bir", is_active: true, deleted_at: null },
+   { id: "v2", title: "Villa İki", slug: "villa-iki", is_active: true, deleted_at: null },

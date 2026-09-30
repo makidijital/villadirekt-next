@@ -1,0 +1,334 @@
+/* /arama PARITY + PERF HARNESS — repo DIŞINDA; proje dosyası değildir.
+   Mod: PARITY_MODE=baseline|compare|perf · PARITY_N · PARITY_LAT · PARITY_OUT */
+import { describe, it, expect, vi } from "vitest";
+import { render, cleanup } from "@testing-library/react";
+import fs from "node:fs";
+import path from "node:path";
+import { buildFixture, LOCATIONS, TYPES, FEATURES, RATE_ROWS, LOC, TYPE, FEAT } from "./fixture";
+
+const S = vi.hoisted(() => ({
+  fx: null as any,
+  lat: 0,
+  calls: [] as string[],
+  bytes: {} as Record<string, number>,
+  inFlight: 0,
+  maxInFlight: 0,
+  currency: undefined as string | undefined,
+  err: {} as Record<string, string>,
+}));
+function maybeErr(key: string) {
+  const m = S.err[key];
+  if (m === 'throw') throw new Error('sim-throw:' + key);
+  if (m === 'error') return { data: null, error: { message: 'sim-error:' + key } };
+  return null;
+}
+async function db<T>(name: string, fn: () => T): Promise<T> {
+  S.calls.push(name);
+  S.inFlight++;
+  S.maxInFlight = Math.max(S.maxInFlight, S.inFlight);
+  try {
+    if (S.lat > 0) await new Promise((r) => setTimeout(r, S.lat));
+    const out = fn();
+    try { S.bytes[name] = (S.bytes[name] || 0) + JSON.stringify((out as any)?.data ?? out).length; } catch {}
+    return out;
+  } finally {
+    S.inFlight--;
+  }
+}
+
+vi.mock("@/lib/db/villa.repository.server", () => ({
+  villaAdminRepository: {
+    findSearchResults: (opts: any) =>
+      db("villa.findSearchResults", () => {
+        const F = S.fx;
+        let rows = F.villas.filter((v: any) => v.is_active === true && v.deleted_at === null);
+        if (opts.categoryVillaIds && opts.categoryVillaIds.length > 0) {
+          const s = new Set(opts.categoryVillaIds);
+          rows = rows.filter((v: any) => s.has(v.id));
+        }
+        if (opts.expandedRegions.length) {
+          const s = new Set(opts.expandedRegions);
+          rows = rows.filter((v: any) => s.has(v.location_id));
+        }
+        if (opts.guests) rows = rows.filter((v: any) => v.guests >= opts.guests);
+        rows = [...rows].sort(
+          (a: any, b: any) =>
+            a.sort_order - b.sort_order ||
+            (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0)
+        );
+        const locName = (id: string) => LOCATIONS.find((l) => l.id === id)?.name ?? null;
+        if (!F.__idx) {
+          const g = (arr: any[]) => { const m = new Map<string, any[]>(); for (const x of arr) { const l = m.get(x.villa_id); if (l) l.push(x); else m.set(x.villa_id, [x]); } return m; };
+          F.__idx = { images: g(F.images), prices: g(F.prices), discounts: g(F.discounts) };
+        }
+        const I = F.__idx;
+        return {
+          data: rows.map((v: any) => ({
+            ...v,
+            location: locName(v.location_id) === null ? null : { name: locName(v.location_id) },
+            villa_images: (I.images.get(v.id) || [])
+              .slice()
+              .sort((a: any, b: any) => Number(b.is_cover) - Number(a.is_cover) || a.sort_order - b.sort_order)
+              .slice(0, 1)
+              .map(({ image_url, is_cover, sort_order }: any) => ({ image_url, is_cover, sort_order })),
+            villa_prices: (I.prices.get(v.id) || [])
+              .map(({ price, currency, start_date, end_date }: any) => ({ price, currency, start_date, end_date })),
+            villa_discounts: (I.discounts.get(v.id) || [])
+              .map(({ start_date, end_date, discount_type, discount_value, currency }: any) => ({
+                start_date, end_date, discount_type, discount_value, currency,
+              })),
+          })),
+          error: null,
+        };
+      }),
+  },
+}));
+vi.mock("@/lib/db/villa-type.repository", () => ({
+  villaTypeRepository: {
+    findVillaTypeRelationsByTypeIds: (ids: string[]) =>
+      db("villa_type_relations", () => maybeErr("typeRel") ?? ({
+        data: S.fx.typeRels.filter((r: any) => ids.includes(r.type_id)).map((r: any) => ({ villa_id: r.villa_id, type_id: r.type_id })),
+        error: null,
+      })),
+  },
+}));
+vi.mock("@/lib/db/villa-feature.repository", () => ({
+  villaFeatureRepository: {
+    findAllForPublicTaxonomy: () => db("villa_features", () => maybeErr("features") ?? ({ data: FEATURES, error: null })),
+    findVillaFeatureRelationsByFeatureIds: (ids: string[]) =>
+      db("villa_feature_relations", () => ({
+        data: S.fx.featureRels.filter((r: any) => ids.includes(r.feature_id)).map((r: any) => ({ villa_id: r.villa_id, feature_id: r.feature_id })),
+        error: null,
+      })),
+  },
+}));
+vi.mock("@/lib/cache.helpers", () => ({
+  getCachedVillaLocations: async () => { S.calls.push("cache:locations"); return LOCATIONS; },
+  getCachedVillaTypes: async () => { S.calls.push("cache:types"); return TYPES; },
+}));
+vi.mock("@/lib/db/reservation.repository", () => ({
+  reservationRepository: {
+    getBlockedVillaIdsRpc: (start: string, end: string, scoped: string[] | null) =>
+      db("rpc:get_blocked_villa_ids", () => {
+        const e = maybeErr("rpc"); if (e) return e;
+        const F = S.fx;
+        if (!(start < end)) return { data: [], error: null };
+        const inScope = (id: string) => scoped === null || scoped.includes(id);
+        const ov = (r: any) => r.start_date < end && r.end_date > start;
+        const out = new Set<string>();
+        for (const r of F.reservations) if ((r.status === "pending" || r.status === "confirmed") && ov(r) && inScope(r.villa_id)) out.add(r.villa_id);
+        for (const r of F.manual) if (ov(r) && inScope(r.villa_id)) out.add(r.villa_id);
+        for (const r of F.external) if (r.is_active === true && ov(r) && inScope(r.villa_id)) out.add(r.villa_id);
+        return { data: [...out], error: null };
+      }),
+  },
+}));
+vi.mock("@/lib/db/villa-review.repository.server", () => ({
+  villaReviewServerRepository: {
+    findApprovedRatingsAllVillas: () =>
+      db("villa_reviews.allApproved", () => maybeErr("reviews") ?? ({ data: S.fx.reviews.map((r: any) => ({ villa_id: r.villa_id, rating: r.rating })), error: null })),
+  },
+}));
+vi.mock("@/lib/db/exchange-rate.repository", () => ({
+  exchangeRateRepository: {
+    findCodeRateUpdated: () => db("exchange_rates", () => maybeErr("rates") ?? ({ data: RATE_ROWS, error: null })),
+  },
+}));
+vi.mock("@/lib/db/translation.repository.server", () => ({
+  translationRepository: {
+    findManyForLocale: (entity: string, ids: string[], locale: string) =>
+      db(`translations:${entity}`, () => {
+        const e = maybeErr("translations"); if (e) return e;
+        const col = entity === "villa" ? "villa_id" : entity === "villa_type" ? "type_id" : "feature_id";
+        return {
+          data: S.fx.translations.filter((t: any) => t.entity === entity && t.locale === locale && ids.includes(t[col])),
+          error: null,
+        };
+      }),
+  },
+}));
+vi.mock("@/lib/storage.helpers", () => ({
+  resolveVillaImageUrl: (u: string | null) => u || "",
+  appendAssetVersion: (u: string) => u,
+}));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: (k: string) => (k === "currency" && S.currency ? { value: S.currency } : undefined) }),
+}));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: () => {}, replace: () => {}, prefetch: () => {} }),
+  useSearchParams: () => ({ get: () => null }),
+  usePathname: () => "/arama",
+  notFound: () => { throw new Error("NEXT_NOT_FOUND"); },
+}));
+vi.mock("next/link", () => ({ default: ({ href, children }: any) => <a href={href}>{children}</a> }));
+vi.mock("next/script", () => ({
+  default: (p: any) =>
+    p.dangerouslySetInnerHTML ? (
+      <script id={p.id} type={p.type} dangerouslySetInnerHTML={p.dangerouslySetInnerHTML} />
+    ) : (
+      <script id={p.id} type={p.type}>{p.children}</script>
+    ),
+}));
+vi.mock("next/image", () => ({ default: ({ alt }: any) => <img alt={alt ?? ""} /> }));
+vi.mock("@/app/components/ui/PageHero", () => ({
+  default: (p: any) => (
+    <header data-eyebrow={p.eyebrow} data-pills={JSON.stringify(p.pills ?? null)} data-bc={JSON.stringify(p.breadcrumb ?? null)}>
+      {p.title}
+    </header>
+  ),
+}));
+vi.mock("@/app/components/villa/VillaCard", () => ({
+  default: (p: any) => <div data-testid="villa-card" data-card={JSON.stringify(p)} />,
+}));
+vi.mock("@/app/(public)/arama/FilterSidebar", () => ({
+  default: (p: any) => <aside data-sidebar={JSON.stringify(p)} />,
+}));
+
+type SP = Record<string, string>;
+const D = { start: "2027-06-10", end: "2027-06-15" };
+const SCENARIOS: Array<{ key: string; sp: SP; locale?: "tr" | "en" | "de"; currency?: string; pages?: number; err?: Record<string, string> }> = [
+  { key: "01-bos", sp: {} },
+  { key: "02-tarih", sp: { ...D } },
+  { key: "03-tarih-kisi", sp: { ...D, guests: "6" } },
+  { key: "04-tarih-bolge-grupkoku", sp: { ...D, bolgeler: "kalkan" } },
+  { key: "04b-tarih-bolge-alt", sp: { ...D, bolgeler: "islamlar,kas" } },
+  { key: "05-tarih-tip", sp: { ...D, "villa-turleri": "havuzlu" } },
+  { key: "05b-tarih-tip-AND", sp: { ...D, "villa-turleri": "havuzlu,balayi" } },
+  { key: "06-tarih-ozellik", sp: { ...D, ozellikler: FEAT.F1 } },
+  { key: "06b-tarih-ozellik-AND-dup", sp: { ...D, ozellikler: `${FEAT.F1},${FEAT.F2},${FEAT.F1}` } },
+  { key: "07-hepsi", sp: { ...D, guests: "4", bolgeler: "kalkan", "villa-turleri": "havuzlu", ozellikler: FEAT.F3 } },
+  { key: "08-esnek3", sp: { ...D, flexible: "3" } },
+  { key: "08b-esnek3-kisi-fiyat", sp: { ...D, flexible: "3", guests: "4", sort: "price-asc" } },
+  { key: "08c-esnek1", sp: { ...D, flexible: "1" } },
+  { key: "09-fiyat-artan", sp: { ...D, sort: "price-asc" } },
+  { key: "10-fiyat-azalan", sp: { ...D, sort: "price-desc" } },
+  { key: "11-fiyat-artan-EUR", sp: { ...D, sort: "price-asc" }, currency: "EUR" },
+  { key: "12-fiyat-azalan-USD-kisi", sp: { ...D, sort: "price-desc", guests: "5" }, currency: "USD" },
+  { key: "13-tarihsiz-fiyat-artan", sp: { sort: "price-asc" } },
+  { key: "13b-tarihsiz-fiyat-azalan-GBP", sp: { sort: "price-desc" }, currency: "GBP" },
+  { key: "14-kapasite-artan", sp: { ...D, sort: "capacity-asc" } },
+  { key: "14b-kapasite-azalan", sp: { sort: "capacity-desc" } },
+  { key: "15-pagesize30", sp: { ...D, pageSize: "30" } },
+  { key: "15b-pagesize-gecersiz", sp: { ...D, pageSize: "7", page: "999" }, pages: 0 },
+  { key: "16-EN-hepsi", sp: { ...D, guests: "4", bolgeler: "kalkan", "villa-turleri": "havuzlu", ozellikler: FEAT.F3, sort: "price-desc" }, locale: "en" },
+  { key: "16b-EN-fiyat-esnek", sp: { ...D, sort: "price-asc", flexible: "3" }, locale: "en", currency: "EUR" },
+  { key: "16c-DE-tip", sp: { ...D, "villa-turleri": "havuzlu" }, locale: "de" },
+  { key: "17-bos-kesisim", sp: { ...D, "villa-turleri": "muhafazakar", ozellikler: FEAT.F3 } },
+  { key: "17c-bos-kesisim-forceEmpty", sp: { ...D, "villa-turleri": "balayi", ozellikler: FEAT.F2 } },
+  { key: "17b-gecersiz-token", sp: { ...D, "villa-turleri": "yok,99999999-9999-4999-8999-999999999999", ozellikler: "abc" } },
+  { key: "18-legacy-params", sp: { ...D, categories: TYPE.balayi, regions: LOC.kas } },
+  { key: "19-gecersiz-tarih", sp: { start: "2027-06-15", end: "2027-06-10", sort: "price-asc" } },
+  { key: "20-bitisik-tarih", sp: { start: "2027-06-14", end: "2027-06-16", sort: "price-desc" } },
+
+  { key: "E1-ozellik-listesi-throw", sp: { ...D, ozellikler: FEAT.F1 }, err: { features: "throw" }, pages: 2 },
+  { key: "E2-ozellik-listesi-error", sp: { ...D }, err: { features: "error" }, pages: 2 },
+  { key: "E3-kur-error-fiyat", sp: { ...D, sort: "price-asc" }, currency: "EUR", err: { rates: "error" }, pages: 2 },
+  { key: "E4-rpc-error", sp: { ...D, sort: "price-desc" }, err: { rpc: "error" }, pages: 2 },
+  { key: "E5-review-error", sp: { ...D }, err: { reviews: "error" }, pages: 2 },
+  { key: "E6-ceviri-throw-EN", sp: { ...D, "villa-turleri": "havuzlu", sort: "price-asc" }, locale: "en", err: { translations: "throw" }, pages: 2 },
+  { key: "E7-tip-junction-error", sp: { ...D, "villa-turleri": "havuzlu" }, err: { typeRel: "error" }, pages: 2 },
+  { key: "E8-esnek-rpc-error", sp: { ...D, flexible: "3" }, err: { rpc: "error" }, pages: 5 },
+];
+
+async function renderOnce(sp: SP, locale: "tr" | "en" | "de") {
+  const { default: AramaPageBody } = await import("@/app/components/search/AramaPageBody");
+  const el = await AramaPageBody({ locale, searchParams: Promise.resolve(sp) as any });
+  const { container } = render(el);
+  const html = container.innerHTML;
+  cleanup();
+  return html;
+}
+
+function summarize(html: string) {
+  const cards = [...html.matchAll(/data-card="([^"]*)"/g)].map((m) =>
+    JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"))
+  );
+  const side = html.match(/data-sidebar="([^"]*)"/);
+  const sidebar = side ? JSON.parse(side[1].replace(/&quot;/g, '"').replace(/&amp;/g, "&")) : null;
+  return {
+    total: sidebar?.resultCount ?? null,
+    cards: cards.filter((c) => !c.isFlexible).map((c) => c.id.slice(-4)),
+    flexible: cards.filter((c) => c.isFlexible).map((c) => c.id.slice(-4)),
+  };
+}
+
+const MODE = process.env.PARITY_MODE || "compare";
+const OUT = process.env.PARITY_OUT || path.join(__dirname, "out");
+fs.mkdirSync(OUT, { recursive: true });
+
+describe(`/arama parity (${MODE})`, () => {
+  if (MODE === "perf") {
+    it("perf", async () => {
+      const N = Number(process.env.PARITY_N || 1500);
+      S.fx = buildFixture(N);
+      const lat = Number(process.env.PARITY_LAT || 0);
+      const keys = ["01-bos", "02-tarih", "07-hepsi", "08-esnek3", "09-fiyat-artan", "13-tarihsiz-fiyat-artan", "14-kapasite-artan", "16-EN-hepsi", "16b-EN-fiyat-esnek"];
+      const res: any = { N, lat, scenarios: {} };
+      for (const k of keys) {
+        const sc = SCENARIOS.find((s) => s.key === k)!;
+        S.currency = sc.currency;
+        S.err = {};
+        S.lat = lat;
+        const times: number[] = [];
+        let calls: string[] = [];
+        let maxIn = 0;
+        let bytes = {};
+        for (let r = 0; r < 5; r++) {
+          S.calls = []; S.bytes = {}; S.maxInFlight = 0;
+          const t0 = performance.now();
+          await renderOnce(sc.sp, sc.locale ?? "tr");
+          times.push(performance.now() - t0);
+          calls = S.calls.slice(); maxIn = S.maxInFlight; bytes = { ...S.bytes };
+        }
+        times.sort((a, b) => a - b);
+        res.scenarios[k] = {
+          medianMs: Math.round(times[2] * 10) / 10,
+          minMs: Math.round(times[0] * 10) / 10,
+          dbCalls: calls.filter((c) => !c.startsWith("cache:")).length,
+          calls,
+          maxConcurrentDb: maxIn,
+          bytes,
+        };
+      }
+      fs.writeFileSync(path.join(OUT, `perf-${process.env.PARITY_LABEL || "x"}-N${N}-L${lat}.json`), JSON.stringify(res, null, 1));
+    });
+    return;
+  }
+
+  it("scenarios", async () => {
+    const N = Number(process.env.PARITY_N || 90);
+    S.fx = buildFixture(N);
+    S.lat = 0;
+    const result: Record<string, { html: string; calls: string[]; summary: any }> = {};
+    for (const sc of SCENARIOS) {
+      S.currency = sc.currency;
+      S.err = sc.err ?? {};
+      const pages = sc.pages ?? 8;
+      const pageList = pages === 0 ? [undefined] : Array.from({ length: pages }, (_, i) => String(i + 1));
+      for (const p of pageList) {
+        S.calls = [];
+        const sp = p ? { ...sc.sp, page: p } : sc.sp;
+        const html = await renderOnce(sp, sc.locale ?? "tr");
+        result[`${sc.key}|p${p ?? "-"}`] = { html, calls: S.calls.slice(), summary: summarize(html) };
+      }
+    }
+    const file = path.join(OUT, `baseline-N${N}.json`);
+    if (MODE === "baseline") {
+      fs.writeFileSync(file, JSON.stringify(result, null, 1));
+      return;
+    }
+    const base = JSON.parse(fs.readFileSync(file, "utf8"));
+    const diffs: string[] = [];
+    const callDiffs: Record<string, { before: string[]; after: string[] }> = {};
+    for (const k of Object.keys(base)) {
+      if (!result[k]) { diffs.push(`${k}: yok`); continue; }
+      if (base[k].html !== result[k].html) diffs.push(k);
+      if (JSON.stringify(base[k].calls) !== JSON.stringify(result[k].calls)) callDiffs[k] = { before: base[k].calls, after: result[k].calls };
+    }
+    fs.writeFileSync(
+      path.join(OUT, `compare-${process.env.PARITY_LABEL || "x"}-N${N}.json`),
+      JSON.stringify({ htmlDiffs: diffs, compared: Object.keys(base).length, callDiffs }, null, 1)
+    );
+    expect(diffs).toEqual([]);
+  });
+});

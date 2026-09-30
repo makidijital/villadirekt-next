@@ -1,0 +1,532 @@
+--- a/next.config.ts
++++ b/next.config.ts
+@@ -44,6 +44,121 @@
+    wildcard host'tur. */
+ const LEGACY_ASSET_HOST = "**.supabase.co";
+ 
++
++/* ===============================================================
++   🛡️ SEC-05 — CONTENT SECURITY POLICY (REPORT-ONLY)
++   ===============================================================
++   YALNIZ `Content-Security-Policy-Report-Only` gönderilir → tarayıcı
++   HİÇBİR kaynağı ENGELLEMEZ; yalnız ihlali console'a yazar ve
++   `/api/csp-report`'a raporlar. Enforce eden `Content-Security-Policy`
++   header'ı BİLEREK YOK (önce production rapor verisi toplanacak).
++
++   - Nonce YOK: nonce tüm sayfaları dinamik render'a zorlar (Next CSP
++     dokümanı) → ISR/static bozulurdu. Statik header ISR ile uyumlu.
++   - CDN host'ları HARDCODE DEĞİL: yukarıdaki remotePatterns ile AYNI
++     env'lerden (`NEXT_PUBLIC_CDN_BASE_*`) türetilir; env yoksa CDN
++     kaynağı policy'ye eklenmez (fallback domain YOK).
++   - 'unsafe-inline' (script): Next App Router her sayfaya inline flight
++     script'leri (`self.__next_f.push`) basar; GTM bootstrap'i
++     (`next/script` inline), arama sıralama script'i ve admin'in
++     `custom_head_scripts`/`analytics_script` alanları da inline'dır.
++     Nonce'suz (ISR korunarak) başka yol yok.
++   - 'unsafe-inline' (style): React `style={}` attribute'ları (ana
++     sayfada ~1400) nonce/hash ile yetkilendirilemez.
++   - 'unsafe-eval' YOK: production'da gerektiğine dair kanıt yok
++     (runtime testte eval ihlali görülmedi); gerekirse raporlarda çıkar.
++   - `frame-ancestors`, `upgrade-insecure-requests`: Report-Only'de
++     tarayıcı tarafından YOK SAYILIR (console uyarısı üretir) → eklenmedi.
++   =============================================================== */
++type CspKind = "public" | "admin";
++type CspEnv = Record<string, string | undefined>;
++
++function originFromBase(base: string | undefined): string | null {
++  if (!base) return null;
++  try {
++    const u = new URL(base);
++    return u.protocol === "https:" || u.protocol === "http:" ? u.origin : null;
++  } catch {
++    return null;
++  }
++}
++
++/* Google Tag Manager + GA4 (GTM üzerinden) — Google Tag Platform CSP
++   rehberindeki temel alan adları. Yalnız PUBLIC policy'de (SEC-05
++   Phase 2 sonrası GTM admin panelinde yüklenmez). */
++const GTM_GA4_SCRIPT = ["https://*.googletagmanager.com"];
++const GTM_GA4_IMG = [
++  "https://*.googletagmanager.com",
++  "https://*.google-analytics.com",
++];
++const GTM_GA4_CONNECT = [
++  "https://*.google-analytics.com",
++  "https://*.analytics.google.com",
++  "https://*.googletagmanager.com",
++];
++/* Harita (lib/map-embed.helper.ts ALLOWED_MAP_HOSTS + koordinat/iletişim
++   iframe'leri) ve YouTube (lib/youtube.helper.ts → youtube-nocookie). */
++const FRAME_HOSTS = [
++  "https://www.google.com",
++  "https://google.com",
++  "https://maps.google.com",
++  "https://www.youtube-nocookie.com",
++];
++
++export function buildCspReportOnly(
++  kind: CspKind,
++  env: CspEnv = process.env
++): string {
++  const cdnOrigins = Array.from(
++    new Set(
++      [
++        originFromBase(env.NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES),
++        originFromBase(env.NEXT_PUBLIC_CDN_BASE_SITE_ASSETS),
++      ].filter((o): o is string => !!o)
++    )
++  );
++  const isPublic = kind === "public";
++  const directives: Array<[string, string[]]> = [
++    ["default-src", ["'self'"]],
++    [
++      "script-src",
++      ["'self'", "'unsafe-inline'", ...(isPublic ? GTM_GA4_SCRIPT : [])],
++    ],
++    ["style-src", ["'self'", "'unsafe-inline'"]],
++    [
++      "img-src",
++      [
++        "'self'",
++        "data:",
++        "blob:",
++        ...cdnOrigins,
++        /* LEGACY_ASSET_HOST ile aynı (yukarıdaki remotePatterns) — DB'de
++           hâlâ eski sağlayıcı URL'i tutan görseller için. */
++        "https://*.supabase.co",
++        /* YouTube video kapak görselleri (lib/youtube.helper.ts). */
++        "https://i.ytimg.com",
++        ...(isPublic
++          ? GTM_GA4_IMG
++          : /* Admin harita seçici (MapPicker): leaflet marker + OSM tile. */
++            ["https://unpkg.com", "https://*.tile.openstreetmap.org"]),
++      ],
++    ],
++    ["font-src", ["'self'", "data:"]],
++    ["connect-src", ["'self'", ...(isPublic ? GTM_GA4_CONNECT : [])]],
++    ["frame-src", [...(isPublic ? [] : ["'self'"]), ...FRAME_HOSTS]],
++    ["media-src", ["'self'", "blob:"]],
++    ["worker-src", ["'self'", "blob:"]],
++    ["manifest-src", ["'self'"]],
++    ["object-src", ["'none'"]],
++    ["base-uri", ["'self'"]],
++    ["form-action", ["'self'"]],
++    ["report-uri", ["/api/csp-report"]],
++  ];
++  return directives.map(([d, v]) => `${d} ${v.join(" ")}`).join("; ");
++}
++
++const CSP_REPORT_ONLY_HEADER = "Content-Security-Policy-Report-Only";
++
+ const nextConfig: NextConfig = {
+   images: {
+     remotePatterns: [
+@@ -60,6 +175,25 @@
+       })),
+     ],
+   },
++  /* 🛡️ SEC-05 — CSP Report-Only (yukarıdaki açıklamaya bkz.). Public ve
++     admin için ayrı policy; `/api`, `/_next/static`, `/_next/image` ve
++     favicon hariç (Next CSP dokümanı önerisi). */
++  async headers() {
++    return [
++      {
++        source: "/((?!api|_next/static|_next/image|favicon.ico|maki-admin).*)",
++        headers: [
++          { key: CSP_REPORT_ONLY_HEADER, value: buildCspReportOnly("public") },
++        ],
++      },
++      {
++        source: "/maki-admin/:path*",
++        headers: [
++          { key: CSP_REPORT_ONLY_HEADER, value: buildCspReportOnly("admin") },
++        ],
++      },
++    ];
++  },
+ };
+ 
+ export default nextConfig;
+--- /dev/null
++++ b/app/api/csp-report/route.ts
+@@ -0,0 +1,50 @@
++import { NextResponse } from "next/server";
++
++/* ===============================================================
++   🛡️ SEC-05 — CSP REPORT-ONLY İHLAL RAPOR UÇ NOKTASI
++   ===============================================================
++   `next.config.ts` içindeki `Content-Security-Policy-Report-Only`
++   header'ının `report-uri /api/csp-report` hedefi. Tarayıcılar ihlal
++   raporlarını buraya POST eder (hiçbir şey ENGELLENMEZ).
++
++   GÜVENLİK / GİZLİLİK:
++     - Yalnız POST; gövde en fazla 16 KB (fazlası okunmaz, loglanmaz).
++     - DB YOK, dış servis YOK — yalnız sunucu log'una tek satır.
++     - Loglanan alanlar KÜÇÜLTÜLÜR: yalnız direktif, engellenecek
++       kaynağın ORIGIN'i (path/query atılır → olası kişisel veri/token
++       loglanmaz) ve sayfa yolunun ilk segmenti (`/v/<token>` gibi
++       token'lı yollar `/v/*` olarak maskelenir). Script örneği
++       (`script-sample`) LOGLANMAZ.
++     - Aynı (direktif, kaynak, sayfa) üçlüsü 10 dakikada bir kez
++       loglanır (log taşmasını önler); bellek en fazla 500 anahtar.
++     - Yanıt her durumda 204 (istemciye bilgi dönmez).
++   =============================================================== */
++import {
++  MAX_BODY_BYTES,
++  extractViolations,
++  shouldLogCspViolation,
++} from "@/lib/security/csp-report";
++
++export const dynamic = "force-dynamic";
++
++export async function POST(req: Request): Promise<Response> {
++  try {
++    const len = Number(req.headers.get("content-length") || "0");
++    if (len > MAX_BODY_BYTES) return new NextResponse(null, { status: 204 });
++    const text = await req.text();
++    if (!text || text.length > MAX_BODY_BYTES) {
++      return new NextResponse(null, { status: 204 });
++    }
++    const violations = extractViolations(JSON.parse(text));
++    const now = Date.now();
++    for (const v of violations) {
++      const key = `${v.directive}|${v.blocked}|${v.page}`;
++      if (shouldLogCspViolation(key, now)) {
++        console.warn(`[csp-report] ${JSON.stringify(v)}`);
++      }
++    }
++  } catch {
++    /* Bozuk/JSON olmayan gövde → sessizce yok say. */
++  }
++  return new NextResponse(null, { status: 204 });
++}
+--- /dev/null
++++ b/lib/security/csp-report.ts
+@@ -0,0 +1,92 @@
++/* ===============================================================
++   🛡️ SEC-05 — CSP rapor ayrıştırma / maskeleme yardımcıları
++   ===============================================================
++   `app/api/csp-report/route.ts` tarafından kullanılır (route dosyası
++   yalnız Next'in izin verdiği export'ları içerebildiği için ayrı).
++   =============================================================== */
++export const MAX_BODY_BYTES = 16 * 1024;
++const DEDUPE_MS = 10 * 60 * 1000;
++const MAX_KEYS = 500;
++const LOCALES = new Set(["tr", "en", "de"]);
++const seen = new Map<string, number>();
++
++export type CspViolation = {
++  directive: string;
++  blocked: string;
++  page: string;
++};
++
++function str(v: unknown, max = 200): string {
++  return typeof v === "string" ? v.slice(0, max) : "";
++}
++
++/** Engellenecek kaynağı origin'e indirger; URL değilse anahtar kelime. */
++export function summarizeBlocked(raw: string): string {
++  const v = raw.trim();
++  if (!v) return "unknown";
++  try {
++    const u = new URL(v);
++    if (u.protocol === "http:" || u.protocol === "https:") return u.origin;
++    return u.protocol.replace(/:$/, ""); // data / blob / chrome-extension …
++  } catch {
++    return v.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24) || "unknown";
++  }
++}
++
++/** Sayfa yolunu maskeler: locale öneki + ilk segment, geri kalanı `*`. */
++export function summarizePage(raw: string): string {
++  let pathname = "";
++  try {
++    pathname = new URL(raw, "http://x").pathname;
++  } catch {
++    return "/";
++  }
++  const segs = pathname.split("/").filter(Boolean);
++  const out: string[] = [];
++  if (segs[0] && LOCALES.has(segs[0])) out.push(segs.shift() as string);
++  if (segs.length) out.push(segs.shift() as string);
++  if (segs.length) out.push("*");
++  return (
++    "/" +
++    out
++      .map((s) =>
++        s === "*" ? s : s.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 40)
++      )
++      .join("/")
++  );
++}
++
++/** Hem `application/csp-report` hem Reporting API (`reports+json`) formatı. */
++export function extractViolations(payload: unknown): CspViolation[] {
++  const items: Record<string, unknown>[] = [];
++  if (Array.isArray(payload)) {
++    for (const r of payload.slice(0, 20)) {
++      const body = (r as { body?: unknown })?.body;
++      if (body && typeof body === "object") items.push(body as Record<string, unknown>);
++    }
++  } else if (payload && typeof payload === "object") {
++    const rep = (payload as Record<string, unknown>)["csp-report"];
++    if (rep && typeof rep === "object") items.push(rep as Record<string, unknown>);
++  }
++  return items.map((b) => ({
++    directive:
++      str(b["effective-directive"] ?? b["effectiveDirective"], 40) ||
++      str(b["violated-directive"], 40).split(" ")[0] ||
++      "unknown",
++    blocked: summarizeBlocked(str(b["blocked-uri"] ?? b["blockedURL"], 500)),
++    page: summarizePage(str(b["document-uri"] ?? b["documentURL"], 500)),
++  }));
++}
++
++export function shouldLogCspViolation(key: string, now: number): boolean {
++  const last = seen.get(key);
++  if (last !== undefined && now - last < DEDUPE_MS) return false;
++  if (seen.size >= MAX_KEYS) seen.clear();
++  seen.set(key, now);
++  return true;
++}
++
++/** Yalnız testler için: dedupe belleğini sıfırlar. */
++export function __resetCspReportDedupeForTests(): void {
++  seen.clear();
++}
+--- /dev/null
++++ b/tests/unit/sec05-csp-report-only.test.ts
+@@ -0,0 +1,231 @@
++/* ===============================================================
++   🛡️ SEC-05 — CSP REPORT-ONLY REGRESYON KİLİDİ
++   ===============================================================
++   1) Yalnız `Content-Security-Policy-Report-Only` (enforce YOK).
++   2) CDN origin'leri env'den (hardcode / fallback domain YOK).
++   3) 'unsafe-eval' YOK; Report-Only'de yok sayılan direktifler YOK.
++   4) /api/csp-report: 204, maskeleme (token/path/query loglanmaz),
++      boyut sınırı, dedupe.
++   =============================================================== */
++import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
++import nextConfig, { buildCspReportOnly } from "@/next.config";
++import {
++  extractViolations,
++  summarizeBlocked,
++  summarizePage,
++  __resetCspReportDedupeForTests,
++} from "@/lib/security/csp-report";
++import { POST } from "@/app/api/csp-report/route";
++
++const ENV = {
++  NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES: "https://cdn.test-villa.example/",
++  NEXT_PUBLIC_CDN_BASE_SITE_ASSETS: "https://assets.test-site.example/base/",
++};
++
++const directive = (policy: string, name: string) =>
++  policy
++    .split(";")
++    .map((d) => d.trim())
++    .find((d) => d.startsWith(name + " "))
++    ?.split(/\s+/)
++    .slice(1) ?? null;
++
++describe("SEC-05 — buildCspReportOnly", () => {
++  it("CDN origin'leri env'den türetilir (path atılır)", () => {
++    for (const kind of ["public", "admin"] as const) {
++      const img = directive(buildCspReportOnly(kind, ENV), "img-src");
++      expect(img).toContain("https://cdn.test-villa.example");
++      expect(img).toContain("https://assets.test-site.example");
++    }
++  });
++
++  it("env yoksa CDN eklenmez ve HİÇBİR fallback domain kullanılmaz", () => {
++    const p = buildCspReportOnly("public", {});
++    expect(p).not.toMatch(/villayagel|yazvillam|example/i);
++    expect(directive(p, "img-src")).toEqual([
++      "'self'",
++      "data:",
++      "blob:",
++      "https://*.supabase.co",
++      "https://i.ytimg.com",
++      "https://*.googletagmanager.com",
++      "https://*.google-analytics.com",
++    ]);
++  });
++
++  it("geçersiz / tehlikeli env değeri policy'ye sızmaz", () => {
++    const p = buildCspReportOnly("public", {
++      NEXT_PUBLIC_CDN_BASE_VILLA_IMAGES: "javascript:alert(1)",
++      NEXT_PUBLIC_CDN_BASE_SITE_ASSETS: "not a url; script-src *",
++    });
++    expect(p).not.toContain("javascript");
++    expect(p).not.toContain("script-src *");
++  });
++
++  it("'unsafe-eval' yok; Report-Only'de yok sayılan direktifler yok", () => {
++    for (const kind of ["public", "admin"] as const) {
++      const p = buildCspReportOnly(kind, ENV);
++      expect(p).not.toContain("unsafe-eval");
++      expect(p).not.toContain("frame-ancestors");
++      expect(p).not.toContain("upgrade-insecure-requests");
++      expect(p).not.toMatch(/nonce-|strict-dynamic/);
++      expect(directive(p, "object-src")).toEqual(["'none'"]);
++      expect(directive(p, "base-uri")).toEqual(["'self'"]);
++      expect(directive(p, "report-uri")).toEqual(["/api/csp-report"]);
++    }
++  });
++
++  it("public: GTM/GA4 + harita/YouTube iframe'leri; admin: GTM YOK, harita seçici var", () => {
++    const pub = buildCspReportOnly("public", ENV);
++    const adm = buildCspReportOnly("admin", ENV);
++    expect(directive(pub, "script-src")).toEqual([
++      "'self'",
++      "'unsafe-inline'",
++      "https://*.googletagmanager.com",
++    ]);
++    expect(directive(pub, "connect-src")).toContain("https://*.google-analytics.com");
++    expect(directive(pub, "frame-src")).toEqual([
++      "https://www.google.com",
++      "https://google.com",
++      "https://maps.google.com",
++      "https://www.youtube-nocookie.com",
++    ]);
++    expect(directive(adm, "script-src")).toEqual(["'self'", "'unsafe-inline'"]);
++    expect(adm).not.toContain("googletagmanager");
++    expect(adm).not.toContain("google-analytics");
++    expect(directive(adm, "connect-src")).toEqual(["'self'"]);
++    expect(directive(adm, "img-src")).toEqual(
++      expect.arrayContaining(["https://unpkg.com", "https://*.tile.openstreetmap.org"])
++    );
++  });
++});
++
++describe("SEC-05 — next.config headers()", () => {
++  it("yalnız Report-Only header'ı döner (enforce eden CSP YOK)", async () => {
++    const rules = await nextConfig.headers!();
++    expect(rules).toHaveLength(2);
++    for (const r of rules) {
++      for (const h of r.headers) {
++        expect(h.key).toBe("Content-Security-Policy-Report-Only");
++        expect(h.key.toLowerCase()).not.toBe("content-security-policy");
++      }
++    }
++    expect(rules.map((r) => r.source)).toEqual([
++      "/((?!api|_next/static|_next/image|favicon.ico|maki-admin).*)",
++      "/maki-admin/:path*",
++    ]);
++  });
++
++  it("public kaynak deseni: sayfalar eşleşir; api/_next/admin eşleşmez", () => {
++    const re = /^\/((?!api|_next\/static|_next\/image|favicon.ico|maki-admin).*)$/;
++    for (const p of ["/", "/kiralik-villa/x", "/v/tok", "/en/iletisim", "/bu-sayfa-yok"]) {
++      expect(re.test(p)).toBe(true);
++    }
++    for (const p of ["/api/csp-report", "/_next/static/chunks/a.js", "/_next/image", "/maki-admin", "/maki-admin/login"]) {
++      expect(re.test(p)).toBe(false);
++    }
++  });
++
++  it("images.remotePatterns aynen korunur (legacy + CDN)", () => {
++    const pats = nextConfig.images?.remotePatterns ?? [];
++    expect(pats[0]).toEqual({
++      protocol: "https",
++      hostname: "**.supabase.co",
++      pathname: "/storage/v1/object/public/**",
++    });
++    expect(pats.length).toBeGreaterThanOrEqual(2);
++  });
++});
++
++describe("SEC-05 — CSP rapor ayrıştırma ve maskeleme", () => {
++  it("blocked-uri → yalnız origin (path/query/token atılır)", () => {
++    expect(summarizeBlocked("https://px.example/tr?id=123&cid=abc")).toBe("https://px.example");
++    expect(summarizeBlocked("inline")).toBe("inline");
++    expect(summarizeBlocked("eval")).toBe("eval");
++    expect(summarizeBlocked("data:image/png;base64,AAAA")).toBe("data");
++    expect(summarizeBlocked("")).toBe("unknown");
++  });
++
++  it("sayfa yolu maskelenir (token'lı yollar)", () => {
++    expect(summarizePage("https://site.example/v/SECRET_TOKEN_123")).toBe("/v/*");
++    expect(summarizePage("https://site.example/en/v/SECRET")).toBe("/en/v/*");
++    expect(summarizePage("https://site.example/favoriler/paylas/TOKEN")).toBe("/favoriler/*");
++    expect(summarizePage("https://site.example/?q=1")).toBe("/");
++    expect(summarizePage("https://site.example/iletisim")).toBe("/iletisim");
++  });
++
++  it("application/csp-report ve Reporting API formatlarını ayrıştırır", () => {
++    expect(
++      extractViolations({
++        "csp-report": {
++          "document-uri": "https://s.example/v/TOKEN",
++          "violated-directive": "script-src-elem",
++          "effective-directive": "script-src-elem",
++          "blocked-uri": "https://evil.example/x.js?t=1",
++          "script-sample": "alert(document.cookie)",
++        },
++      })
++    ).toEqual([{ directive: "script-src-elem", blocked: "https://evil.example", page: "/v/*" }]);
++    expect(
++      extractViolations([
++        { type: "csp-violation", body: { documentURL: "https://s.example/", effectiveDirective: "img-src", blockedURL: "https://px.example/p?id=9" } },
++      ])
++    ).toEqual([{ directive: "img-src", blocked: "https://px.example", page: "/" }]);
++    expect(extractViolations("x")).toEqual([]);
++    expect(extractViolations(null)).toEqual([]);
++  });
++});
++
++describe("SEC-05 — POST /api/csp-report", () => {
++  let warn: ReturnType<typeof vi.spyOn>;
++  beforeEach(() => {
++    __resetCspReportDedupeForTests();
++    warn = vi.spyOn(console, "warn").mockImplementation(() => {});
++  });
++  afterEach(() => warn.mockRestore());
++
++  const post = (body: string, headers: Record<string, string> = {}) =>
++    POST(
++      new Request("http://localhost/api/csp-report", {
++        method: "POST",
++        headers: { "content-type": "application/csp-report", ...headers },
++        body,
++      })
++    );
++  const report = JSON.stringify({
++    "csp-report": {
++      "document-uri": "https://s.example/v/PRIVATE_TOKEN",
++      "effective-directive": "img-src",
++      "blocked-uri": "https://px.example/p?email=a@b.c",
++      "script-sample": "SECRET_SAMPLE",
++    },
++  });
++
++  it("204 döner ve yalnız maskelenmiş özeti loglar", async () => {
++    const res = await post(report);
++    expect(res.status).toBe(204);
++    expect(warn).toHaveBeenCalledTimes(1);
++    const line = String(warn.mock.calls[0][0]);
++    expect(line).toContain('"directive":"img-src"');
++    expect(line).toContain('"blocked":"https://px.example"');
++    expect(line).toContain('"page":"/v/*"');
++    for (const leak of ["PRIVATE_TOKEN", "email", "a@b.c", "SECRET_SAMPLE"]) {
++      expect(line).not.toContain(leak);
++    }
++  });
++
++  it("aynı ihlal tekrarında log tekrarlanmaz (dedupe)", async () => {
++    await post(report);
++    await post(report);
++    await post(report);
++    expect(warn).toHaveBeenCalledTimes(1);
++  });
++
++  it("bozuk JSON / boş / çok büyük gövde → 204, log yok", async () => {
++    expect((await post("{not json")).status).toBe(204);
++    expect((await post("")).status).toBe(204);
++    expect((await post("x".repeat(20 * 1024))).status).toBe(204);
++    expect((await post("{}", { "content-length": String(1024 * 1024) })).status).toBe(204);
++    expect(warn).not.toHaveBeenCalled();
++  });
++});

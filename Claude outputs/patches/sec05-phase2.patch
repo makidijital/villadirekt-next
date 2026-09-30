@@ -1,0 +1,453 @@
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -1,6 +1,5 @@
+ import type { Metadata, Viewport } from "next";
+ import { Outfit, Geist_Mono } from "next/font/google";
+-import Script from "next/script";
+ import "leaflet/dist/leaflet.css";
+ import "./globals.css";
+ 
+@@ -8,7 +7,6 @@
+ import { getCachedSettings } from "@/lib/cache.helpers";
+ import { siteMetadataBase } from "@/lib/seo";
+ import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
+-import { normalizeGtmId } from "@/lib/gtm.helper";
+ 
+ /* 🛡️ PUBLIC BODY/UI + DISPLAY/HEADING FONT — Outfit. Global
+    `--font-sans` VE `--font-display` bu tek fonta bağlanır (yalnızca
+@@ -137,49 +135,18 @@
+ }: {
+   children: React.ReactNode;
+ }) {
+-  const settings = await getCachedSettings().catch(() => null);
+-  /* 🛡️ SEC-05 — GTM ID strict doğrulama. Yalnız `GTM-[A-Z0-9]{4,15}`
+-     geçer; geçersiz/zararlı değer null döner → inline script'e ASLA
+-     interpolate edilmez (breakout imkânsız). */
+-  const gtmId = normalizeGtmId(settings?.gtm_container_id);
+-  const customHead = settings?.custom_head_scripts?.trim();
+-  const analyticsScript = settings?.analytics_script?.trim();
+-
++  /* 🛡️ SEC-05 Phase 2 — GTM, `custom_head_scripts` ve `analytics_script`
++     artık root layout'ta DEĞİL; yalnız public kabuklarda render edilir
++     (bkz. app/components/layout/SiteTrackingScripts.tsx). Böylece admin
++     paneli ve login sayfası admin girdisi ham HTML / GTM tag'lerini
++     çalıştırmaz. Public sayfalarda içerik ve sıra AYNEN korunur. */
+   return (
+     <html
+       lang="tr"
+       className={`${outfit.variable} ${geistMono.variable}`}
+     >
+-      <head>
+-        {/* 🛡️ Custom head HTML — admin tarafından kontrol edilen
+-           raw inject. XSS vektör; sadece admin'in girdiği güvenilir
+-           HTML. dangerouslySetInnerHTML kullanılır. */}
+-        {customHead ? (
+-          <div
+-            // eslint-disable-next-line react/no-unknown-property
+-            dangerouslySetInnerHTML={{ __html: customHead }}
+-          />
+-        ) : null}
+-      </head>
++      <head />
+       <body className="min-h-screen bg-[var(--color-ivory)] text-[var(--color-stone-900)] antialiased font-sans">
+-        {/* 🛡️ GTM Container — admin GTM-ID girdiğinde otomatik load.
+-           next/script `afterInteractive` → main bundle'ı bloklamaz. */}
+-        {gtmId ? (
+-          <Script id="gtm-init" strategy="afterInteractive">
+-            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+-              })(window,document,'script','dataLayer','${gtmId}');`}
+-          </Script>
+-        ) : null}
+-        {/* 🛡️ Custom analytics script — admin raw HTML. */}
+-        {analyticsScript ? (
+-          <div
+-            // eslint-disable-next-line react/no-unknown-property
+-            dangerouslySetInnerHTML={{ __html: analyticsScript }}
+-          />
+-        ) : null}
+         <CurrencyProvider>{children}</CurrencyProvider>
+       </body>
+     </html>
+--- a/app/(public)/layout.tsx
++++ b/app/(public)/layout.tsx
+@@ -17,6 +17,9 @@
+ import ScrollToTopButton from "@/app/components/layout/ScrollToTopButton";
+ import { getCachedSettings } from "@/lib/cache.helpers";
+ import { resolvePublicHome } from "@/lib/i18n/public-home";
++/* 🛡️ SEC-05 Phase 2 — GTM + custom head/analytics alanları root
++   layout'tan buraya taşındı (admin panelinde çalışmasın diye). */
++import SiteTrackingScripts from "@/app/components/layout/SiteTrackingScripts";
+ 
+ /* ===============================================================
+    🛡️ PUBLIC LAYOUT — MAINTENANCE MODE GATE
+@@ -49,8 +52,13 @@
+     /* 🛡️ `settings.maintenance_message` CANONICAL kalır (migration 084
+        kararı DEĞİŞMEDİ). Boşsa dictionary varsayılanı gösterilir; "Bakım"
+        etiketi ve varsayılan metin locale-aware (bkz. MaintenanceScreen). */
++    /* 🛡️ SEC-05 Phase 2 — root layout'tayken bakım modunda da
++       yükleniyordu; davranış korunur. */
+     return (
+-      <MaintenanceScreen brand={brand} message={settings?.maintenance_message} />
++      <>
++        <SiteTrackingScripts settings={settings} />
++        <MaintenanceScreen brand={brand} message={settings?.maintenance_message} />
++      </>
+     );
+   }
+ 
+@@ -71,6 +79,10 @@
+   const { trHomeHref } = resolvePublicHome(settings);
+ 
+   return (
++    <>
++    {/* 🛡️ SEC-05 Phase 2 — takip/özel script alanları (public-only).
++       public-shell'in ÖNCESİNDE → önceki DOM sırası (body başı) korunur. */}
++    <SiteTrackingScripts settings={settings} />
+     <div className="public-shell flex flex-col min-h-screen bg-[var(--color-ivory)]">
+       {/* HEADER */}
+       <HeaderWrapper />
+@@ -110,5 +122,6 @@
+          Bakım modunda render edilmez (yukarıdaki early-return). */}
+       <CookieConsent />
+     </div>
++    </>
+   );
+ }
+--- a/app/not-found.tsx
++++ b/app/not-found.tsx
+@@ -18,6 +18,11 @@
+ import NotFoundContent from "@/app/components/not-found/NotFoundContent";
+ import { DEFAULT_LOCALE } from "@/lib/i18n/config";
+ import { getDictionary } from "@/lib/i18n/get-dictionary";
++/* 🛡️ SEC-05 Phase 2 — root layout'tan taşınan takip alanları; 404
++   sayfası (public) layout DIŞINDA olduğu için burada ayrıca render
++   edilir → 404 takibi (GTM vb.) korunur. */
++import SiteTrackingScripts from "@/app/components/layout/SiteTrackingScripts";
++import { getCachedSettings } from "@/lib/cache.helpers";
+ 
+ /* ===============================================================
+    🛡️ ÖZEL 404 — VillaYaGel (app/not-found.tsx)
+@@ -48,8 +53,11 @@
+      (eski `getCachedVillas().slice(0, 3)` ile aynı küme ve sıra).
+      Hata olursa bölüm gizlenir. */
+   const featured = await getNotFoundSuggestionVillas().catch(() => []);
++  const settings = await getCachedSettings().catch(() => null);
+ 
+   return (
++    <>
++    <SiteTrackingScripts settings={settings} />
+     <div className="flex flex-col min-h-screen bg-[var(--color-ivory)]">
+       <HeaderWrapper />
+ 
+@@ -60,5 +68,6 @@
+ 
+       <FooterWrapper />
+     </div>
++    </>
+   );
+ }
+--- a/app/components/seo/StructuredData.tsx
++++ b/app/components/seo/StructuredData.tsx
+@@ -53,6 +53,17 @@
+ /* ---------------------------------------------
+    🔥 Generic JSON-LD <script> renderer
+ ---------------------------------------------- */
++/* 🛡️ SEC-05 — JSON-LD inline <script> breakout koruması.
++   `JSON.stringify` `<` karakterini escape ETMEZ; admin kontrollü bir
++   metin (villa başlığı, SSS, blog başlığı…) `</script>` içerirse HTML
++   parser script bloğunu erken kapatır ve arkasındaki içerik ÇALIŞIR.
++   `<` → `<`: JSON açısından AYNI string (JSON.parse sonucu birebir
++   aynı → Google/schema.org verisi değişmez), HTML açısından `</script`
++   ve `<!--` dizileri oluşamaz. */
++export function serializeJsonLd(data: unknown): string {
++  return (JSON.stringify(data) ?? "").replace(/</g, "\\u003c");
++}
++
+ export function JsonLd({ data }: { data: unknown }) {
+   // <script> SSR'de inline JSON; client'ta re-parse edilmez.
+   return (
+@@ -60,7 +71,7 @@
+       type="application/ld+json"
+       // eslint-disable-next-line react/no-danger
+       dangerouslySetInnerHTML={{
+-        __html: JSON.stringify(data),
++        __html: serializeJsonLd(data),
+       }}
+     />
+   );
+--- /dev/null
++++ b/app/components/layout/SiteTrackingScripts.tsx
+@@ -0,0 +1,62 @@
++import Script from "next/script";
++
++import type { Settings } from "@/app/services/settings.types";
++import { normalizeGtmId } from "@/lib/gtm.helper";
++
++/* ===============================================================
++   🛡️ SEC-05 Phase 2 — PUBLIC-ONLY TAKİP / ÖZEL SCRIPT ALANLARI
++   ===============================================================
++   Önceden root `app/layout.tsx` içindeydi → admin paneli ve
++   `/maki-admin/login` DAHİL her sayfada çalışıyordu. Artık yalnız
++   public kabuklarda render edilir:
++     - app/(public)/layout.tsx  (normal + bakım modu dalı)
++     - app/p/layout.tsx         (aynı PublicLayout re-export'u)
++     - app/not-found.tsx        (404 takibi korunur)
++   Admin rotaları ((admin) grubu) bu component'i HİÇ render etmez →
++   admin girdisi ham HTML / GTM konteyner tag'leri admin panelinde
++   çalışmaz ve admin RSC payload'ına girmez.
++
++   İÇERİK DEĞİŞMEDİ: `custom_head_scripts` ve `analytics_script`
++   ham değerleri AYNEN (parse/sanitize YOK → hiçbir takip kodu
++   kaybolmaz) basılır; GTM ID Phase 1 doğrulamasından geçer.
++
++   Konum: Önceden `custom_head_scripts` <head> içindeki bir <div>'e
++   basılıyordu; HTML parser <head> içindeki <div>'i görünce head'i
++   kapatıp içeriği <body>'nin BAŞINA taşıyordu (+ React hydration
++   #418). Burada aynı sıra (custom head → analytics → sayfa) body
++   başında, geçerli HTML olarak korunur.
++   =============================================================== */
++export default function SiteTrackingScripts({
++  settings,
++}: {
++  settings: Settings | null | undefined;
++}) {
++  /* 🛡️ SEC-05 (Phase 1) — GTM ID strict doğrulama. Geçersiz/zararlı
++     değer null → inline script'e ASLA interpolate edilmez. */
++  const gtmId = normalizeGtmId(settings?.gtm_container_id);
++  const customHead = settings?.custom_head_scripts?.trim();
++  const analyticsScript = settings?.analytics_script?.trim();
++
++  return (
++    <>
++      {/* Custom head HTML — admin tarafından girilen raw HTML (public). */}
++      {customHead ? (
++        <div dangerouslySetInnerHTML={{ __html: customHead }} />
++      ) : null}
++      {/* GTM Container — `afterInteractive`, main bundle'ı bloklamaz. */}
++      {gtmId ? (
++        <Script id="gtm-init" strategy="afterInteractive">
++          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
++              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
++              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
++              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
++              })(window,document,'script','dataLayer','${gtmId}');`}
++        </Script>
++      ) : null}
++      {/* Custom analytics script — admin raw HTML (public). */}
++      {analyticsScript ? (
++        <div dangerouslySetInnerHTML={{ __html: analyticsScript }} />
++      ) : null}
++    </>
++  );
++}
+--- /dev/null
++++ b/tests/unit/sec05-jsonld-escape.test.tsx
+@@ -0,0 +1,89 @@
++/* ===============================================================
++   🛡️ SEC-05 Phase 2 — JSON-LD <script> BREAKOUT REGRESYON KİLİDİ
++   ===============================================================
++   `JsonLd` inline `<script type="application/ld+json">` üretir.
++   Admin kontrollü bir metin `</script>` içerdiğinde blok erken
++   kapanmamalı (runtime'da doğrulanan XSS). Aynı zamanda JSON-LD
++   verisi (JSON.parse sonucu) BİREBİR aynı kalmalı → SEO bozulmaz.
++   =============================================================== */
++import { describe, it, expect } from "vitest";
++import { renderToStaticMarkup } from "react-dom/server";
++import {
++  JsonLd,
++  serializeJsonLd,
++  buildVacationRental,
++  buildBreadcrumb,
++} from "@/app/components/seo/StructuredData";
++
++const BREAKOUT =
++  "Villa </script><script>window.__SEC05_JSONLD_TEST=1</script> <!-- x";
++
++describe("SEC-05 — serializeJsonLd", () => {
++  it("çıktıda hiç '<' karakteri kalmaz (</script ve <!-- oluşamaz)", () => {
++    const out = serializeJsonLd({ name: BREAKOUT, nested: [{ a: "<b>" }] });
++    expect(out).not.toContain("<");
++    expect(out.toLowerCase()).not.toContain("</script");
++    expect(out).not.toContain("<!--");
++  });
++
++  it("JSON.parse sonucu orijinal veriyle BİREBİR aynı (SEO verisi değişmez)", () => {
++    const data = {
++      "@context": "https://schema.org",
++      "@type": "VacationRental",
++      name: BREAKOUT,
++      description: "Kaş'ta 3+1 villa — havuz & deniz manzarası > 50m² \"özel\"",
++      image: ["https://cdn.example.test/a.webp"],
++      geo: { latitude: 36.2, longitude: 29.6 },
++      emoji: "🌊",
++    };
++    expect(JSON.parse(serializeJsonLd(data))).toEqual(data);
++  });
++
++  it("'<' içermeyen normal veri için çıktı JSON.stringify ile AYNI (mevcut HTML değişmez)", () => {
++    const data = {
++      "@context": "https://schema.org",
++      "@type": "Organization",
++      name: "VillaYaGel",
++      url: "https://example.test/",
++      sameAs: ["https://instagram.com/x"],
++      text: "Çok güzel & şık > villa",
++    };
++    expect(serializeJsonLd(data)).toBe(JSON.stringify(data));
++  });
++
++  it("undefined → boş string (eski davranış: boş script)", () => {
++    expect(serializeJsonLd(undefined)).toBe("");
++  });
++});
++
++describe("SEC-05 — JsonLd render (SSR markup)", () => {
++  it("breakout içeren veriyle bile tek bir script bloğu üretir", () => {
++    const html = renderToStaticMarkup(<JsonLd data={{ name: BREAKOUT }} />);
++    expect(html.startsWith('<script type="application/ld+json">')).toBe(true);
++    // Yalnız bloğun kendi kapanışı: tam olarak 1 adet </script
++    expect(html.toLowerCase().split("</script").length - 1).toBe(1);
++    expect(html).not.toContain("<script>window.");
++    const body = html
++      .replace('<script type="application/ld+json">', "")
++      .replace(/<\/script>$/, "");
++    expect(JSON.parse(body)).toEqual({ name: BREAKOUT });
++  });
++
++  it("gerçek builder'lar (VacationRental + Breadcrumb) güvenli ve parse edilebilir", () => {
++    const rental = buildVacationRental({
++      slug: "villa-x",
++      title: BREAKOUT,
++      description: "<p>Açıklama</p>",
++      images: [],
++    } as Parameters<typeof buildVacationRental>[0]);
++    const crumb = buildBreadcrumb([{ name: "Ana Sayfa", url: "/" }, { name: BREAKOUT }]);
++    for (const data of [rental, crumb]) {
++      const html = renderToStaticMarkup(<JsonLd data={data} />);
++      expect(html.toLowerCase().split("</script").length - 1).toBe(1);
++      const body = html
++        .replace('<script type="application/ld+json">', "")
++        .replace(/<\/script>$/, "");
++      expect(JSON.parse(body)).toEqual(JSON.parse(JSON.stringify(data)));
++    }
++  });
++});
+--- /dev/null
++++ b/tests/unit/sec05-tracking-public-only.test.tsx
+@@ -0,0 +1,113 @@
++/* ===============================================================
++   🛡️ SEC-05 Phase 2 — TAKİP / ÖZEL SCRIPT ALANLARI YALNIZ PUBLIC
++   ===============================================================
++   1) SiteTrackingScripts: ham içerik AYNEN basılır (hiçbir takip
++      kodu kaybolmaz), GTM yalnız geçerli ID ile (Phase 1 kilidi).
++   2) Mimari kilit: root layout ve admin layout'ları bu alanları
++      render ETMEZ; public layout, /p layout'u ve 404 render EDER.
++   =============================================================== */
++import { describe, it, expect, vi } from "vitest";
++import { renderToStaticMarkup } from "react-dom/server";
++import fs from "node:fs";
++import path from "node:path";
++
++vi.mock("next/script", () => ({
++  default: (p: { id?: string; strategy?: string; children?: string }) => (
++    <script id={p.id} data-strategy={p.strategy}>
++      {p.children}
++    </script>
++  ),
++}));
++
++import SiteTrackingScripts from "@/app/components/layout/SiteTrackingScripts";
++import type { Settings } from "@/app/services/settings.types";
++
++const HEAD =
++  '<meta name="x-verify" content="abc"><script async src="https://static.example.test/t.js"></script>';
++const ANALYTICS =
++  "<script>window.dataLayer=window.dataLayer||[];</script><noscript><img src=\"https://px.example.test/p?id=1\" /></noscript>";
++
++const s = (v: Partial<Settings>) => v as Settings;
++
++describe("SEC-05 P2 — SiteTrackingScripts", () => {
++  it("custom head + analytics ham içeriği BİREBİR basılır (sıra: head → GTM → analytics)", () => {
++    const html = renderToStaticMarkup(
++      <SiteTrackingScripts
++        settings={s({
++          custom_head_scripts: `  ${HEAD}  `,
++          analytics_script: ANALYTICS,
++          gtm_container_id: "GTM-ABC1234",
++        })}
++      />
++    );
++    expect(html).toContain(`<div>${HEAD}</div>`);
++    expect(html).toContain(`<div>${ANALYTICS}</div>`);
++    expect(html).toContain('id="gtm-init"');
++    expect(html).toContain("'GTM-ABC1234'");
++    const iHead = html.indexOf(HEAD);
++    const iGtm = html.indexOf("gtm-init");
++    const iAn = html.indexOf(ANALYTICS);
++    expect(iHead).toBeLessThan(iGtm);
++    expect(iGtm).toBeLessThan(iAn);
++  });
++
++  it("geçersiz GTM ID → GTM script'i render edilmez (Phase 1 korunur)", () => {
++    const html = renderToStaticMarkup(
++      <SiteTrackingScripts
++        settings={s({ gtm_container_id: "');window.X=1;//" })}
++      />
++    );
++    expect(html).not.toContain("gtm-init");
++    expect(html).not.toContain("window.X");
++  });
++
++  it("boş / null ayar → hiçbir çıktı yok", () => {
++    expect(renderToStaticMarkup(<SiteTrackingScripts settings={null} />)).toBe("");
++    expect(
++      renderToStaticMarkup(
++        <SiteTrackingScripts
++          settings={s({
++            custom_head_scripts: "   ",
++            analytics_script: "",
++            gtm_container_id: null,
++          })}
++        />
++      )
++    ).toBe("");
++  });
++});
++
++describe("SEC-05 P2 — mimari kilit (admin'de render yok)", () => {
++  const root = process.cwd();
++  const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
++  /* Yorumları at → yalnız kod satırları kontrol edilir. */
++  const code = (p: string) =>
++    read(p)
++      .replace(/\/\*[\s\S]*?\*\//g, "")
++      .replace(/^\s*\/\/.*$/gm, "");
++
++  it("root app/layout.tsx ham HTML / GTM render etmez", () => {
++    const c = code("app/layout.tsx");
++    expect(c).not.toContain("dangerouslySetInnerHTML");
++    expect(c).not.toContain("gtm-init");
++    expect(c).not.toContain("custom_head_scripts");
++    expect(c).not.toContain("analytics_script");
++    expect(c).not.toContain("SiteTrackingScripts");
++  });
++
++  it("admin layout'ları SiteTrackingScripts kullanmaz", () => {
++    for (const p of ["app/(admin)/layout.tsx", "app/(admin)/maki-admin/layout.tsx"]) {
++      const c = code(p);
++      expect(c).not.toContain("SiteTrackingScripts");
++      expect(c).not.toContain("custom_head_scripts");
++      expect(c).not.toContain("analytics_script");
++    }
++  });
++
++  it("public layout (normal + bakım dalı), /p layout'u ve 404 render eder", () => {
++    const pub = code("app/(public)/layout.tsx");
++    expect(pub.match(/<SiteTrackingScripts settings=\{settings\} \/>/g)?.length).toBe(2);
++    expect(code("app/p/layout.tsx")).toContain('export { default } from "@/app/(public)/layout"');
++    expect(code("app/not-found.tsx")).toContain("<SiteTrackingScripts settings={settings} />");
++  });
++});
