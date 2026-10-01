@@ -713,31 +713,6 @@ export default function VillaCard({
             </div>
           )}
 
-          {/* Bottom editorial scrim — text readability */}
-          <div
-            aria-hidden="true"
-            className="
-              absolute inset-x-0 bottom-0 h-[65%]
-              bg-black/40
-              pointer-events-none
-            "
-          />
-          {/* Hover scrim deepen — subtle */}
-          <div
-            aria-hidden="true"
-            className="
-              absolute inset-x-0 bottom-0 h-[65%]
-              bg-black/5
-              pointer-events-none
-              opacity-0 group-hover:opacity-100
-              transition-opacity duration-500 motion-reduce:transition-none
-            "
-          />
-          {/* Top vignette — badge legibility */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-24 bg-black/5 pointer-events-none"
-          />
           {/* Inner premium ring stroke */}
           <div
             aria-hidden="true"
@@ -1077,11 +1052,6 @@ export default function VillaCard({
             </div>
           )}
 
-          {/* Top vignette — badge legibility */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-20 bg-black/10 pointer-events-none"
-          />
           {/* Inner premium ring stroke */}
           <div
             aria-hidden="true"
@@ -1338,11 +1308,6 @@ export default function VillaCard({
             </div>
           )}
 
-          {/* Top vignette — badge/fav buton legibility */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-20 bg-black/10 pointer-events-none"
-          />
           {/* Inner premium ring stroke */}
           <div
             aria-hidden="true"
