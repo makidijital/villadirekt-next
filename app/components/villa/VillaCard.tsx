@@ -751,7 +751,7 @@ export default function VillaCard({
           >
             {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge arkasında; blur ayrı katmanda, metin keskin kalır */}
             <div className="relative isolate w-fit max-w-full px-3 py-2">
-              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/35 blur-[10px]" />
+              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/20 blur-[10px]" />
               {/* LOCATION */}
               <p className="flex items-center gap-1.5 text-[10.5px] tracking-[0.18em] uppercase font-medium text-white/75 min-w-0 truncate [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
                 <MapPin
@@ -1094,7 +1094,7 @@ export default function VillaCard({
           <div className="absolute inset-x-0 bottom-0 p-4 pointer-events-none text-center">
             {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge arkasında; blur ayrı katmanda, metin keskin kalır */}
             <div className="relative isolate mx-auto w-fit max-w-full px-3 py-2">
-              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/35 blur-[10px]" />
+              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/20 blur-[10px]" />
               <h3 className="font-display text-[19px] md:text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
                 {title}
               </h3>
@@ -1347,7 +1347,7 @@ export default function VillaCard({
           <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 md:p-4 pr-20 md:pr-24">
             {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge arkasında; blur ayrı katmanda, metin keskin kalır */}
             <div className="relative isolate w-fit max-w-full px-3 py-2">
-              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/35 blur-[10px]" />
+              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/20 blur-[10px]" />
               <h3
                 className={
                   "font-display text-white font-semibold " +
