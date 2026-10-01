@@ -163,6 +163,8 @@ export default async function HomeCategoryVillas({
         empty: dict.empty,
         viewAll: dict.viewAll,
         countBadge: home.villaTypes.countBadge,
+        carouselPrev: home.carousel.previous,
+        carouselNext: home.carousel.next,
       }}
     />
   );

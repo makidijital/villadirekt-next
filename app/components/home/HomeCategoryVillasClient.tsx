@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import VillaCard from "@/app/components/villa/VillaCard";
+import HorizontalCarousel from "@/app/components/villa/HorizontalCarousel";
 import type { PublicVillaCard } from "@/lib/cache.helpers";
 import type { Locale } from "@/lib/i18n/config";
 import { formatDictionaryString } from "@/lib/i18n/format-dictionary-string";
@@ -38,6 +39,9 @@ type Labels = {
   viewAll: string;
   /** template: {count} */
   countBadge: string;
+  /** HorizontalCarousel ok etiketleri (`home.carousel`). */
+  carouselPrev: string;
+  carouselNext: string;
 };
 
 /* VillaList ile aynı grid (1 / sm 2 / lg 4) → aynı `sizes` değeri. */
@@ -77,11 +81,18 @@ export default function HomeCategoryVillasClient({
           {labels.title}
         </h2>
 
-        {/* KATEGORİ KARTLARI — mobil: yatay kaydırma; lg: 6 sütun grid */}
+        {/* KATEGORİ KARTLARI — TÜM ekranlarda TEK SATIR yatay carousel
+           (mevcut HorizontalCarousel: scroll-snap + desktop okları).
+           Kartlar sabit genişlik → ikinci satır oluşmaz. */}
+        <HorizontalCarousel
+          showArrows
+          prevLabel={labels.carouselPrev}
+          nextLabel={labels.carouselNext}
+        >
         <div
           role="tablist"
           aria-label={labels.tabsAriaLabel}
-          className="-mx-5 px-5 md:mx-0 md:px-0 flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 lg:grid lg:grid-cols-6 lg:gap-4 lg:overflow-visible lg:pb-0"
+          className="flex flex-nowrap min-w-max gap-3 md:gap-4 py-1.5"
         >
           {categories.map((c) => {
             const isActive = c.id === active.id;
@@ -94,7 +105,7 @@ export default function HomeCategoryVillasClient({
                 aria-controls={panelId}
                 onClick={() => setActiveId(c.id)}
                 className={
-                  "group snap-start shrink-0 w-[42vw] max-w-[180px] sm:w-[180px] lg:w-auto lg:max-w-none " +
+                  "group snap-start shrink-0 w-[42vw] max-w-[180px] sm:w-[180px] " +
                   "text-left rounded-[14px] bg-white border p-1.5 " +
                   "transition-[border-color,box-shadow,transform] duration-300 motion-reduce:transition-none " +
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 " +
@@ -117,8 +128,12 @@ export default function HomeCategoryVillasClient({
                       {(c.name[0] || "·").toUpperCase()}
                     </span>
                   )}
+                  {/* Villa sayısı — görselin sağ üstü (mevcut veri: c.count) */}
+                  <span className="absolute top-1.5 right-1.5 z-10 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[var(--color-stone-800)] shadow-[0_4px_12px_-4px_rgb(27_26_23/0.3)]">
+                    {formatDictionaryString(labels.countBadge, { count: c.count })}
+                  </span>
                 </span>
-                <span className="flex items-center justify-between gap-2 px-1.5 pt-2 pb-1">
+                <span className="block px-1.5 pt-2 pb-1">
                   <span
                     className={
                       "font-display text-[13px] font-semibold leading-tight line-clamp-1 " +
@@ -127,21 +142,12 @@ export default function HomeCategoryVillasClient({
                   >
                     {c.name}
                   </span>
-                  <span
-                    className={
-                      "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums " +
-                      (isActive
-                        ? "bg-brand text-white"
-                        : "bg-[var(--color-stone-100)] text-[var(--color-stone-600)]")
-                    }
-                  >
-                    {formatDictionaryString(labels.countBadge, { count: c.count })}
-                  </span>
                 </span>
               </button>
             );
           })}
         </div>
+        </HorizontalCarousel>
 
         {/* SEÇİLİ KATEGORİNİN İLK 8 VİLLASI */}
         <div

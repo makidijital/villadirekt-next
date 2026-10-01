@@ -17,7 +17,7 @@ const mk = (id: string): PublicVillaCard =>
   ({ id, slug: id, title: `Villa ${id}`, location: "Kaş", price: 100, currency: "TRY", images: [], bedrooms: 1, bathrooms: 1, guests: 2 }) as unknown as PublicVillaCard;
 
 const tr = getDictionary("tr").home;
-const labels = { ...tr.categoryVillas, countBadge: tr.villaTypes.countBadge };
+const labels = { ...tr.categoryVillas, countBadge: tr.villaTypes.countBadge, carouselPrev: tr.carousel.previous, carouselNext: tr.carousel.next };
 
 const categories = [
   { id: "a", name: "Muhafazakar", count: 10, coverUrl: null, href: "/villa-turleri/a" },
@@ -44,6 +44,16 @@ describe("HomeCategoryVillasClient", () => {
     const panel = screen.getByRole("tabpanel");
     expect(within(panel).getAllByTestId("villa-card").map((n) => n.textContent)).toEqual(["Villa b0", "Villa b1"]);
     expect(screen.queryByRole("link", { name: /villalarını gör/ })).toBeNull();
+  });
+
+  it("tek satır carousel + villa sayısı görselin üzerinde badge", () => {
+    render(<HomeCategoryVillasClient locale="tr" categories={categories} villasByCategory={villasByCategory} badgeByVillaId={{}} labels={labels} />);
+    const tablist = screen.getByRole("tablist");
+    expect(tablist.className).toContain("flex-nowrap");
+    expect(tablist.className).not.toMatch(/grid-cols/);
+    const badge = screen.getByText("10 Villa");
+    expect(badge.className).toContain("absolute");
+    expect(badge.className).toContain("bg-white");
   });
 
   it("boş kategori → empty metni", () => {
