@@ -438,14 +438,11 @@ export const de: Dictionary = {
     advantages: {
       sectionAriaLabel: "Warum Sie uns wählen sollten",
       priceTitle: "Bestpreis-Garantie",
-      priceDescription:
-        "Direkt beim Eigentümer buchen – ohne Vermittler und zum besten Preis.",
+      priceDescription: "Vorteilhafte Preise bei direkter Buchung",
       easyTitle: "Einfache Buchung",
-      easyDescription:
-        "Aktuelle Kalender, echte Bewertungen und sofortiger Support für eine einfachere Buchung.",
+      easyDescription: "Aktuelle Kalender und schnelle Buchung",
       secureTitle: "Sichere Buchung",
-      secureDescription:
-        "100 % Rückerstattungsgarantie und sichere Zahlung mit 128-Bit-Verschlüsselung",
+      secureDescription: "Sichere Zahlung und zuverlässige Buchung",
       cancellationLink: "Stornobedingungen",
     },
     discount: {

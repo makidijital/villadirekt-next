@@ -437,14 +437,11 @@ export const en: Dictionary = {
     advantages: {
       sectionAriaLabel: "Why choose us",
       priceTitle: "Best Price Guarantee",
-      priceDescription:
-        "Book directly from owners with no middlemen and get the best price.",
+      priceDescription: "Great prices when you book direct",
       easyTitle: "Easy Booking",
-      easyDescription:
-        "Up-to-date calendars, genuine reviews and instant support make booking easier.",
+      easyDescription: "Up-to-date calendars and quick booking",
       secureTitle: "Secure Booking",
-      secureDescription:
-        "100% refund guarantee and secure payment with 128-bit encryption",
+      secureDescription: "Secure payment and reliable booking",
       cancellationLink: "Cancellation Policy",
     },
     discount: {

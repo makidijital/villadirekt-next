@@ -450,14 +450,11 @@ export const tr: Dictionary = {
     advantages: {
       sectionAriaLabel: "Neden bizi tercih etmelisiniz",
       priceTitle: "En İyi Fiyat Garantisi",
-      priceDescription:
-        "Sahibinden direkt ilanlar ile aracısız rezervasyon ile en iyi fiyat.",
+      priceDescription: "Doğrudan rezervasyon ile avantajlı fiyatlar",
       easyTitle: "Kolay Rezervasyon",
-      easyDescription:
-        "Güncel takvimler, gerçek yorumlar ve anında destek ile daha kolay rezervasyon.",
+      easyDescription: "Güncel takvimler ve hızlı rezervasyon imkanı",
       secureTitle: "Güvenli Rezervasyon",
-      secureDescription:
-        "%100 Ücreti iade garantisi, 128 bit güvenlik sistemi ile güvenli ödeme",
+      secureDescription: "Güvenli ödeme ve güvenilir rezervasyon",
       cancellationLink: "İptal Şartları",
     },
     discount: {
