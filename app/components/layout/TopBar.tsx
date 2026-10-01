@@ -114,7 +114,7 @@ function LocaleSwitchOptions({
               role="option"
               aria-selected="true"
               aria-current="true"
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-medium text-left bg-brand/10 text-[var(--color-stone-900)]"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] font-medium text-left bg-brand/10 text-[var(--color-stone-900)]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -132,7 +132,7 @@ function LocaleSwitchOptions({
               role="option"
               aria-selected="false"
               onClick={onSelect}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-medium text-left text-[var(--color-stone-700)] hover:bg-[var(--color-stone-50)] transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] font-medium text-left text-[var(--color-stone-700)] hover:bg-[var(--color-stone-50)] transition-colors"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -267,9 +267,9 @@ export default function TopBar() {
           py-[6px]
         "
       >
-      {/* SOL — İletişim (Telefon + E-posta).
-          Mobilde sıkışmayı/taşmayı önlemek için md+ görünür. */}
-      <div className="hidden md:flex items-center gap-4 lg:gap-5 shrink-0 text-[14px]">
+      {/* SOL — İletişim. Telefon TÜM breakpoint'lerde görünür (mobilde
+          sol alan boş kalmasın); e-posta sıkışmayı önlemek için md+. */}
+      <div className="flex items-center gap-4 lg:gap-5 shrink-0 text-[12px]">
         {phoneHref && (
           <a
             href={phoneHref}
@@ -290,7 +290,7 @@ export default function TopBar() {
           <a
             href={emailHref}
             className="
-              flex items-center gap-1.5
+              hidden md:flex items-center gap-1.5
               text-white/75 hover:text-white
               transition-colors motion-reduce:transition-none
             "
@@ -321,7 +321,7 @@ export default function TopBar() {
               bg-white/10 hover:bg-white/[0.16]
               ring-1 ring-inset ring-white/10 hover:ring-white/25
               text-white/90 hover:text-white
-              text-[14px] font-medium cursor-pointer
+              text-[12px] font-medium cursor-pointer
               transition-colors
               focus:outline-none focus-visible:ring-2
               focus-visible:ring-accent/70
@@ -354,7 +354,7 @@ export default function TopBar() {
                       setCurOpen(false);
                     }}
                     className={
-                      "w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-medium text-left transition-colors " +
+                      "w-full flex items-center gap-2 px-3 py-1.5 text-[12px] font-medium text-left transition-colors " +
                       (c.code === currency
                         ? "bg-brand/10 text-[var(--color-stone-900)]"
                         : "text-[var(--color-stone-700)] hover:bg-[var(--color-stone-50)]")
@@ -400,7 +400,7 @@ export default function TopBar() {
                 bg-white/10 hover:bg-white/[0.16]
                 ring-1 ring-inset ring-white/10 hover:ring-white/25
                 text-white/90 hover:text-white
-                text-[14px] font-medium cursor-pointer
+                text-[12px] font-medium cursor-pointer
                 transition-colors
                 focus:outline-none focus-visible:ring-2
                 focus-visible:ring-accent/70
