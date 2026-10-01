@@ -359,7 +359,7 @@ export const tr: Dictionary = {
     bedroomsAriaLabel: "{n} yatak odası",
     bathroomsAriaLabel: "{n} banyo",
     guestsValue: "{n} Kişi",
-    bedroomsValue: "{n} Yatak Odası",
+    bedroomsValue: "{n} Yatak",
     bathroomsValue: "{n} Banyo",
     discountBadge: "%{percent} İNDİRİM",
     discountBadgeAriaLabel: "Yüzde {percent} indirim",

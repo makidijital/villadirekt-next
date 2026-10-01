@@ -213,7 +213,7 @@ describe("TR byte-identity — VillaCard", () => {
       "6 Kişi"
     );
     expect(formatDictionaryString(tr.card.bedroomsValue, { n: 3 })).toBe(
-      "3 Yatak Odası"
+      "3 Yatak"
     );
     expect(formatDictionaryString(tr.card.bathroomsValue, { n: 2 })).toBe(
       "2 Banyo"

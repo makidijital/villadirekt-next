@@ -1120,7 +1120,7 @@ export default function VillaCard({
               elemanı → üst margin'e gerek yok (review varken kullanılan
               "mt-3" koşulu da kaldırıldı, review hiç render edilmediği
               için AYNI sonuç zaten hep margin'siz durumdu). */}
-          <div className="flex items-center justify-center gap-x-4 gap-y-1.5 flex-wrap text-[12.5px] font-medium text-[var(--color-stone-800)]">
+          <div className="flex items-center justify-center gap-x-4 gap-y-1.5 flex-wrap text-[10px] font-medium text-[var(--color-stone-800)]">
             <span
               className="inline-flex items-center gap-1.5"
               aria-label={formatDictionaryString(dict.card.guestsAriaLabel, {
@@ -1498,7 +1498,7 @@ export default function VillaCard({
           <div aria-hidden="true" className="mt-3.5 h-px bg-[var(--color-stone-100)]" />
 
           {/* AMENITIES — guests / bedrooms / bathrooms, marka rengi ikon vurgusu */}
-          <div className="mt-3.5 flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[12.5px] font-medium text-[var(--color-stone-800)]">
+          <div className="mt-3.5 flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[10px] font-medium text-[var(--color-stone-800)]">
             <span
               className="inline-flex items-center gap-1.5"
               aria-label={formatDictionaryString(dict.card.guestsAriaLabel, {
