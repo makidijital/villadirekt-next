@@ -17,7 +17,7 @@
      1-3)   Görünürlük: multilingual kapalı/açık/settings-null.
      4-9)   Aktif locale + hedef URL'ler (ana sayfa, villa detay, TR/EN/DE).
      10-12) Fallback-to-home (locale karşılığı olmayan route'lar).
-     13-16) Regresyon: currency seçici, sosyal ikonlar, telefon/e-posta
+     13-16) Regresyon: currency seçici, telefon/e-posta (sosyal ikonlar KALDIRILDI)
             ETKİLENMEDİ (7/24 Destek ve TURSAB satırı TopBar'dan KALDIRILDI).
      17-19) Dropdown mekaniği: aç/kapa, dışa-tık, aktif locale
             tıklanamaz + aria-current.
@@ -282,7 +282,7 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
     expect(screen.queryByRole("option", { name: /USD/ })).not.toBeInTheDocument();
   });
 
-  it("15) sosyal ikonlar, telefon/e-posta — multilingual açıkken de DEĞİŞMEDİ", async () => {
+  it("15) telefon/e-posta — multilingual açıkken de DEĞİŞMEDİ; sosyal ikon YOK", async () => {
     usePathnameMock.mockReturnValue("/");
     getPublicSettingsMock.mockResolvedValue(settingsWith({ multilingual_enabled: true }));
     render(<TopBar />);
@@ -290,13 +290,12 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
     expect(screen.queryByText("7/24 Destek")).not.toBeInTheDocument();
     expect(screen.getByText(BASE_SETTINGS.phone)).toBeInTheDocument();
     expect(screen.getByText(BASE_SETTINGS.email)).toBeInTheDocument();
-    expect(screen.getByLabelText("Instagram")).toBeInTheDocument();
-    expect(screen.getByLabelText("Facebook")).toBeInTheDocument();
-    expect(screen.getByLabelText("YouTube")).toBeInTheDocument();
-    expect(screen.getByLabelText("TikTok")).toBeInTheDocument();
+    for (const label of ["Instagram", "Facebook", "WhatsApp", "YouTube", "TikTok"]) {
+      expect(screen.queryByLabelText(label), label).not.toBeInTheDocument();
+    }
   });
 
-  it("16) sosyal ikonlar, telefon/e-posta — multilingual KAPALİYKEN de DEĞİŞMEDİ (regresyon)", async () => {
+  it("16) telefon/e-posta — multilingual KAPALİYKEN de DEĞİŞMEDİ (regresyon)", async () => {
     usePathnameMock.mockReturnValue("/");
     getPublicSettingsMock.mockResolvedValue(settingsWith({ multilingual_enabled: false }));
     render(<TopBar />);
@@ -489,9 +488,8 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
      ═══════════════════════════════════════════════════════════════
      "7/24 Destek" rozeti ve "TURSAB … Belge No" satırı TopBar'dan
      KALDIRILDI (sözlük key'leri de silindi) → testler bu metinlerin
-     hiçbir dilde görünmediğini kilitler. Marka adı "Costeralla Travel"
-     ÖZEL İSİM olduğu için ÇEVRİLMEZ; sosyal medya etiketleri
-     (Instagram/Facebook/...) de marka adıdır. */
+     hiçbir dilde görünmediğini kilitler. "Costeralla Travel" ve sosyal
+     medya ikonları da TopBar'dan KALDIRILDI (orta alan boş). */
 
   /** Belirtilen path + multilingual bayrağı ile TopBar'ı mount eder. */
   async function mountAt(pathname: string, multilingual = true) {
@@ -500,7 +498,7 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
       settingsWith({ multilingual_enabled: multilingual })
     );
     render(<TopBar />);
-    await screen.findByText("Costeralla Travel");
+    await screen.findByText("TRY");
   }
 
   it("29) 7/24 Destek ve TURSAB belge satırı HİÇBİR dilde/sayfada GÖRÜNMEZ (kaldırıldı)", async () => {
@@ -519,18 +517,21 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
     }
   });
 
-  it("33) MARKA ADI hiçbir dilde çevrilmez (özel isim)", async () => {
+  it("33) 'Costeralla Travel' hiçbir dilde GÖRÜNMEZ (orta alan boş)", async () => {
     for (const p of ["/", "/en", "/de"]) {
       await mountAt(p);
-      expect(screen.getByText("Costeralla Travel")).toBeInTheDocument();
+      expect(screen.queryByText("Costeralla Travel")).not.toBeInTheDocument();
       cleanup();
     }
   });
 
-  it("34) SOSYAL MEDYA etiketleri marka adıdır — çevrilmez", async () => {
-    await mountAt("/de");
-    for (const label of ["Instagram", "Facebook", "WhatsApp", "YouTube"]) {
-      expect(screen.getByLabelText(label)).toBeInTheDocument();
+  it("34) sosyal medya ikonları/linkleri TopBar'da YOK", async () => {
+    for (const p of ["/", "/en", "/de"]) {
+      await mountAt(p);
+      for (const label of ["Instagram", "Facebook", "WhatsApp", "YouTube", "TikTok"]) {
+        expect(screen.queryByLabelText(label), `${p} ${label}`).not.toBeInTheDocument();
+      }
+      cleanup();
     }
   });
 
@@ -745,8 +746,10 @@ describe("TopBar — dictionary bütünlüğü ve source-lock", () => {
     }
   });
 
-  it("43) marka adı KODDA kalır (çeviri kapsamı dışı)", () => {
-    expect(code.includes("Costeralla Travel")).toBe(true);
+  it("43) SOURCE-LOCK — TopBar kodunda 'Costeralla Travel' ve sosyal ikon/link YOK", () => {
+    for (const s of ["Costeralla", "SocialLink", "settings.instagram", "settings.facebook", "settings.youtube", "settings.tiktok", "whatsappHref", ...["Instagram", "Facebook", "WhatsApp", "YouTube", "TikTok"]]) {
+      expect(code.includes(s), s).toBe(false);
+    }
   });
 
 });
