@@ -242,7 +242,7 @@ export default function Header({
                 <img
                   src={siteLogo}
                   alt={dictionary.header.logoAlt}
-                  className="h-12 w-auto object-contain"
+                  className="h-12 md:h-17 w-auto object-contain"
                 />
               ) : (
                 <>
@@ -277,13 +277,17 @@ export default function Header({
                     key={item.id || item.name}
                     className="relative group py-5"
                   >
+                    {/* Aktif/hover vurgusu — #1B4EF5 üzerinden çok düşük
+                       opaklıkta saydam arka plan (gradient/underline YOK).
+                       Negatif margin + eşit padding → kutu, mevcut menü
+                       aralığını ve header yüksekliğini DEĞİŞTİRMEZ. */}
                     <Link
                       href={localeHref(item.href, locale)}
                       className={
-                        "flex items-center gap-1 transition-colors motion-reduce:transition-none " +
+                        "flex items-center gap-1 -mx-2.5 -my-1.5 px-2.5 py-1.5 rounded-lg transition-colors motion-reduce:transition-none " +
                         (isActive
-                          ? "text-[var(--color-stone-900)]"
-                          : "hover:text-[var(--color-stone-900)]")
+                          ? "text-[var(--color-stone-900)] bg-brand/[0.08]"
+                          : "hover:text-[var(--color-stone-900)] hover:bg-brand/[0.05]")
                       }
                     >
                       {itemName}
@@ -291,18 +295,6 @@ export default function Header({
                         <ChevronDown size={14} className="opacity-70" />
                       )}
                     </Link>
-
-                    {/* Coral underline accent (FAZ 38) */}
-                    <span
-                      aria-hidden="true"
-                      className={
-                        "absolute left-0 right-0 -bottom-px mx-auto h-[2px] w-6 rounded-full transition-opacity duration-300 motion-reduce:transition-none " +
-                        "bg-[var(--brand-coral)] " +
-                        (isActive
-                          ? "opacity-100"
-                          : "opacity-0 group-hover:opacity-100")
-                      }
-                    />
 
                     {hasChildren && (
                       <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[999]">
