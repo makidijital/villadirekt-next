@@ -265,7 +265,7 @@ export default function Hero({
             <div
               className="
                 relative w-full overflow-hidden
-                aspect-[4/3] lg:aspect-[16/15]
+                aspect-[4/3]
                 rounded-3xl
                 bg-[var(--color-stone-100)]
                 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.35)]
