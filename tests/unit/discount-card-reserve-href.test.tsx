@@ -281,3 +281,19 @@ describe("İndirimli kart CTA — fırsat tarihlerini rezervasyona taşır", () 
     ).toBeNull();
   });
 });
+
+describe("🗓️ GEÇERLİLİK ETİKETİ — sol üst yeşil köşe etiketi", () => {
+  it("tarih aralığı villa_discounts'tan dinamik, TEK KEZ ve yeşil etikette gösterilir", () => {
+    renderDiscountCard();
+    const matches = screen.getAllByText("8 - 14 Ekim arası geçerli");
+    expect(matches).toHaveLength(1);
+    const badge = matches[0].parentElement!;
+    expect(badge.className).toContain("bg-green-700");
+    expect(badge.className).toContain("top-0 left-0");
+  });
+
+  it("indirim kaydı yoksa etiket render edilmez", () => {
+    renderDiscountCard({ discount: null });
+    expect(screen.queryByText(/arası geçerli/)).toBeNull();
+  });
+});

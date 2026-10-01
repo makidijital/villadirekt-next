@@ -1106,6 +1106,32 @@ export default function VillaCard({
               render edilmez. Kartın içine taşmaması için image bloğunun kendi
               `relative overflow-hidden` alanına, `absolute top-3 right-3` ile
               konumlandırıldı. */}
+          {/* 🗓️ GEÇERLİLİK ETİKETİ — sol üst köşe, sağdaki kırmızı indirim
+              etiketinin aynası (flush top/left, sol üst köşe kart radius'u,
+              sağ alt yumuşak, aynı yükseklik). Metin `discountDateRangeLabel`
+              (villa_discounts start/end → formatDiscountDateRange) — kart
+              altındaki eski satırla AYNI kaynak; yoksa etiket render edilmez.
+              Efekt: mevcut `.dc-badge-shimmer` (DiscountCollection <style>,
+              3.6sn'de bir hafif ışık geçişi; prefers-reduced-motion'da kapalı)
+              + hover'da hafif parlama. */}
+          {discountDateRangeLabel && (
+            <div
+              className={
+                "dc-badge-shimmer absolute top-0 left-0 z-10 overflow-hidden " +
+                "flex items-center gap-1.5 min-h-[51px] max-w-[calc(100%-84px)] " +
+                "rounded-tl-[12.5px] rounded-br-[12px] bg-green-700 px-3 py-2 text-white " +
+                "shadow-[0_6px_14px_-6px_rgba(21,128,61,0.6)] " +
+                "transition-[filter,box-shadow] duration-500 group-hover:brightness-110 " +
+                "group-hover:shadow-[0_8px_20px_-6px_rgba(21,128,61,0.75)] motion-reduce:transition-none"
+              }
+            >
+              <CalendarDays size={14} strokeWidth={2} className="shrink-0" aria-hidden />
+              <span className="text-[12px] font-bold leading-[1.2] tracking-[0.01em] [text-shadow:0_1px_2px_rgba(0,0,0,0.2)]">
+                {discountDateRangeLabel}
+              </span>
+            </div>
+          )}
+
           {/* 🏷️ KÖŞE ETİKETİ — kartın üst + sağ kenarına sıfır oturan kompakt
               dikey kırmızı blok; sağ üst köşe kartın radius'unu (12.5px)
               takip eder, sol alt köşe yumuşak. Üstte oran, altta "İNDİRİM". */}
@@ -1229,18 +1255,9 @@ export default function VillaCard({
                 </>
               ) : showDiscountPricing ? (
                 <>
-                  {/* İndirim tarih aralığı — villa_discounts kaydından
-                      DİNAMİK (bkz. formatDiscountDateRangeTr). Sabit
-                      metin YOK. */}
-                  <p className="text-[13px] font-semibold text-red-600 tracking-[0.01em] text-center">
-                    {discountDateRangeLabel}
-                  </p>
-                  {/* İnce yatay ayırıcı — tam genişlik, nötr (mevcut
-                      kart divider'larıyla AYNI dil: h-px + stone-200). */}
-                  <div
-                    aria-hidden="true"
-                    className="mt-1.5 mb-1.5 h-px w-full bg-[var(--color-stone-200)]"
-                  />
+                  {/* İndirim tarih aralığı artık görselin SOL ÜSTÜNDEKİ yeşil
+                      köşe etiketinde (çift gösterim yok); ayırıcısı da
+                      onunla birlikte kaldırıldı. */}
                   {/* Üstü çizili normal fiyat + vurgulu indirimli fiyat +
                       indirimli fiyatın SAĞINDA küçük/zarif "GECELİK" etiketi
                       — kullanıcı talebiyle bu turda eklendi. Fiyat hesabı
