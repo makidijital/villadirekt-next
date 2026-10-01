@@ -1306,10 +1306,6 @@ export default function VillaCard({
                 <span className="truncate">{location || dict.card.noLocation}</span>
               </p>
             </div>
-            <div
-              aria-hidden="true"
-              className="mt-2 h-[3px] w-12 rounded-full bg-brand mx-auto"
-            />
           </div>
         </div>
 
