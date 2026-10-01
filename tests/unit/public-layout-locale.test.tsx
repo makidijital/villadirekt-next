@@ -2,7 +2,7 @@
    🛡️ PHASE 11 — PUBLIC LAYOUT KABUĞU i18n TESTLERİ
    ===============================================================
    Kapsam: BottomNav · SearchBottomSheet · VillaSearchBox ·
-           CookieConsent · ScrollToTopButton · FloatingSocialClient
+           CookieConsent · FloatingSocialClient
 
    `footer-locale.test.tsx` / `header-locale.test.tsx` (Phase 9A/9B) ile
    AYNI `usePathname` mock deseni — yeni test altyapısı İCAT EDİLMEDİ.
@@ -36,7 +36,6 @@ import BottomNav from "@/app/components/layout/BottomNav";
 import SearchBottomSheet from "@/app/components/layout/SearchBottomSheet";
 import VillaSearchBox from "@/app/components/layout/VillaSearchBox";
 import CookieConsent from "@/app/components/layout/CookieConsent";
-import ScrollToTopButton from "@/app/components/layout/ScrollToTopButton";
 import FloatingSocialClient from "@/app/components/layout/FloatingSocialClient";
 
 /** Blok + satır yorumlarını sıyırır — kaynak kilidi testleri YALNIZ
@@ -359,29 +358,6 @@ describe("4) CookieConsent — locale", () => {
 });
 
 /* ===============================================================
-   5) SCROLL TO TOP
-   =============================================================== */
-describe("5) ScrollToTopButton — locale", () => {
-  it("5a) TR — ESKİ metinler BİREBİR", () => {
-    render(<ScrollToTopButton />);
-    expect(screen.getByText("Yukarı Çık")).toBeInTheDocument();
-    expect(screen.getByLabelText("Sayfanın başına dön")).toBeInTheDocument();
-  });
-
-  it("5b) EN/DE — çevrilmiş metinler", () => {
-    for (const locale of ["en", "de"] as const) {
-      usePathnameMock.mockReturnValue(PATHS[locale]);
-      const d = getDictionary(locale).layout.scrollTop;
-      const { unmount } = render(<ScrollToTopButton />);
-      expect(screen.getByText(d.label)).toBeInTheDocument();
-      expect(screen.getByLabelText(d.ariaLabel)).toBeInTheDocument();
-      expect(screen.queryByText("Yukarı Çık")).not.toBeInTheDocument();
-      unmount();
-    }
-  });
-});
-
-/* ===============================================================
    6) FLOATING SOCIAL (client sunum katmanı)
    =============================================================== */
 describe("6) FloatingSocialClient — locale", () => {
@@ -495,10 +471,6 @@ describe("7) dictionary + kaynak kilidi", () => {
       [
         "app/components/layout/CookieConsent.tsx",
         ['"Çerez bilgilendirmesi"', "Kabul Et", ">Detaylar<"],
-      ],
-      [
-        "app/components/layout/ScrollToTopButton.tsx",
-        ['"Sayfanın başına dön"', "Yukarı Çık"],
       ],
       [
         "app/components/layout/FloatingSocialClient.tsx",

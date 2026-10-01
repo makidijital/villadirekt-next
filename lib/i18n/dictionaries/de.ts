@@ -549,10 +549,6 @@ export const de: Dictionary = {
       details: "Details",
       accept: "Akzeptieren",
     },
-    scrollTop: {
-      label: "Nach oben",
-      ariaLabel: "Zum Seitenanfang",
-    },
     floatingSocial: {
       ariaLabel: "Schnellkontakt",
       call: "Jetzt anrufen",

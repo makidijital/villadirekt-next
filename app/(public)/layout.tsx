@@ -14,7 +14,6 @@ import CookieConsent from "@/app/components/layout/CookieConsent";
 import MaintenanceScreen from "@/app/components/layout/MaintenanceScreen";
 import FloatingSocial from "@/app/components/layout/FloatingSocial";
 import BottomNav from "@/app/components/layout/BottomNav";
-import ScrollToTopButton from "@/app/components/layout/ScrollToTopButton";
 import { getCachedSettings } from "@/lib/cache.helpers";
 import { resolvePublicHome } from "@/lib/i18n/public-home";
 /* 🛡️ SEC-05 Phase 2 — GTM + custom head/analytics alanları root
@@ -119,12 +118,6 @@ export default async function PublicLayout({
         whatsappHref={whatsappHref}
         trHomeHref={trHomeHref}
       />
-
-      {/* ⬆️ Scroll-to-top — sol alt floating client island; scrollY>400'de
-         görünür. z-40 (cookie/modaller üstte kalır), bottom-20 md:bottom-8
-         (mobil MobileBookingCta bar'ını temizler). Additive; layout
-         yapısına dokunmaz. */}
-      <ScrollToTopButton />
 
       {/* 🍪 Çerez onay banner'ı — client-only island, SSR-safe, additive.
          Bakım modunda render edilmez (yukarıdaki early-return). */}

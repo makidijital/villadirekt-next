@@ -545,10 +545,6 @@ export const en: Dictionary = {
       details: "Details",
       accept: "Accept",
     },
-    scrollTop: {
-      label: "Back to top",
-      ariaLabel: "Back to top of page",
-    },
     floatingSocial: {
       ariaLabel: "Quick contact",
       call: "Call now",
