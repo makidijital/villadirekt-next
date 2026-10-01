@@ -1095,10 +1095,10 @@ export default function VillaCard({
             {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge arkasında; blur ayrı katmanda, metin keskin kalır */}
             <div className="relative isolate mx-auto w-fit max-w-full px-3 py-2">
               <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/20 blur-[10px]" />
-              <h3 className="font-display text-[19px] md:text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
+              <h3 className="font-display text-[19px] md:text-[20px] font-bold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
                 {title}
               </h3>
-              <p className="mt-1 inline-flex items-center gap-1 text-[11.5px] text-white/85 uppercase tracking-[0.05em] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+              <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-white/85 uppercase tracking-[0.05em] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
                 <MapPin size={11} className="shrink-0" strokeWidth={2} aria-hidden />
                 <span className="truncate">{location || dict.card.noLocation}</span>
               </p>
@@ -1324,7 +1324,7 @@ export default function VillaCard({
 
           {/* BADGE — sarı (accent) pill, indicator dot kaldırıldı. */}
           {badge && (
-            <span className="absolute top-3.5 left-3.5 z-10 inline-flex items-center gap-1.5 bg-accent backdrop-blur-md text-[var(--color-stone-900)] text-[8px] tracking-[0.16em] uppercase font-semibold px-2.5 py-1.5 rounded-full shadow-[0_6px_18px_-6px_rgb(27_26_23/0.28)] ring-1 ring-white/50">
+            <span className="absolute top-3.5 left-3.5 z-10 inline-flex items-center gap-1.5 bg-accent backdrop-blur-md text-[var(--color-stone-900)] text-[8px] tracking-[0.16em] uppercase font-semibold px-2.5 py-1.5 rounded-md shadow-[0_6px_18px_-6px_rgb(27_26_23/0.28)] ring-1 ring-white/50">
               {badge}
             </span>
           )}
@@ -1346,7 +1346,7 @@ export default function VillaCard({
               <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/20 blur-[10px]" />
               <h3
                 className={
-                  "font-display text-white font-semibold " +
+                  "font-display text-white font-bold " +
                   "text-[17px] md:text-[19px] leading-[1.15] tracking-[-0.02em] " +
                   "line-clamp-1 group-hover:text-white/90 " +
                   "transition-colors duration-300 motion-reduce:transition-none " +
@@ -1355,7 +1355,7 @@ export default function VillaCard({
               >
                 {title}
               </h3>
-              <p className="mt-1 flex items-center gap-1.5 text-[10.5px] tracking-[0.14em] uppercase font-medium text-white/80 min-w-0 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+              <p className="mt-1 flex items-center gap-1.5 text-[11px] tracking-[0.14em] uppercase font-bold text-white/80 min-w-0 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
                 <MapPin
                   size={11}
                   className="text-white/75 shrink-0"
