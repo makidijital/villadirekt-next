@@ -273,7 +273,7 @@ export default function Footer({
         }}
       />
 
-      <div className="relative max-w-6xl mx-auto px-5 md:px-10 lg:px-16 pb-10">
+      <div className="relative site-container px-5 md:px-10 lg:px-16 pb-10">
         {/* ═════════════ SECTION 2 — MARKA + KEŞFET (asimetrik, kolon-kartı yok) ═════════════
             LEFT (dominant): logo + marka açıklaması + sosyal — mantık AYNEN.
             RIGHT: tek "Keşfet" başlığı altında iki minimal alt-grup (Villalar,

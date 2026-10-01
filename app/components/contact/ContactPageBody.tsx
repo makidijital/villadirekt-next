@@ -225,7 +225,7 @@ export default async function ContactPageBody({
 
           {/* GRID — sol iletişim/sosyal, sağ glass form */}
           <section className="px-5 md:px-10 lg:px-16 pt-12 md:pt-16 pb-24 md:pb-32">
-            <div className="max-w-6xl mx-auto">
+            <div className="site-container-inner">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
                 {/* LEFT — bilgi + sosyal kartlar */}
                 <aside className="lg:col-span-5 space-y-8">
@@ -291,7 +291,7 @@ export default async function ContactPageBody({
           MAP — modern container
       ============================================================ */}
       <section className="px-5 md:px-10 lg:px-16 pb-24 md:pb-32">
-        <div className="max-w-6xl mx-auto">
+        <div className="site-container-inner">
           <div className="flex items-end justify-between gap-6 mb-8 md:mb-12">
             <div>
               <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)]">
@@ -326,7 +326,7 @@ export default async function ContactPageBody({
           FAQ — yeniden tasarım (numaralı premium kartlar)
       ============================================================ */}
       <section className="px-5 md:px-10 lg:px-16 pb-24 md:pb-32">
-        <div className="max-w-6xl mx-auto">
+        <div className="site-container-inner">
           <div className="mb-12 md:mb-16">
             <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)]">
               <span className="inline-block w-6 h-px bg-[var(--color-stone-300)] align-middle mr-2" />
@@ -361,7 +361,7 @@ export default async function ContactPageBody({
           CTA — yeniden tasarım (premium koyu panel + coral aksan)
       ============================================================ */}
       <section className="px-5 md:px-10 lg:px-16 pb-32 md:pb-44">
-        <div className="max-w-6xl mx-auto">
+        <div className="site-container-inner">
           <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#0B1F3A] to-[#132A46] px-8 md:px-16 py-16 md:py-24 text-center shadow-[0_40px_100px_-40px_rgba(11,31,58,0.6)]">
             {/* dekoratif coral glow */}
             <div

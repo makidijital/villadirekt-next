@@ -836,6 +836,27 @@ select.input {
 /* ----------------------------------------------------------------
    UTILS
    ---------------------------------------------------------------- */
+/* PUBLIC ANA CONTAINER — referans çizgi: Header / Hero / Hero Search.
+   Kutu = var(--container-6xl); yatay gutter (px-5 md:px-10 lg:px-16)
+   kutunun İÇİNDE → desktop içerik çizgisi = 6xl − 2×4rem.
+   • site-container       → gutter'ı KENDİ üzerinde taşıyan sarmalayıcı
+                             (örn. "site-container px-5 md:px-10 lg:px-16").
+   • site-container-inner → gutter'ı PARENT section'da olan içerik
+                             sarmalayıcısı; aynı içerik çizgisi. Viewport
+                             6xl'den darken sınır devreye girmez → mobil /
+                             tablet davranışı birebir aynı. */
+@utility site-container {
+  width: 100%;
+  max-width: var(--container-6xl);
+  margin-inline: auto;
+}
+
+@utility site-container-inner {
+  width: 100%;
+  max-width: calc(var(--container-6xl) - 8rem);
+  margin-inline: auto;
+}
+
 .section-narrow {
   max-width: var(--container-6xl);
   margin-left: auto;
@@ -848,6 +869,15 @@ select.input {
   .section-narrow {
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+}
+
+/* lg+: gutter public ana container ile aynı (4rem) → içerik çizgisi
+   Header / Hero Search ile hizalı. Mobil/tablet padding'i AYNEN. */
+@media (min-width: 1024px) {
+  .section-narrow {
+    padding-left: 4rem;
+    padding-right: 4rem;
   }
 }
 

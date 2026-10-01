@@ -94,7 +94,7 @@ export default async function BlogDetailPageBody({
       />
 
       <section className="px-5 md:px-10 lg:px-16 pb-32 md:pb-44 pt-12 md:pt-16">
-        <div className="max-w-6xl mx-auto space-y-12 md:space-y-16">
+        <div className="site-container-inner space-y-12 md:space-y-16">
           {cover && (
             <div className="relative aspect-[16/9] overflow-hidden rounded-3xl bg-[var(--color-sand-50)]">
               <Image

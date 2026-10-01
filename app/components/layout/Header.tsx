@@ -224,7 +224,7 @@ export default function Header({
         <TopBar />
 
         <div className={headerShellClass}>
-          <div className="max-w-6xl mx-auto px-5 md:px-10 lg:px-16 h-[72px] md:h-[80px] flex items-center justify-between">
+          <div className="site-container px-5 md:px-10 lg:px-16 h-[72px] md:h-[80px] flex items-center justify-between">
             {/* LOGO */}
             <Link
               href={homeHref}

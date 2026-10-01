@@ -56,7 +56,7 @@ export default async function SharedFavoritesPageBody({
 
   return (
     <div className="px-5 md:px-10 lg:px-16 pt-28 md:pt-40 pb-24 md:pb-32">
-      <div className="max-w-6xl mx-auto">
+      <div className="site-container-inner">
         {/* ════════════════════════════════════════════════════
             HEADER — luxury itinerary banner
             ════════════════════════════════════════════════════ */}

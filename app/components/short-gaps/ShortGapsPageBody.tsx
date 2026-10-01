@@ -378,7 +378,7 @@ export default async function ShortGapsPageBody({
   return (
     <main className="px-5 md:px-10 lg:px-16 py-10 md:py-14">
       <JsonLd data={itemListLd} />
-      <div className="max-w-6xl mx-auto">
+      <div className="site-container-inner">
         <header className="mb-8 md:mb-10">
           <p className="text-[10.5px] tracking-[0.28em] uppercase font-medium text-[var(--brand-coral)]">
             {dict.heroEyebrow}

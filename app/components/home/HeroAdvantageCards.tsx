@@ -167,7 +167,7 @@ export default function HeroAdvantageCards({
       `}</style>
 
       <div className="px-5 md:px-10 lg:px-16">
-        <div className="max-w-6xl mx-auto">
+        <div className="site-container-inner">
           <ul
             role="list"
             className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7"

@@ -92,7 +92,7 @@ export default function NotFoundContent({
       {/* ÖNE ÇIKAN VİLLALAR */}
       {suggestionVillas && suggestionVillas.length > 0 && (
         <section className="px-5 md:px-10 lg:px-16 pb-16 md:pb-24">
-          <div className="max-w-6xl mx-auto">
+          <div className="site-container-inner">
             <div className="text-center mb-8 md:mb-10">
               <p className="text-[10.5px] tracking-[0.28em] uppercase font-medium text-[var(--brand-coral)]">
                 {dict.suggestionsEyebrow}

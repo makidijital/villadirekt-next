@@ -391,7 +391,7 @@ export default function TopBar() {
     <div
       className="
         flex items-center gap-2 md:gap-4 lg:gap-6
-        px-4 md:px-10 lg:px-12 py-[6px]
+        px-4 md:px-10 lg:px-[max(4rem,calc((100%_-_var(--container-6xl))/2_+_4rem))] py-[6px]
         bg-[var(--color-stone-900)]
         text-white
       "
