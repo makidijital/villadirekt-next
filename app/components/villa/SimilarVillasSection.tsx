@@ -161,8 +161,8 @@ export default async function SimilarVillasSection({
   });
 
   return (
-    <section className="w-full -mt-10 md:-mt-14">
-      <div className="site-container px-5 md:px-10 lg:px-16 pt-2 md:pt-4 pb-10 md:pb-14">
+    <section className="w-full -mt-10 md:-mt-14 px-5 md:px-10 lg:px-16">
+      <div className="site-container pt-2 md:pt-4 pb-10 md:pb-14">
         <h2 className="font-display font-medium text-[22px] md:text-[26px] text-[var(--color-stone-900)] tracking-[-0.02em] mb-6 md:mb-8">
           {dict.villa.similarVillasTitle}
         </h2>

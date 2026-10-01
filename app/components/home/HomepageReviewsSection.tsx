@@ -55,7 +55,7 @@ export default async function HomepageReviewsSection({
       aria-label={dict.sectionAriaLabel}
       className="px-5 md:px-10 lg:px-16 pt-14 md:pt-20 pb-12 md:pb-16"
     >
-      <div className="site-container-inner">
+      <div className="site-container">
         {/* HEADER — editorial: mikro çizgi + uppercase mikro-etiket +
                sol hizali başlık. Metinler (h2/p) BİREBİR aynı, sadece
                sunum "guest stories" diline uyacak şekilde yeniden

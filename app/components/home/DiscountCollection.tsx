@@ -155,7 +155,7 @@ export default async function DiscountCollection({
         }
       `}</style>
 
-      <div className="site-container-inner">
+      <div className="site-container">
         <div className="text-center mb-8 md:mb-12">
           <h2 className="font-display font-medium text-[22px] md:text-[26px] text-[var(--color-stone-900)] leading-tight tracking-[-0.02em]">
             {title}

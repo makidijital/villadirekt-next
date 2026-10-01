@@ -172,6 +172,7 @@ export default function Header({
   const headerShellClass =
     "transition-shadow duration-300 motion-reduce:transition-none " +
     "bg-white/92 backdrop-blur-xl backdrop-saturate-150 " +
+    "px-5 md:px-10 lg:px-16 " +
     "border-b border-[var(--color-stone-100)] " +
     (scrolled
       ? "shadow-[0_8px_24px_-12px_rgba(27,26,23,0.08)]"
@@ -224,7 +225,7 @@ export default function Header({
         <TopBar />
 
         <div className={headerShellClass}>
-          <div className="site-container px-5 md:px-10 lg:px-16 h-[72px] md:h-[80px] flex items-center justify-between">
+          <div className="site-container h-[72px] md:h-[80px] flex items-center justify-between">
             {/* LOGO */}
             <Link
               href={homeHref}

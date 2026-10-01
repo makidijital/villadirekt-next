@@ -108,7 +108,7 @@ export default async function CategoryCollection() {
       aria-label="Kategoriler"
       className="px-5 md:px-10 lg:px-16 pt-14 md:pt-20 pb-4 md:pb-10"
     >
-      <div className="site-container-inner">
+      <div className="site-container">
         {/* 🛡️ FAZ 39H — Refined editorial header.
            Daha kompakt + daha modern hierarchy:
              - Eyebrow "KOLEKSİYONLAR" tracking-tight uppercase coral

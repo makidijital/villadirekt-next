@@ -266,7 +266,7 @@ export default function CmsPageBody({
           </div>
 
           {/* Cover image — full-width premium */}
-          <div className="site-container-inner mt-12 md:mt-16">
+          <div className="site-container mt-12 md:mt-16">
             <div className="relative aspect-[16/9] overflow-hidden rounded-3xl bg-[var(--color-sand-50)]">
               <Image
                 src={coverUrl as string}
@@ -319,7 +319,7 @@ export default function CmsPageBody({
 
            Hero (max-w-3xl), navbar, footer, typography, leading,
            font-size DOKUNULMADI. */}
-        <div className="site-container-inner space-y-12 md:space-y-16">
+        <div className="site-container space-y-12 md:space-y-16">
           {/* Sections varsa render, yoksa body fallback */}
           {hasSections ? (
             sections.map((s, idx) => (

@@ -1304,7 +1304,7 @@ export default async function AramaPageBody({
 
       <section className="px-5 md:px-10 lg:px-16 pt-8 md:pt-12 pb-24 md:pb-32">
         {/* 🛡️ LAYOUT WIDTH — 1480 cap (1728+ ekranda yan boşluk kontrolü). */}
-        <div className="site-container-inner">
+        <div className="site-container">
           <JsonLd data={breadcrumbLd} />
           {itemListLd ? <JsonLd data={itemListLd} /> : null}
 

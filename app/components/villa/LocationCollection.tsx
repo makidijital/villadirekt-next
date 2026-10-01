@@ -198,7 +198,7 @@ export default async function LocationCollection({
       aria-label={dict.sectionAriaLabel}
       className="px-5 md:px-10 lg:px-16 pt-14 md:pt-20 pb-4 md:pb-10"
     >
-      <div className="site-container-inner">
+      <div className="site-container">
         {/* 🛡️ FAZ 39M — Normalized section header (CategoryCollection parity). */}
         <div className="text-center mb-8 md:mb-12">
           <h2 className="font-display font-medium text-[22px] md:text-[26px] text-[var(--color-stone-900)] leading-tight tracking-[-0.02em]">

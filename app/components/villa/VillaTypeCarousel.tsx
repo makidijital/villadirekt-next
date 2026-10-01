@@ -170,7 +170,7 @@ export default async function VillaTypeCarousel({
       aria-label={dict.sectionAriaLabel}
       className="px-5 md:px-10 lg:px-16 pt-10 md:pt-14 pb-2 md:pb-4"
     >
-      <div className="site-container-inner">
+      <div className="site-container">
         <div className="text-center mb-7 md:mb-10">
           <h2 className="font-display font-medium text-[22px] md:text-[26px] text-[var(--color-stone-900)] leading-tight tracking-[-0.02em]">
             {dict.title}

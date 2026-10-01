@@ -158,6 +158,7 @@ export default function Hero({
         relative z-20
         min-h-[60svh] lg:min-h-[78svh]
         w-full
+        px-5 md:px-10 lg:px-16
         bg-[var(--color-stone-900)]
       "
     >
@@ -265,7 +266,6 @@ export default function Hero({
         className="
           relative
           site-container
-          px-5 md:px-10 lg:px-16
           min-h-[60svh] lg:min-h-[78svh]
           flex flex-col justify-end
           pt-24 md:pt-24 lg:pt-28

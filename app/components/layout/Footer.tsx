@@ -245,7 +245,7 @@ export default function Footer({
   return (
     <footer
       aria-label={dictionary.footer.ariaLabel}
-      className="relative mt-20 md:mt-28 overflow-hidden text-[var(--color-stone-700)]"
+      className="relative mt-20 md:mt-28 overflow-hidden px-5 md:px-10 lg:px-16 text-[var(--color-stone-700)]"
       /* ☀️ Soft, ferah zemin — koyu lacivert kaldırıldı. Sıcak kırık beyaz
          yüzey; turuncu/mavi yalnızca çok hafif, ayrı glow katmanlarında
          atmosferik bir iz olarak kullanılıyor (ağır gradient yok). */
@@ -273,7 +273,7 @@ export default function Footer({
         }}
       />
 
-      <div className="relative site-container px-5 md:px-10 lg:px-16 pb-10">
+      <div className="relative site-container pb-10">
         {/* ═════════════ SECTION 2 — MARKA + KEŞFET (asimetrik, kolon-kartı yok) ═════════════
             LEFT (dominant): logo + marka açıklaması + sosyal — mantık AYNEN.
             RIGHT: tek "Keşfet" başlığı altında iki minimal alt-grup (Villalar,

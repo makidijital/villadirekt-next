@@ -836,28 +836,20 @@ select.input {
 /* ----------------------------------------------------------------
    UTILS
    ---------------------------------------------------------------- */
-/* PUBLIC ANA CONTAINER — referans çizgi: Header / Hero / Hero Search.
-   Kutu = var(--container-6xl); yatay gutter (px-5 md:px-10 lg:px-16)
-   kutunun İÇİNDE → desktop içerik çizgisi = 6xl − 2×4rem.
-   • site-container       → gutter'ı KENDİ üzerinde taşıyan sarmalayıcı
-                             (örn. "site-container px-5 md:px-10 lg:px-16").
-   • site-container-inner → gutter'ı PARENT section'da olan içerik
-                             sarmalayıcısı; aynı içerik çizgisi. Viewport
-                             6xl'den darken sınır devreye girmez → mobil /
-                             tablet davranışı birebir aynı. */
+/* PUBLIC ANA CONTAINER — tek standart: var(--container-6xl) (1152px).
+   TopBar / Header / Hero / Hero Search / section'lar / Footer içerik
+   sarmalayıcıları bu kutuyu kullanır. Arka planlar full-width kalır;
+   mevcut responsive padding'ler (px-*) olduğu yerde korunur. */
 @utility site-container {
   width: 100%;
   max-width: var(--container-6xl);
   margin-inline: auto;
 }
 
-@utility site-container-inner {
-  width: 100%;
-  max-width: calc(var(--container-6xl) - 8rem);
-  margin-inline: auto;
-}
-
+/* Padding kutunun DIŞINDA sayılır (content-box) → içerik genişliği
+   site-container ile aynı 1152px; mobilde davranış birebir aynı. */
 .section-narrow {
+  box-sizing: content-box;
   max-width: var(--container-6xl);
   margin-left: auto;
   margin-right: auto;
@@ -872,8 +864,7 @@ select.input {
   }
 }
 
-/* lg+: gutter public ana container ile aynı (4rem) → içerik çizgisi
-   Header / Hero Search ile hizalı. Mobil/tablet padding'i AYNEN. */
+/* lg+: gutter diğer public section'larla aynı (lg:px-16). */
 @media (min-width: 1024px) {
   .section-narrow {
     padding-left: 4rem;

@@ -73,7 +73,7 @@ export default async function ReservationLookupPageBody({
       />
 
       <section className="px-5 md:px-10 lg:px-16 pt-12 md:pt-16 pb-24 md:pb-32">
-        <div className="site-container-inner">
+        <div className="site-container">
           {share?.kind === "ok" ? (
             <ReservationShareView data={share.data} locale={locale} />
           ) : share?.kind === "cancelled" ? (
