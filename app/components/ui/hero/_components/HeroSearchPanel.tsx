@@ -101,7 +101,7 @@ registerLocale("de", deLocale);
        glow shadow, ince entrance animasyonu (local `<style>`,
        globals.css'e dokunulmadı, prefers-reduced-motion'da kapanır).
      - Tüm alan ikonları nötr gri (stone-400).
-     - "Villa bul" CTA → koyu düz buton (gradient yok).
+     - "Villa bul" CTA → #1B4EF5 düz buton (gradient yok).
    =============================================================== */
 
 export default function HeroSearchPanel({
@@ -233,10 +233,11 @@ export default function HeroSearchPanel({
         Mevcut state + handlers + URL/param mantığı AYNEN korundu.
         Visual:
           - Beyaz zemin, ince stone border, rounded-[24px], hafif gölge
-          - Alan sırası (CSS `order`): Bölge · Villa türü · Tarih · Kişi
+          - Alan sırası (CSS `order`): Tarih · Nereye · Villa tipi · Kişi
+            (DOM sırası: Tarih, Kişi, Tip, Bölge — order-1…4 + aksiyonlar order-5)
           - Alanlar arası ince dikey ayırıcı (mobilde yatay)
           - Gri ikon + küçük uppercase başlık + büyük değer
-          - Kare filtre butonu (Gelişmiş arama aç/kapa) + koyu "Villa bul"
+          - Kare filtre butonu (Gelişmiş arama aç/kapa) + #1B4EF5 "Villa bul"
           - Gradient YOK; hover'da #1B4EF5 düşük opaklık
           - Tek seferlik entrance animasyonu (reduced-motion'da kapanır)
         ═══════════════════════════════════════════════════════ */
@@ -269,7 +270,7 @@ export default function HeroSearchPanel({
         "
       >
       {/* DATE */}
-      <div className="order-3 flex-1 min-w-0 px-4 md:px-5 py-3 md:py-2.5 rounded-2xl hover:bg-brand/[0.04] transition-colors flex items-center gap-3 border-t md:border-t-0 md:border-l border-[var(--color-stone-200)] md:rounded-none">
+      <div className="order-1 flex-1 min-w-0 px-4 md:px-5 py-3 md:py-2.5 rounded-2xl hover:bg-brand/[0.04] transition-colors flex items-center gap-3 md:rounded-none">
         <span
           className="
             w-5 h-5 shrink-0
@@ -281,7 +282,7 @@ export default function HeroSearchPanel({
           <Calendar size={18} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
+          <div className="text-[9px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
             {dict.dateLabel}
           </div>
           <DatePicker
@@ -299,7 +300,7 @@ export default function HeroSearchPanel({
             dateFormat="dd.MM.yyyy"
             minDate={new Date()}
             placeholderText={dict.datePlaceholder}
-            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[18px] md:text-[19px] font-semibold !text-[var(--color-stone-900)] placeholder-[var(--color-stone-400)] cursor-pointer"
+            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[12px] font-semibold !text-[var(--color-stone-900)] placeholder-[var(--color-stone-400)] cursor-pointer"
             /* 🛡️ PHASE 11 — sentinel string karşılaştırması yerine
                DOĞRUDAN state kontrolü: `buildHeroDateLabel` sentinel'i
                TAM OLARAK `!startDate` iken döndürür → davranış birebir
@@ -332,13 +333,13 @@ export default function HeroSearchPanel({
           <Users size={18} />
         </span>
         <div className="min-w-0">
-          <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
+          <div className="text-[9px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
             {dict.guestsLabel}
           </div>
           <select
             value={guests}
             onChange={(e) => setGuests(Number(e.target.value))}
-            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none text-[18px] md:text-[19px] font-semibold !text-[var(--color-stone-900)] cursor-pointer"
+            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none text-[12px] font-semibold !text-[var(--color-stone-900)] cursor-pointer"
             style={{ backgroundImage: "none", paddingRight: 0 }}
           >
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((g) => (
@@ -353,7 +354,7 @@ export default function HeroSearchPanel({
 
 
       {/* CATEGORY */}
-      <div ref={catRef} className="order-2 relative flex-1 min-w-0 border-t md:border-t-0 md:border-l border-[var(--color-stone-200)]">
+      <div ref={catRef} className="order-3 relative flex-1 min-w-0 border-t md:border-t-0 md:border-l border-[var(--color-stone-200)]">
         <button
           type="button"
           onClick={() => {
@@ -379,10 +380,10 @@ export default function HeroSearchPanel({
             <Tag size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
+            <div className="text-[9px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
               {dict.typeLabel}
             </div>
-            <div className="text-[18px] md:text-[19px] font-semibold text-[var(--color-stone-900)] truncate">
+            <div className="text-[12px] font-semibold text-[var(--color-stone-900)] truncate">
               {categories.length
                 ? formatDictionaryString(dict.typesSelected, {
                     n: categories.length,
@@ -435,7 +436,7 @@ export default function HeroSearchPanel({
 
 
       {/* REGION */}
-      <div ref={regRef} className="order-1 relative flex-1 min-w-0">
+      <div ref={regRef} className="order-2 relative flex-1 min-w-0 border-t md:border-t-0 md:border-l border-[var(--color-stone-200)]">
         <button
           type="button"
           onClick={() => {
@@ -461,10 +462,10 @@ export default function HeroSearchPanel({
             <MapPin size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
+            <div className="text-[9px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
               {dict.regionLabel}
             </div>
-            <div className="text-[18px] md:text-[19px] font-semibold text-[var(--color-stone-900)] truncate">
+            <div className="text-[12px] font-semibold text-[var(--color-stone-900)] truncate">
               {regions.length
                 ? formatDictionaryString(dict.regionsSelected, {
                     n: regions.length,
@@ -542,7 +543,7 @@ export default function HeroSearchPanel({
             inline-flex items-center justify-center gap-2
             h-14 px-7 rounded-2xl
             text-white font-semibold text-[15px] tracking-[0.01em]
-            bg-[var(--color-stone-900)] hover:bg-[var(--color-stone-700)]
+            bg-brand hover:bg-brand-strong
             transition-colors duration-200 motion-reduce:transition-none
             focus:outline-none focus-visible:ring-2
             focus-visible:ring-brand/50

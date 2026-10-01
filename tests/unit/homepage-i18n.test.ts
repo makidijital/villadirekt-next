@@ -78,8 +78,8 @@ describe("A) TR dictionary değerleri, taşınmadan önceki hardcoded metinlerle
     expect(h.advantages.experienceTitle).toBe("14 Yıllık Tecrübe");
     expect(h.advantages.priceTitle).toBe("En Uygun Fiyat Garantisi");
     expect(h.advantages.trustTitle).toBe("Güvenli Rezervasyon");
-    expect(h.search.datePlaceholder).toBe("Tarih seç");
-    expect(h.search.villaType).toBe("Villa tipi");
+    expect(h.search.datePlaceholder).toBe("Tarih seçin");
+    expect(h.search.villaType).toBe("Tüm türler");
     expect(h.search.allRegions).toBe("Tüm bölgeler");
     expect(h.search.submit).toBe("Villa bul");
   });
