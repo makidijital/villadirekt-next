@@ -118,11 +118,11 @@ export const PAGE_LIST_READERS: PermissionRequirement = ["pages", "menu"];
    (bucket'ın mevcut sahibi; yeni bir yol açılmaz).
 --------------------------------------------------------------- */
 const STORAGE_PREFIX_PERMISSIONS: Record<string, Array<[string, PermissionRequirement]>> = {
-  "tatilinyeri-villa-images": [
+  "villadirekt-villa-images": [
     ["villas/", "villas"],
     ["descriptions/", ["villas", "blog"]],
   ],
-  "tatilinyeri-site-assets": [
+  "villadirekt-site-assets": [
     ["category-covers/", "villa_types"],
     ["location-covers/", "locations"],
     ["page-covers/", "pages"],
@@ -137,8 +137,8 @@ const STORAGE_PREFIX_PERMISSIONS: Record<string, Array<[string, PermissionRequir
   ],
 };
 const STORAGE_BUCKET_DEFAULT: Record<string, PermissionRequirement> = {
-  "tatilinyeri-villa-images": "villas",
-  "tatilinyeri-site-assets": "settings",
+  "villadirekt-villa-images": "villas",
+  "villadirekt-site-assets": "settings",
 };
 
 /** Bu bucket/yol için gereken izin; bucket tanınmıyorsa null. */

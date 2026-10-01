@@ -15,10 +15,10 @@
 export const STORAGE_BUCKETS = {
   /** Villa gallery + admin upload. Migration 003 + 005 düzeyinde
    *  RLS policy'leriyle gel — admin write, anon read. */
-  VILLA_IMAGES: "tatilinyeri-villa-images",
+  VILLA_IMAGES: "villadirekt-villa-images",
 
   /** Singleton site varlıkları + admin branding + cover'lar. */
-  SITE_ASSETS: "tatilinyeri-site-assets",
+  SITE_ASSETS: "villadirekt-site-assets",
 } as const;
 
 /** Tip-güvenli union — caller'lar `STORAGE_BUCKETS.VILLA_IMAGES`
