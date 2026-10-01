@@ -558,15 +558,18 @@ export default function HeroSearchPanel({
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          🛡️ GELİŞMİŞ ARAMA — panel altında sade/premium expandable.
-          Inline açılır (floating değil) → DatePicker portal / dropdown
-          stacking'iyle ÇAKIŞMAZ. Filtre paneli tasarımına dokunmaz.
+          🛡️ GELİŞMİŞ ARAMA — search bar altında popover (absolute).
+          Sayfa akışını uzatmaz; Bölge/Villa Tipi dropdown'larıyla aynı
+          açılma dili. State/handler'lar (advOpen, flexible, features) AYNEN.
           Checkbox yalnız `flexible` state'ini set eder; Villa Bul'a
           basınca `flexible=3` param'ı eklenir (ana tarih değişmez).
           ═══════════════════════════════════════════════════════ */}
       {advOpen && (
-      <div className="mt-3 flex flex-col items-center">
-          <div className="mt-2 w-[min(92vw,420px)] rounded-2xl bg-white/95 backdrop-blur-md border border-[var(--color-stone-100)] shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)] px-4 py-3.5">
+      /* POPOVER — normal akışta yer KAPLAMAZ (absolute); search bar'ın
+         hemen altında, sağa (filtre butonuna) hizalı. Bölge/Villa Tipi
+         dropdown'larıyla aynı yüzey dili. Kendi içinde scroll edilir. */
+      <div className="absolute top-full right-0 mt-3 z-[60] w-[min(calc(100vw-2.5rem),380px)]">
+          <div className="w-full max-h-[min(70vh,440px)] overflow-y-auto overscroll-contain rounded-2xl bg-white border border-[var(--color-stone-200)] shadow-[0_24px_48px_-16px_rgb(27_26_23/0.18)] px-4 py-3.5">
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
