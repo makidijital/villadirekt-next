@@ -750,7 +750,7 @@ export default function VillaCard({
             }
           >
             {/* LOCATION */}
-            <p className="flex items-center gap-1.5 text-[10.5px] tracking-[0.18em] uppercase font-medium text-white/75 min-w-0 truncate">
+            <p className="flex items-center gap-1.5 text-[10.5px] tracking-[0.18em] uppercase font-medium text-white/75 min-w-0 truncate [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
               <MapPin
                 size={11}
                 className="text-white/70 shrink-0"
@@ -770,7 +770,7 @@ export default function VillaCard({
                 "leading-[1.08] tracking-[-0.022em] line-clamp-2 " +
                 "group-hover:text-white/95 " +
                 "transition-colors motion-reduce:transition-none " +
-                "drop-shadow-[0_1px_2px_rgba(0,0,0,0.30)]"
+                "[text-shadow:0_1px_4px_rgba(0,0,0,0.45)]"
               }
             >
               {title}
@@ -1088,10 +1088,10 @@ export default function VillaCard({
               Normal public karttan (VillaCard default) ayırt etmek için altina
               turuncu→mavi ince accent çizgisi eklendi. */}
           <div className="absolute inset-x-0 bottom-0 p-4 pointer-events-none text-center">
-            <h3 className="font-display text-[19px] md:text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] line-clamp-1">
+            <h3 className="font-display text-[19px] md:text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
               {title}
             </h3>
-            <p className="mt-1 inline-flex items-center gap-1 text-[11.5px] text-white/85 uppercase tracking-[0.05em]">
+            <p className="mt-1 inline-flex items-center gap-1 text-[11.5px] text-white/85 uppercase tracking-[0.05em] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
               <MapPin size={11} className="shrink-0" strokeWidth={2} aria-hidden />
               <span className="truncate">{location || dict.card.noLocation}</span>
             </p>
@@ -1343,12 +1343,12 @@ export default function VillaCard({
                 "text-[17px] md:text-[19px] leading-[1.15] tracking-[-0.02em] " +
                 "line-clamp-1 group-hover:text-white/90 " +
                 "transition-colors duration-300 motion-reduce:transition-none " +
-                "drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
+                "[text-shadow:0_1px_4px_rgba(0,0,0,0.45)]"
               }
             >
               {title}
             </h3>
-            <p className="mt-1 flex items-center gap-1.5 text-[10.5px] tracking-[0.14em] uppercase font-medium text-white/80 min-w-0">
+            <p className="mt-1 flex items-center gap-1.5 text-[10.5px] tracking-[0.14em] uppercase font-medium text-white/80 min-w-0 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
               <MapPin
                 size={11}
                 className="text-white/75 shrink-0"
