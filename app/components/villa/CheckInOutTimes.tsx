@@ -20,7 +20,7 @@ export default function CheckInOutTimes() {
         className="
           relative overflow-hidden rounded-2xl
           border border-[var(--color-champagne-200)]
-          bg-gradient-to-b from-white/85 to-[var(--color-sand-50)]/75
+          bg-white/85
           backdrop-blur-sm
           shadow-[0_16px_40px_-24px_rgba(27,26,23,0.28)]
           p-6 md:p-8

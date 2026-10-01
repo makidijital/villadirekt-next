@@ -73,7 +73,7 @@ export default function WhyUsSection({ brandName, phone }: Props) {
         className="
           site-container
           rounded-3xl border border-black/[0.06]
-          bg-[#FAF8F5]
+          bg-[var(--color-stone-50)]
           shadow-[0_24px_60px_-32px_rgba(27,26,23,0.18)]
           px-6 py-14 md:px-14 md:py-20
         "
@@ -135,8 +135,8 @@ export default function WhyUsSection({ brandName, phone }: Props) {
         <div
           className="
             mt-14 md:mt-18
-            rounded-3xl border border-[#dbe4f0]
-            bg-[#F4F7FC]
+            rounded-3xl border border-[var(--color-stone-100)]
+            bg-[var(--color-champagne-50)]
             shadow-[0_16px_40px_-28px_rgba(20,40,70,0.25)]
             px-7 py-9 md:px-12 md:py-11
             flex flex-col md:flex-row md:items-center md:justify-between gap-7

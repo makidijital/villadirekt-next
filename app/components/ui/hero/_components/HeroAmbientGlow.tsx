@@ -24,7 +24,7 @@ export default function HeroAmbientGlow() {
         "
         style={{
           background:
-            "radial-gradient(circle at center, rgba(255,101,63,0.14), transparent 70%)",
+            "transparent",
         }}
       />
       <div
@@ -35,7 +35,7 @@ export default function HeroAmbientGlow() {
         "
         style={{
           background:
-            "radial-gradient(circle at center, rgba(245,238,223,0.85), transparent 70%)",
+            "transparent",
         }}
       />
       {/* Fine grain noise — premium magazine paper feel; pure
@@ -45,7 +45,7 @@ export default function HeroAmbientGlow() {
         className="pointer-events-none absolute inset-0 opacity-[0.018] mix-blend-overlay"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(0,0,0,1) 1px, transparent 1px)",
+            "none",
           backgroundSize: "3px 3px",
         }}
       />

@@ -320,7 +320,7 @@ export default function AvailabilityInlineCalendar({
               (m) => new Date(m.getFullYear(), m.getMonth() - 1, 1)
             )
           }
-          className="w-9 h-9 rounded-full bg-white border border-[var(--color-stone-100)] shadow-[0_4px_12px_-6px_rgba(11,31,58,0.2)] flex items-center justify-center text-[var(--color-stone-800)] hover:-translate-y-0.5 hover:border-[var(--color-stone-200)] hover:shadow-[0_8px_18px_-8px_rgba(11,31,58,0.25)] transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          className="w-9 h-9 rounded-full bg-white border border-[var(--color-stone-100)] shadow-[0_4px_12px_-6px_rgba(0,0,0,0.2)] flex items-center justify-center text-[var(--color-stone-800)] hover:-translate-y-0.5 hover:border-[var(--color-stone-200)] hover:shadow-[0_8px_18px_-8px_rgba(0,0,0,0.25)] transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
           aria-label={dict.availability.prevMonth}
         >
           <ChevronLeft size={16} />
@@ -332,7 +332,7 @@ export default function AvailabilityInlineCalendar({
               (m) => new Date(m.getFullYear(), m.getMonth() + 1, 1)
             )
           }
-          className="w-9 h-9 rounded-full bg-white border border-[var(--color-stone-100)] shadow-[0_4px_12px_-6px_rgba(11,31,58,0.2)] flex items-center justify-center text-[var(--color-stone-800)] hover:-translate-y-0.5 hover:border-[var(--color-stone-200)] hover:shadow-[0_8px_18px_-8px_rgba(11,31,58,0.25)] transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+          className="w-9 h-9 rounded-full bg-white border border-[var(--color-stone-100)] shadow-[0_4px_12px_-6px_rgba(0,0,0,0.2)] flex items-center justify-center text-[var(--color-stone-800)] hover:-translate-y-0.5 hover:border-[var(--color-stone-200)] hover:shadow-[0_8px_18px_-8px_rgba(0,0,0,0.25)] transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
           aria-label={dict.availability.nextMonth}
         >
           <ChevronRight size={16} />
@@ -350,7 +350,7 @@ export default function AvailabilityInlineCalendar({
               key={`${viewMonth.getFullYear()}-${viewMonth.getMonth()}`}
               className={
                 (monthIdx === 2 ? "hidden lg:block " : "") +
-                "rounded-2xl border border-[var(--color-stone-100)] bg-white px-3 py-3.5 md:px-4 md:py-4 shadow-[0_6px_18px_-14px_rgba(11,31,58,0.15)]"
+                "rounded-2xl border border-[var(--color-stone-100)] bg-white px-3 py-3.5 md:px-4 md:py-4 shadow-[0_6px_18px_-14px_rgba(0,0,0,0.15)]"
               }
             >
               <div className="px-1 mb-1.5">

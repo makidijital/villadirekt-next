@@ -7,6 +7,18 @@
    ================================================================ */
 
 @theme {
+  /* ════════════════════════════════════════════════════════════
+     🎨 VİLLADİREKT MARKA RENKLERİ — tek kaynak (public)
+     brand  → ana renk: header, ana buton, link, aktif durum, ikon
+     accent → vurgu: CTA detayı, badge, küçük accent, hover detayı
+     Gradient YOK — yalnız düz renk. Tonlar gerekirse Tailwind opaklık
+     modifier'ı (bg-brand/10) ya da aşağıdaki türetilmiş token'larla.
+     ════════════════════════════════════════════════════════════ */
+  --color-brand: #1b4ef5;
+  --color-brand-strong: color-mix(in srgb, var(--color-brand) 82%, #000);
+  --color-accent: #fad716;
+  --color-accent-strong: color-mix(in srgb, var(--color-accent) 86%, #000);
+
   /* 🎨 Brand */
   /* 🌊 REBRAND — cool coastal navy/slate neutrals (warm stone → navy).
      Lightness ramp paritesi korundu → metin kontrastı ≥ önceki. */
@@ -139,13 +151,7 @@
   /* 🌅 CINEMATIC HERO — tropical sunset overlay (coral → cyan):
      Üst kısımda warm sunset glow, alt kısımda deep sea darkness.
      Travel-poster Mediterranean atmosphere. */
-  --gradient-hero-warm: linear-gradient(
-    180deg,
-    rgb(2 170 229 / 0.10) 0%,
-    rgb(2 170 229 / 0.18) 35%,
-    rgb(11 95 91 / 0.5) 75%,
-    rgb(11 31 58 / 0.85) 100%
-  );
+  --gradient-hero-warm: rgb(11 31 58 / 0.4);
 }
 
 /* ----------------------------------------------------------------
@@ -160,6 +166,106 @@
      `ring-*` utility'leri kendi `--tw-ring-color`'ını taşır; bu token
      CSS docs/legacy reference + form focus ile tutarlı. */
   --ring: #02aae5;
+}
+
+/* ================================================================
+   🎨 PUBLIC RENK SİSTEMİ — VilladDirekt (#1B4EF5 + #FAD716)
+   ================================================================
+   Kapsam: `.admin-shell` İÇERMEYEN her sayfa (public, /p, 404,
+   bakım ekranı). Admin sayfalarında bu blok eşleşmez → admin renkleri
+   BİREBİR aynı kalır. Değişkenler :root'ta tanımlandığı için body'ye
+   portal edilen modal/popover'lar da yeni renkleri alır.
+
+   • Nötrler: eski lacivert-tonlu stone/sand rampaları, aynı parlaklıkta
+     (luminance-eşleşmeli) NÖTR griye taşındı → metin kontrastı aynı.
+   • Eski turkuaz/aqua/champagne/coral/bronze rampaları (legacy token
+     isimleri korunarak) TEK kaynaktan, --color-brand'den türetilir.
+   ================================================================ */
+:root:not(:has(.admin-shell)) {
+  /* Nötr gri rampa */
+  --color-stone-50: #f7f7f7;
+  --color-stone-100: #ededed;
+  --color-stone-200: #dadada;
+  --color-stone-300: #a4a4a4;
+  --color-stone-400: #6f6f6f;
+  --color-stone-500: #535353;
+  --color-stone-600: #3d3d3d;
+  --color-stone-700: #2e2e2e;
+  --color-stone-800: #242424;
+  --color-stone-900: #1f1f1f;
+  --color-ivory: var(--color-stone-50);
+  --color-sand-50: var(--color-stone-50);
+  --color-sand-100: var(--color-stone-100);
+  --color-sand-200: var(--color-stone-200);
+  --color-sand-300: #c4c4c4;
+  --color-sand-400: var(--color-stone-300);
+
+  /* Marka rampası — legacy isimler → #1B4EF5'ten türetilmiş */
+  --color-champagne-50: color-mix(in srgb, var(--color-brand) 6%, #fff);
+  --color-champagne-100: color-mix(in srgb, var(--color-brand) 14%, #fff);
+  --color-champagne-200: color-mix(in srgb, var(--color-brand) 28%, #fff);
+  --color-champagne-300: color-mix(in srgb, var(--color-brand) 50%, #fff);
+  --color-champagne-400: color-mix(in srgb, var(--color-brand) 75%, #fff);
+  --color-champagne-500: var(--color-brand);
+  --color-champagne-600: var(--color-brand-strong);
+  --color-champagne-700: var(--color-brand-strong);
+  --color-champagne-800: color-mix(in srgb, var(--color-brand) 62%, #000);
+  --color-aqua-50: var(--color-champagne-50);
+  --color-aqua-100: var(--color-champagne-100);
+  --color-aqua-200: var(--color-champagne-200);
+  --color-aqua-300: var(--color-champagne-300);
+  --color-aqua-400: var(--color-champagne-400);
+  --color-aqua-500: var(--color-brand);
+  --color-aqua-600: var(--color-brand-strong);
+  --color-aqua-700: var(--color-brand-strong);
+  --color-aqua-800: var(--color-champagne-800);
+  --color-coral-400: var(--color-champagne-400);
+  --color-coral-500: var(--color-brand);
+  --color-coral-600: var(--color-brand-strong);
+  --color-peach-300: var(--color-champagne-100);
+  --color-peach-400: var(--color-champagne-200);
+  --color-peach-500: var(--color-champagne-300);
+  --color-bronze-500: var(--color-brand);
+  --color-bronze-600: var(--color-brand-strong);
+  --color-bronze-700: var(--color-brand-strong);
+  --color-terracotta-400: var(--color-champagne-300);
+  --color-terracotta-500: var(--color-champagne-400);
+  --brand-coral: var(--color-brand);
+  --brand-coral-soft: var(--color-champagne-300);
+  --brand-coral-deep: var(--color-brand-strong);
+  --brand-coral-tint: var(--color-champagne-50);
+  --brand-coral-ink: var(--color-champagne-800);
+
+  /* Gölgeler — marka tonlu glow */
+  --shadow-warm: 0 1px 2px rgb(0 0 0 / 0.04),
+    0 10px 28px -12px color-mix(in srgb, var(--color-brand) 22%, transparent);
+  --shadow-warm-hover: 0 2px 4px rgb(0 0 0 / 0.06),
+    0 22px 48px -14px color-mix(in srgb, var(--color-brand) 30%, transparent);
+  --shadow-elevated: 0 4px 8px rgb(0 0 0 / 0.06),
+    0 32px 64px -20px rgb(0 0 0 / 0.22);
+  --shadow-glow-champagne: 0 0 0 1px color-mix(in srgb, var(--color-brand) 35%, transparent),
+    0 8px 28px -6px color-mix(in srgb, var(--color-brand) 40%, transparent);
+  --shadow-glow-coral: var(--shadow-glow-champagne);
+  /* Eski "sunset" overlay token'ı → düz overlay (gradient yok) */
+  --gradient-hero-warm: rgb(0 0 0 / 0.35);
+
+  --background: var(--color-stone-50);
+  --foreground: var(--color-stone-800);
+  --muted: var(--color-stone-500);
+  --border: #e8e8e8;
+  --ring: var(--color-brand);
+  --dp-day-hover: var(--color-champagne-50);
+}
+
+/* Public başlık rengi (eski lacivert #082060 → nötr koyu) */
+:root:not(:has(.admin-shell)) h1.text-\[var\(--color-stone-900\)\],
+:root:not(:has(.admin-shell)) h2.text-\[var\(--color-stone-900\)\] {
+  color: var(--color-stone-900);
+}
+
+/* Public gövde zemini — düz renk (eski turkuaz radial glow kaldırıldı) */
+:root:not(:has(.admin-shell)) body {
+  background: var(--background);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -191,29 +297,8 @@ html {
 }
 
 body {
-  /* 🌊 FAZ 18 — MEDITERRANEAN AMBIENT GRADIENT
-     Solid ivory üstüne 2-katmanlı sunset+sea atmosfer:
-       • Top-right: cyan glow (Mediterranean daylight, pool reflection)
-       • Bottom-left: coral glow (sunset golden hour)
-     Yumuşak (max 0.10 opacity) — "yazlık tatil" hissi yaratır, loud
-     değil. Stone text contrast korunur; AA. --background ivory bg
-     altta neutral kalır.
-
-     background-attachment: fixed → desktop'ta parallax luxury hissi;
-     iOS Safari otomatik scroll fallback (görsel etki minimal). */
-  background:
-    radial-gradient(
-      ellipse 90% 65% at 100% 0%,
-      rgb(2 170 229 / 0.10) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 80% 55% at 0% 100%,
-      rgb(2 170 229 / 0.08) 0%,
-      transparent 55%
-    ),
-    var(--background);
-  background-attachment: fixed;
+  /* Düz zemin — gradient yok. */
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   font-feature-settings: "ss01", "cv11";
@@ -473,7 +558,7 @@ select.input {
 .card-premium {
   /* 🛡️ FAZ 17 — subtle warm gradient bg (saf beyaz → sand-50);
      düz beyaz tekdüzeliğini kırar, premium depth ekler. */
-  background: linear-gradient(180deg, #ffffff 0%, #fbf8f2 100%);
+  background: #ffffff;
   border: 1px solid #ece8df;
   border-radius: 20px;
   box-shadow: var(--shadow-card);
@@ -494,16 +579,11 @@ select.input {
    "Spotlight pick" hissi. Opsiyonel adoption — mevcut card-premium
    yerlerine dokunulmaz. */
 .card-warm {
-  background: linear-gradient(
-    180deg,
-    #e8f7fd 0%,
-    #ffffff 100%
-  );
-  border: 1px solid rgb(84 200 243 / 0.45);
+  background: var(--brand-coral-tint);
+  border: 1px solid color-mix(in srgb, var(--brand-coral-soft) 45%, transparent);
   border-radius: 20px;
   box-shadow: var(--shadow-warm);
-  transition: box-shadow 280ms ease, transform 280ms ease,
-    border-color 280ms ease;
+  transition: box-shadow 280ms ease, transform 280ms ease, border-color 280ms ease;
 }
 
 .card-warm:hover {
@@ -515,11 +595,7 @@ select.input {
 /* 🌊 FAZ 18 — `.card-aqua` variant: cool Mediterranean spotlight.
    Pool/sea-themed kartlar; "lagoon view" hissi. */
 .card-aqua {
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #e8f7fd 100%
-  );
+  background: #ffffff;
   border: 1px solid var(--color-aqua-200, #90dcf8);
   border-radius: 20px;
   box-shadow:
@@ -549,14 +625,7 @@ select.input {
 .section-divider-warm {
   height: 1px;
   width: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--color-coral-400, #1fb2ec) 25%,
-    var(--color-aqua-400, #1fb2ec) 50%,
-    var(--color-coral-400, #1fb2ec) 75%,
-    transparent 100%
-  );
+  background: var(--color-aqua-400, #1fb2ec);
   opacity: 0.35;
 }
 
@@ -752,7 +821,7 @@ select.input {
 
 .react-datepicker__day:hover {
   /* 🌊 REBRAND — soft turquoise hover. */
-  background: #e8f7fd !important;
+  background: var(--dp-day-hover, #e8f7fd) !important;
 }
 
 .react-datepicker__day--selected,
@@ -873,20 +942,11 @@ select.input {
 }
 
 .gradient-fade-bottom {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgb(0 0 0 / 0.55) 100%
-  );
+  background: rgb(0 0 0 / 0.3);
 }
 
 .gradient-hero {
-  background: linear-gradient(
-    180deg,
-    rgb(27 26 23 / 0.15) 0%,
-    rgb(27 26 23 / 0.45) 60%,
-    rgb(27 26 23 / 0.75) 100%
-  );
+  background: rgb(0 0 0 / 0.4);
 }
 
 /* 🌅 FAZ 18 — `.gradient-hero-warm`: tropical sunset cinematic overlay.
@@ -900,23 +960,13 @@ select.input {
 /* 🌊 FAZ 18 — `.gradient-warm-overlay`: villa cover üstüne hafif
    tropikal grading. Üstte coral kıvılcımı, altta deep sea fade. */
 .gradient-warm-overlay {
-  background: linear-gradient(
-    180deg,
-    rgb(2 170 229 / 0.06) 0%,
-    transparent 35%,
-    rgb(11 95 91 / 0.18) 100%
-  );
+  background: color-mix(in srgb, var(--brand-coral) 8%, transparent);
 }
 
 /* 🌊 FAZ 18 — `.gradient-aqua-overlay`: cool resort overlay
    (pool/sea theme). Top fade'i light cyan, bottom sea darkness. */
 .gradient-aqua-overlay {
-  background: linear-gradient(
-    180deg,
-    rgb(210 243 240 / 0.18) 0%,
-    transparent 50%,
-    rgb(2 170 229 / 0.24) 100%
-  );
+  background: color-mix(in srgb, var(--brand-coral) 12%, transparent);
 }
 
 .line-clamp-1 {
@@ -943,6 +993,155 @@ select.input {
 ::selection {
   background: rgb(2 170 229 / 0.28);
   color: #045d7e;
+}
+
+/* ================================================================
+   🎨 PUBLIC ORTAK BİLEŞEN RENKLERİ — yalnız public kapsam
+   ================================================================
+   Aşağıdaki class'lar admin'de de kullanıldığı için temel kurallar
+   (yukarıda) admin için AYNEN bırakıldı; public sayfalarda bu blok
+   eşleşir ve yeni marka renklerini uygular. Gradient yok.
+   `:where()` → seçici özgüllüğü temel kuralla AYNI kalır; component'teki
+   Tailwind class'ları ve takvim durum class'ları önceliğini korur.
+   ================================================================ */
+:where(:root:not(:has(.admin-shell))) .eyebrow {
+  text-shadow: none;
+}
+
+:where(:root:not(:has(.admin-shell))) input,
+:where(:root:not(:has(.admin-shell))) textarea,
+:where(:root:not(:has(.admin-shell))) select {
+  color: var(--color-stone-900) !important;
+  border-color: var(--color-stone-200);
+}
+:where(:root:not(:has(.admin-shell))) input::placeholder,
+:where(:root:not(:has(.admin-shell))) textarea::placeholder {
+  color: var(--color-stone-400);
+}
+:where(:root:not(:has(.admin-shell))) input:focus,
+:where(:root:not(:has(.admin-shell))) textarea:focus,
+:where(:root:not(:has(.admin-shell))) select:focus,
+:where(:root:not(:has(.admin-shell))) .input:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand) 16%, transparent);
+}
+:where(:root:not(:has(.admin-shell))) .input {
+  border-color: var(--color-stone-200);
+  color: var(--color-stone-900);
+}
+:where(:root:not(:has(.admin-shell))) select.input {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23535353' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+}
+
+/* Ana buton — #1B4EF5 düz, beyaz metin (kontrast ≈ 6:1) */
+:where(:root:not(:has(.admin-shell))) .btn-primary {
+  background: var(--color-brand);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 14px 28px -10px color-mix(in srgb, var(--color-brand) 40%, transparent);
+}
+:where(:root:not(:has(.admin-shell))) .btn-primary:hover {
+  background: var(--color-brand-strong);
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.10),
+    0 22px 40px -12px color-mix(in srgb, var(--color-brand) 50%, transparent);
+}
+:where(:root:not(:has(.admin-shell))) .btn-primary:active {
+  box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--color-brand) 45%, transparent);
+}
+:where(:root:not(:has(.admin-shell))) .btn-primary:focus-visible {
+  box-shadow:
+    0 0 0 3px var(--color-accent),
+    0 14px 28px -10px color-mix(in srgb, var(--color-brand) 40%, transparent);
+}
+:where(:root:not(:has(.admin-shell))) .btn-primary.btn-glow {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 20px 40px -10px color-mix(in srgb, var(--color-brand) 50%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-brand) 18%, transparent);
+}
+:where(:root:not(:has(.admin-shell))) .btn-primary.btn-glow:hover {
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.10),
+    0 28px 52px -10px color-mix(in srgb, var(--color-brand) 60%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-brand) 25%, transparent);
+}
+
+:where(:root:not(:has(.admin-shell))) .btn-ghost {
+  color: var(--color-stone-700);
+  border-color: var(--color-stone-200);
+}
+:where(:root:not(:has(.admin-shell))) .btn-ghost:hover {
+  color: var(--color-brand);
+}
+:where(:root:not(:has(.admin-shell))) .btn-ghost:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 22%, transparent);
+}
+
+:where(:root:not(:has(.admin-shell))) .btn-dark {
+  background: var(--color-stone-900);
+  color: #ffffff;
+  border-color: var(--color-stone-900);
+}
+:where(:root:not(:has(.admin-shell))) .btn-dark:hover {
+  background: var(--color-stone-700);
+}
+
+:where(:root:not(:has(.admin-shell))) .card-premium {
+  border-color: var(--color-stone-100);
+}
+
+:where(:root:not(:has(.admin-shell))) .skeleton {
+  background: var(--color-stone-100);
+}
+:where(:root:not(:has(.admin-shell))) .skeleton::after {
+  background: rgb(255 255 255 / 0.45);
+}
+
+:where(:root:not(:has(.admin-shell))) ::-webkit-scrollbar-thumb {
+  background: var(--color-stone-300);
+  background-clip: padding-box;
+}
+:where(:root:not(:has(.admin-shell))) ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand);
+  background-clip: padding-box;
+}
+
+:where(:root:not(:has(.admin-shell))) ::selection {
+  background: color-mix(in srgb, var(--color-accent) 70%, transparent);
+  color: var(--color-stone-900);
+}
+
+/* Datepicker (public arama/rezervasyon) — doluluk durum renkleri
+   (kırmızı/sarı yarım gün göstergeleri) işlevsel olduğu için AYNEN. */
+:where(:root:not(:has(.admin-shell))) .react-datepicker {
+  border-color: var(--color-stone-100) !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__header {
+  background: var(--color-stone-50) !important;
+  border-bottom-color: var(--color-stone-100) !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__current-month {
+  color: var(--color-stone-900) !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day-name {
+  color: var(--color-stone-400) !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day {
+  color: var(--color-stone-700) !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day--selected,
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day--in-selecting-range,
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day--in-range {
+  background: var(--color-brand) !important;
+  color: #ffffff !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day--keyboard-selected {
+  background: var(--color-champagne-100) !important;
+  color: var(--color-brand) !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day--disabled {
+  color: var(--color-stone-300) !important;
 }
 
 /* ================================================================

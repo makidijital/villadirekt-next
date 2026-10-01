@@ -305,7 +305,7 @@ export default function BookingSidebar({
       className="
         relative rounded-[28px]
         bg-white border border-[var(--color-stone-100)]
-        shadow-[0_1px_2px_rgba(11,31,58,0.05)]
+        shadow-[0_1px_2px_rgba(0,0,0,0.05)]
         px-6 py-7 md:px-7 md:py-8
         space-y-6
       "
@@ -316,7 +316,7 @@ export default function BookingSidebar({
         <span className="inline-flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
           <span
             aria-hidden="true"
-            className="inline-block w-3.5 h-px bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+            className="inline-block w-3.5 h-px bg-brand "
           />
           {dict.booking.sidebarEyebrow}
         </span>
@@ -358,7 +358,7 @@ export default function BookingSidebar({
           className="group flex items-center gap-4 cursor-pointer"
         >
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-[#ED7926] transition-colors duration-200 motion-reduce:transition-none">
+            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
               {dict.booking.checkInPillLabel}
             </div>
             <div className="mt-1 text-[15px] font-medium text-[var(--color-stone-900)] truncate">
@@ -374,7 +374,7 @@ export default function BookingSidebar({
           />
 
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-[#0973BA] transition-colors duration-200 motion-reduce:transition-none">
+            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
               {dict.booking.checkOutPillLabel}
             </div>
             <div className="mt-1 text-[15px] font-medium text-[var(--color-stone-900)] truncate">
@@ -396,7 +396,7 @@ export default function BookingSidebar({
           <div
             className="
               absolute right-0 z-[999] mt-4 bg-white border border-[var(--color-stone-100)]
-              rounded-2xl shadow-[0_16px_40px_-16px_rgba(11,31,58,0.16)]
+              rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.16)]
               p-4 md:p-5
               w-[min(22rem,calc(100vw-2.5rem))]
             "
@@ -421,7 +421,7 @@ export default function BookingSidebar({
           className="group flex items-center gap-4 cursor-pointer"
         >
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-[#ED7926] transition-colors duration-200 motion-reduce:transition-none">
+            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
               {dict.booking.guestsLabel}
             </div>
             <div className="mt-1 text-[15px] font-medium text-[var(--color-stone-900)]">
@@ -440,7 +440,7 @@ export default function BookingSidebar({
         </div>
 
         {openGuests && (
-          <div className="absolute z-50 mt-3 w-full bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_16px_40px_-16px_rgba(11,31,58,0.16)] p-5 space-y-4">
+          <div className="absolute z-50 mt-3 w-full bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.16)] p-5 space-y-4">
             <Counter
               label={dict.booking.adultsLabel}
               value={adults}
@@ -561,7 +561,7 @@ export default function BookingSidebar({
               ${
                 !minimumStayValid || priceUnavailable || availabilityPending || initialRangeConflict
                   ? "bg-[var(--color-stone-300)] cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#ED7926] to-[#0973BA] shadow-[0_16px_32px_-12px_rgba(9,115,186,0.45)] hover:shadow-[0_20px_40px_-12px_rgba(9,115,186,0.55)] hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
+                  : "bg-brand shadow-[0_16px_32px_-12px_color-mix(in_srgb,var(--color-brand)_45%,transparent)] hover:shadow-[0_20px_40px_-12px_color-mix(in_srgb,var(--color-brand)_55%,transparent)] hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
               }
             `}
           >
@@ -604,7 +604,7 @@ export default function BookingSidebar({
             className="
               group relative overflow-hidden rounded-[22px]
               border border-[var(--color-stone-100)]
-              bg-gradient-to-br from-white via-white to-[#ED7926]/[0.05]
+              bg-accent/[0.05]
               px-5 py-5 md:px-6 md:py-5
               transition-transform duration-300 motion-reduce:transition-none
               hover:-translate-y-1 motion-reduce:hover:translate-y-0
@@ -616,7 +616,7 @@ export default function BookingSidebar({
               className="pp-perk-shimmer absolute inset-x-5 top-0 h-[2px] rounded-full opacity-60"
               style={{
                 background:
-                  "linear-gradient(90deg, transparent, #ED7926, #0973BA, transparent)",
+                  "var(--color-brand)",
                 backgroundSize: "220% 100%",
               }}
             />
@@ -629,7 +629,7 @@ export default function BookingSidebar({
               <span
                 className="
                   shrink-0 font-display text-[42px] md:text-[46px]
-                  leading-none tracking-[-0.02em] text-[#ED7926]
+                  leading-none tracking-[-0.02em] text-brand
                   animate-pulse [animation-duration:5s] motion-reduce:animate-none
                 "
               >
@@ -676,7 +676,7 @@ function Counter({
         <button
           type="button"
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-8 h-8 rounded-full border border-[var(--color-stone-200)] flex items-center justify-center text-[var(--color-stone-700)] hover:border-[#ED7926]/60 hover:text-[#ED7926] transition disabled:opacity-30"
+          className="w-8 h-8 rounded-full border border-[var(--color-stone-200)] flex items-center justify-center text-[var(--color-stone-700)] hover:border-accent/60 hover:text-brand transition disabled:opacity-30"
           disabled={value <= min}
         >
           −
@@ -687,7 +687,7 @@ function Counter({
         <button
           type="button"
           onClick={() => onChange(value + 1)}
-          className="w-8 h-8 rounded-full border border-[var(--color-stone-200)] flex items-center justify-center text-[var(--color-stone-700)] hover:border-[#ED7926]/60 hover:text-[#ED7926] transition"
+          className="w-8 h-8 rounded-full border border-[var(--color-stone-200)] flex items-center justify-center text-[var(--color-stone-700)] hover:border-accent/60 hover:text-brand transition"
         >
           +
         </button>

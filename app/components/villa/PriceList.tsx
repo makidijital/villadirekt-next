@@ -301,8 +301,8 @@ export default function PriceList({
       className="
         relative mt-5 rounded-[20px]
         border border-[var(--color-stone-100)]
-        bg-gradient-to-br from-white via-white to-[#FFF7F0]
-        shadow-[0_20px_48px_-30px_rgba(237,121,38,0.22),0_24px_54px_-32px_rgba(9,115,186,0.18)]
+        bg-white
+        shadow-[0_20px_48px_-30px_color-mix(in_srgb,var(--color-accent)_22%,transparent),0_24px_54px_-32px_color-mix(in_srgb,var(--color-brand)_18%,transparent)]
         p-6 md:p-7
       "
     >
@@ -330,7 +330,7 @@ export default function PriceList({
       {/* İnce üst accent çizgisi — turuncu → mavi (marka imzası) */}
       <span
         aria-hidden="true"
-        className="absolute inset-x-6 md:inset-x-7 top-0 h-[2.5px] rounded-full bg-gradient-to-r from-[#ED7926] via-[#ED7926]/50 to-[#0973BA]"
+        className="absolute inset-x-6 md:inset-x-7 top-0 h-[2.5px] rounded-full bg-brand "
       />
 
       {/* 🛡️ LAYOUT-ONLY: sezon satırları artık desktop'ta 2 kolonlu grid
@@ -404,8 +404,8 @@ export default function PriceList({
             className={
               "pl-row-in group/row relative rounded-2xl border px-4 py-4 md:px-5 md:py-5 transition-[transform,box-shadow,border-color,background-color] duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 " +
               (isDiscounted
-                ? "border-green-200 bg-gradient-to-br from-green-50 via-white to-green-50/60 hover:border-green-300 hover:shadow-[0_18px_38px_-24px_rgba(22,163,74,0.4),0_16px_34px_-24px_rgba(9,115,186,0.18)] "
-                : "border-[var(--color-stone-100)] bg-white/60 hover:bg-white hover:border-[var(--color-stone-200)] hover:shadow-[0_18px_38px_-24px_rgba(237,121,38,0.4),0_16px_34px_-24px_rgba(9,115,186,0.32)] ") +
+                ? "border-green-200 bg-green-50 hover:border-green-300 hover:shadow-[0_18px_38px_-24px_rgba(22,163,74,0.4),0_16px_34px_-24px_color-mix(in_srgb,var(--color-brand)_18%,transparent)] "
+                : "border-[var(--color-stone-100)] bg-white/60 hover:bg-white hover:border-[var(--color-stone-200)] hover:shadow-[0_18px_38px_-24px_color-mix(in_srgb,var(--color-accent)_40%,transparent),0_16px_34px_-24px_color-mix(in_srgb,var(--color-brand)_32%,transparent)] ") +
               /* 🛡️ Açık olan satır (isOpen) her zaman diğer satırların
                  üstünde kalsın diye EXPLICIT z-index — auto DEĞİL, bu
                  yüzden satır kendi stacking context'ini garanti kurar
@@ -422,8 +422,8 @@ export default function PriceList({
               className={
                 "absolute left-1.5 md:left-2 top-3 bottom-3 w-[3px] rounded-full opacity-60 group-hover/row:opacity-100 transition-opacity duration-300 motion-reduce:transition-none " +
                 (isDiscounted
-                  ? "bg-gradient-to-b from-green-500 to-green-600"
-                  : "bg-gradient-to-b from-[#ED7926] to-[#0973BA]")
+                  ? "bg-green-500 "
+                  : "bg-brand ")
               }
             />
 
@@ -447,13 +447,13 @@ export default function PriceList({
               <p className="min-w-0 font-display text-[13px] text-[var(--color-stone-900)] tracking-[-0.01em] leading-snug flex items-center gap-2.5">
                 <span
                   aria-hidden="true"
-                  className="hidden md:inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#0973BA]/[0.09] text-[#0973BA] shrink-0"
+                  className="hidden md:inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand/[0.09] text-brand shrink-0"
                 >
                   <Calendar size={14} strokeWidth={1.9} />
                 </span>
                 <span className="tabular-nums">
                   {formatDateForLocale(seg.start_date, effectiveLocale)}
-                  <span className="mx-2 text-[#ED7926]/55 font-medium">
+                  <span className="mx-2 text-brand/55 font-medium">
                     —
                   </span>
                   {formatDateForLocale(seg.end_date, effectiveLocale)}
@@ -484,7 +484,7 @@ export default function PriceList({
                 ) : (
                   <div className="text-left md:text-right">
                     <p
-                      className="font-display font-bold text-[19px] md:text-[17px] text-[#ED7926] tracking-[-0.02em] leading-none"
+                      className="font-display font-bold text-[19px] md:text-[17px] text-brand tracking-[-0.02em] leading-none"
                       style={{ fontVariantNumeric: "tabular-nums" }}
                     >
                       {formatCurrency(convertedPrice, currency, effectiveLocale)}
@@ -519,10 +519,10 @@ export default function PriceList({
                       aria-expanded={isOpen}
                       aria-label={dict.price.infoAriaLabel}
                       className={
-                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold tracking-wide transition-all duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/40 " +
+                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold tracking-wide transition-all duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 " +
                         (isOpen
-                          ? "border-[#0973BA]/40 bg-[#0973BA]/[0.08] text-[#0973BA] shadow-[0_4px_14px_-6px_rgba(9,115,186,0.35)]"
-                          : "border-[var(--color-stone-200)] text-[var(--color-stone-500)] hover:border-[#ED7926]/40 hover:text-[#ED7926] hover:bg-[#ED7926]/[0.05]")
+                          ? "border-brand/40 bg-brand/[0.08] text-brand shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-brand)_35%,transparent)]"
+                          : "border-[var(--color-stone-200)] text-[var(--color-stone-500)] hover:border-accent/40 hover:text-brand hover:bg-accent/[0.05]")
                       }
                     >
                       <Info size={12} strokeWidth={2} aria-hidden />
@@ -532,18 +532,18 @@ export default function PriceList({
                       <div
                         role="note"
                         className={
-                          "pl-popover-in absolute right-0 z-20 w-60 overflow-hidden rounded-2xl border border-[var(--color-stone-100)] bg-white p-4 shadow-[0_18px_40px_-18px_rgba(11,31,58,0.28)] " +
+                          "pl-popover-in absolute right-0 z-20 w-60 overflow-hidden rounded-2xl border border-[var(--color-stone-100)] bg-white p-4 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.28)] " +
                           (isLastRow ? "bottom-full mb-2" : "top-full mt-2")
                         }
                       >
                         <span
                           aria-hidden="true"
-                          className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+                          className="absolute inset-x-0 top-0 h-[2.5px] bg-brand "
                         />
                         <ul className="mt-1 space-y-2.5">
                           {hasMinStay && (
                             <li className="flex items-center gap-2.5 text-[12.5px] text-[var(--color-stone-700)]">
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#ED7926]/10 text-[#ED7926] shrink-0">
+                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-brand shrink-0">
                                 <Moon size={12} strokeWidth={1.9} aria-hidden />
                               </span>
                               {formatDictionaryString(dict.price.minNights, {
@@ -553,7 +553,7 @@ export default function PriceList({
                           )}
                           {hasDeposit && (
                             <li className="flex items-center gap-2.5 text-[12.5px] text-[var(--color-stone-700)]">
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#0973BA]/10 text-[#0973BA] shrink-0">
+                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand/10 text-brand shrink-0">
                                 <ShieldCheck size={12} strokeWidth={1.9} aria-hidden />
                               </span>
                               {formatDictionaryString(dict.price.damageDeposit, {

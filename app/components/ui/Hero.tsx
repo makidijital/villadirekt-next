@@ -218,19 +218,19 @@ export default function Hero({
         aria-hidden="true"
         className="
           absolute inset-0 pointer-events-none
-          bg-gradient-to-t from-black/92 via-black/45 to-black/5
+          bg-black/45
         "
         style={{ opacity: hero.overlayOpacity }}
       />
 
       {/* BRAND DUOTONE GLOW — köşelerde çok düşük opacity'li marka
-          renk radial glow'ları. Ana vurgu renkleri SADECE burada:
-          sağ-üst mavi (#0973BA), sol-alt turuncu (#ED7926). */}
+          renk radial glow'ları. 🎨 Marka güncellemesi: gradient
+          kullanılmadığı için glow'lar şeffaf (dekoratif katman pasif). */}
       <div
         aria-hidden="true"
         className="
           absolute inset-0 pointer-events-none
-          bg-[radial-gradient(58%_48%_at_100%_0%,rgba(9,115,186,0.35),transparent_62%)]
+          bg-transparent
         "
         style={{ opacity: hero.overlayOpacity }}
       />
@@ -238,7 +238,7 @@ export default function Hero({
         aria-hidden="true"
         className="
           absolute inset-0 pointer-events-none
-          bg-[radial-gradient(52%_42%_at_0%_100%,rgba(237,121,38,0.28),transparent_60%)]
+          bg-transparent
         "
         style={{ opacity: hero.overlayOpacity }}
       />
@@ -252,7 +252,7 @@ export default function Hero({
           hidden md:block
           pointer-events-none absolute -top-16 right-[10%]
           w-72 h-72 rounded-full blur-3xl
-          bg-gradient-to-br from-[#ED7926]/20 to-[#0973BA]/20
+          bg-brand/20
         "
       />
       </div>
@@ -290,11 +290,11 @@ export default function Hero({
             >
               <span
                 aria-hidden="true"
-                className="relative inline-flex w-1.5 h-1.5 rounded-full bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+                className="relative inline-flex w-1.5 h-1.5 rounded-full bg-accent "
               >
                 <span
                   aria-hidden="true"
-                  className="absolute inset-0 rounded-full bg-[#ED7926] animate-ping opacity-60"
+                  className="absolute inset-0 rounded-full bg-accent animate-ping opacity-60"
                 />
               </span>
               {hero.badge}
@@ -323,7 +323,7 @@ export default function Hero({
                   className={
                     i === 0
                       ? "block"
-                      : "block bg-gradient-to-r from-[#ED7926] to-[#0973BA] bg-clip-text text-transparent"
+                      : "block text-accent"
                   }
                 >
                   {line}
@@ -367,20 +367,20 @@ export default function Hero({
                     group relative inline-flex items-center
                     px-6 py-3 rounded-full
                     text-white text-[13.5px] font-medium tracking-[0.02em]
-                    bg-gradient-to-r from-[#ED7926] to-[#0973BA]
-                    shadow-[0_18px_36px_-14px_rgba(237,121,38,0.5),0_10px_26px_-10px_rgba(9,115,186,0.45)]
-                    hover:shadow-[0_22px_44px_-14px_rgba(237,121,38,0.6),0_12px_30px_-10px_rgba(9,115,186,0.55)]
+                    bg-brand
+                    shadow-[0_18px_36px_-14px_color-mix(in_srgb,var(--color-accent)_50%,transparent),0_10px_26px_-10px_color-mix(in_srgb,var(--color-brand)_45%,transparent)]
+                    hover:shadow-[0_22px_44px_-14px_color-mix(in_srgb,var(--color-accent)_60%,transparent),0_12px_30px_-10px_color-mix(in_srgb,var(--color-brand)_55%,transparent)]
                     hover:-translate-y-[1px]
                     transition-[transform,box-shadow] duration-300
                     motion-reduce:transition-none motion-reduce:hover:translate-y-0
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-stone-900)]
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-stone-900)]
                   "
                 >
                   <span
                     aria-hidden
                     className="
                       pointer-events-none absolute -inset-1.5 rounded-full
-                      bg-gradient-to-r from-[#ED7926] to-[#0973BA]
+                      bg-brand
                       opacity-40 blur-md
                       animate-pulse [animation-duration:2.8s]
                       group-hover:opacity-70 group-hover:blur-lg

@@ -286,7 +286,7 @@ function LocationCard({ item, locale }: { item: Item; locale: Locale }) {
   return (
     <Link
       href={href}
-      className="group flex w-[140px] sm:w-[150px] md:w-[170px] lg:w-[180px] flex-col items-center text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/40 focus-visible:ring-offset-2 rounded-3xl"
+      className="group flex w-[140px] sm:w-[150px] md:w-[170px] lg:w-[180px] flex-col items-center text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 rounded-3xl"
     >
       {/* DAİRESEL GÖRSEL — ince premium ring, hover'da sadece zoom +
           çok hafif elevation (büyük translate/scale YOK). */}
@@ -295,14 +295,14 @@ function LocationCard({ item, locale }: { item: Item; locale: Locale }) {
           relative shrink-0 overflow-hidden rounded-full
           w-[140px] h-[140px] sm:w-[150px] sm:h-[150px]
           md:w-[170px] md:h-[170px] lg:w-[180px] lg:h-[180px]
-          bg-gradient-to-br from-[var(--color-sand-100)] via-[var(--color-sand-50)] to-[var(--color-sand-100)]
+          bg-[var(--color-sand-100)]
           ring-1 ring-[var(--color-stone-200)]
-          shadow-[0_8px_20px_-12px_rgba(11,31,58,0.28)]
+          shadow-[0_8px_20px_-12px_rgba(0,0,0,0.28)]
           transition-[box-shadow,transform] duration-400
           motion-reduce:transition-none
-          group-hover:shadow-[0_14px_30px_-14px_rgba(11,31,58,0.34)]
+          group-hover:shadow-[0_14px_30px_-14px_rgba(0,0,0,0.34)]
           group-hover:-translate-y-0.5
-          group-hover:ring-[#0973BA]/30
+          group-hover:ring-brand/30
         "
       >
         {item.coverUrl ? (
@@ -331,7 +331,7 @@ function LocationCard({ item, locale }: { item: Item; locale: Locale }) {
       <div className="mt-1 flex items-center justify-center gap-1.5">
         <span
           aria-hidden="true"
-          className="inline-block h-1.5 w-1.5 rounded-full bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+          className="inline-block h-1.5 w-1.5 rounded-full bg-accent "
         />
         <span className="text-[11px] text-[var(--color-stone-500)] tabular-nums">
           {item.count} villa

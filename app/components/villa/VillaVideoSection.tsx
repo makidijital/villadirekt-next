@@ -187,7 +187,7 @@ export default function VillaVideoSection({ videos, villaTitle }: Props) {
               aria-hidden
               className="
                 absolute inset-0
-                bg-gradient-to-t from-black/55 via-black/15 to-black/25
+                bg-black/30
                 pointer-events-none
               "
             />

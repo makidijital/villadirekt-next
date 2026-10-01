@@ -186,12 +186,12 @@ function CategoryCard({
     <Link
       href={href}
       className={
-        "group flex items-center gap-3.5 p-2.5 rounded-xl bg-white border border-[var(--color-stone-100)] shadow-[0_6px_18px_-14px_rgba(11,31,58,0.20)] hover:shadow-[0_14px_30px_-18px_rgba(11,31,58,0.30)] hover:-translate-y-[2px] hover:border-[var(--color-stone-200)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40 " +
+        "group flex items-center gap-3.5 p-2.5 rounded-xl bg-white border border-[var(--color-stone-100)] shadow-[0_6px_18px_-14px_rgba(0,0,0,0.20)] hover:shadow-[0_14px_30px_-18px_rgba(0,0,0,0.30)] hover:-translate-y-[2px] hover:border-[var(--color-stone-200)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40 " +
         className
       }
     >
       {/* SOL — küçük thumbnail (fixed small, rounded-lg) */}
-      <div className="relative shrink-0 w-16 h-16 overflow-hidden rounded-lg bg-gradient-to-br from-[var(--color-sand-100)] via-[var(--color-sand-50)] to-[var(--color-sand-100)]">
+      <div className="relative shrink-0 w-16 h-16 overflow-hidden rounded-lg bg-[var(--color-sand-100)] ">
         {item.coverUrl ? (
           <Image
             src={item.coverUrl}

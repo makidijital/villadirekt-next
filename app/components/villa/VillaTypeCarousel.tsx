@@ -234,15 +234,15 @@ function VillaTypeCard({
         group block w-full
         rounded-[18px] overflow-hidden
         bg-white border border-[var(--color-stone-100)]
-        shadow-[0_14px_34px_-22px_rgba(11,31,58,0.28)]
-        hover:shadow-[0_26px_54px_-24px_rgba(11,31,58,0.36)]
+        shadow-[0_14px_34px_-22px_rgba(0,0,0,0.28)]
+        hover:shadow-[0_26px_54px_-24px_rgba(0,0,0,0.36)]
         hover:-translate-y-[3px]
         transition-[transform,box-shadow] duration-500
         motion-reduce:transition-none motion-reduce:hover:translate-y-0
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/40 focus-visible:ring-offset-2
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2
       "
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[var(--color-sand-100)] via-[var(--color-sand-50)] to-[var(--color-sand-100)]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-sand-100)] ">
         {item.coverUrl ? (
           <Image
             src={item.coverUrl}
@@ -261,7 +261,7 @@ function VillaTypeCard({
         {/* Badge legibility — hafif üst gradient */}
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/30 to-transparent pointer-events-none"
+          className="absolute inset-x-0 top-0 h-16 bg-black/15 pointer-events-none"
         />
 
         {/* Villa sayısı — gerçek DB verisi (item.count), gradient pill badge */}
@@ -271,8 +271,8 @@ function VillaTypeCard({
             inline-flex items-center rounded-full
             px-2.5 py-1
             text-[10.5px] font-semibold tracking-[0.02em] text-white
-            bg-gradient-to-r from-[#ED7926] to-[#0973BA]
-            shadow-[0_6px_16px_-6px_rgba(9,115,186,0.5)]
+            bg-brand
+            shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--color-brand)_50%,transparent)]
           "
         >
           {countLabel}
@@ -280,7 +280,7 @@ function VillaTypeCard({
       </div>
 
       <div className="px-4 py-3.5 border-t border-[var(--color-stone-100)]">
-        <h3 className="font-display text-[15px] md:text-[16px] font-medium leading-[1.2] tracking-[-0.01em] text-[var(--color-stone-900)] line-clamp-1 group-hover:text-[#0973BA] transition-colors duration-300 motion-reduce:transition-none">
+        <h3 className="font-display text-[15px] md:text-[16px] font-medium leading-[1.2] tracking-[-0.01em] text-[var(--color-stone-900)] line-clamp-1 group-hover:text-brand transition-colors duration-300 motion-reduce:transition-none">
           {item.name}
         </h3>
       </div>

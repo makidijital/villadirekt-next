@@ -735,7 +735,7 @@ function ModalContent({
              sınıfa DOKUNULMADI → diğer tüm butonlar aynı). Marka
              turuncusu #ED7926, beyaz metin; hover sade koyu ton,
              gradient/glass/translate efekti yok. */
-          className={`btn-primary w-full !py-3.5 !text-sm !bg-[#ED7926] !bg-none !shadow-none !transform-none hover:!bg-[#d96d1f] hover:!shadow-none ${
+          className={`btn-primary w-full !py-3.5 !text-sm !bg-accent !text-[var(--color-stone-900)] !bg-none !shadow-none !transform-none hover:!bg-accent-strong hover:!shadow-none ${
             !minimumStayValid || availabilityPending || initialRangeConflict ? "!opacity-50 !cursor-not-allowed" : ""
           }`}
         >

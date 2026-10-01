@@ -68,7 +68,7 @@ export default function FaqSection({
           <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
             <span
               aria-hidden="true"
-              className="inline-block w-4 h-px bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+              className="inline-block w-4 h-px bg-brand "
             />
             {dict.eyebrow}
           </span>
@@ -105,14 +105,14 @@ export default function FaqSection({
                     group w-full flex items-center gap-4 md:gap-6
                     py-5 md:py-6 text-left
                     focus:outline-none focus-visible:ring-2
-                    focus-visible:ring-[#0973BA]/30 focus-visible:ring-inset
+                    focus-visible:ring-brand/30 focus-visible:ring-inset
                   "
                 >
                   <span
                     className={
                       "shrink-0 font-display text-[13px] md:text-[14px] tabular-nums tracking-[0.02em] " +
                       "transition-colors duration-200 motion-reduce:transition-none " +
-                      (isOpen ? "text-[#0973BA]" : "text-[var(--color-stone-300)]")
+                      (isOpen ? "text-brand" : "text-[var(--color-stone-300)]")
                     }
                   >
                     {num}
@@ -136,7 +136,7 @@ export default function FaqSection({
                       <Minus
                         size={16}
                         strokeWidth={1.75}
-                        className="text-[#ED7926] transition-colors duration-200 motion-reduce:transition-none"
+                        className="text-brand transition-colors duration-200 motion-reduce:transition-none"
                       />
                     ) : (
                       <Plus
@@ -164,7 +164,7 @@ export default function FaqSection({
                     <div className="flex gap-3 md:gap-4 pb-6 md:pb-7 pl-9 md:pl-14 pr-2 md:pr-8">
                       <span
                         aria-hidden="true"
-                        className="shrink-0 w-[3px] rounded-full bg-gradient-to-b from-[#ED7926] to-[#0973BA]"
+                        className="shrink-0 w-[3px] rounded-full bg-brand "
                       />
                       <p className="flex-1 min-w-0 text-[14.5px] md:text-[15.5px] text-[var(--color-stone-600)] leading-[1.75] whitespace-pre-line">
                         {faq.answer}

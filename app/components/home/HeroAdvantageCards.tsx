@@ -105,25 +105,25 @@ const TONE_STYLES: Record<
   }
 > = {
   orange: {
-    border: "group-hover:border-[#ED7926]/45",
-    iconBg: "bg-[#ED7926]/15",
-    iconText: "text-[#ED7926]",
-    glow: "bg-[#ED7926]/30",
-    topBar: "bg-gradient-to-r from-[#ED7926] to-[#ED7926]/10",
+    border: "group-hover:border-accent/45",
+    iconBg: "bg-accent/15",
+    iconText: "text-brand",
+    glow: "bg-accent/30",
+    topBar: "bg-accent ",
   },
   blue: {
-    border: "group-hover:border-[#0973BA]/45",
-    iconBg: "bg-[#0973BA]/15",
-    iconText: "text-[#0973BA]",
-    glow: "bg-[#0973BA]/30",
-    topBar: "bg-gradient-to-r from-[#0973BA] to-[#0973BA]/10",
+    border: "group-hover:border-brand/45",
+    iconBg: "bg-brand/15",
+    iconText: "text-brand",
+    glow: "bg-brand/30",
+    topBar: "bg-brand ",
   },
   duo: {
-    border: "group-hover:border-[#ED7926]/40",
-    iconBg: "bg-gradient-to-br from-[#ED7926]/20 to-[#0973BA]/20",
-    iconText: "text-[#ED7926]",
-    glow: "bg-gradient-to-br from-[#ED7926]/30 to-[#0973BA]/30",
-    topBar: "bg-gradient-to-r from-[#ED7926] to-[#0973BA]",
+    border: "group-hover:border-accent/40",
+    iconBg: "bg-brand/20 ",
+    iconText: "text-brand",
+    glow: "bg-brand/30 ",
+    topBar: "bg-brand ",
   },
 };
 
@@ -212,7 +212,7 @@ export default function HeroAdvantageCards({
                   {/* İnce diagonal shimmer geçişi — düşük opasiteli, yavaş */}
                   <span
                     aria-hidden="true"
-                    className="hac-shimmer pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    className="hac-shimmer pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-white/5 "
                   />
 
                   <span

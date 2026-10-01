@@ -86,7 +86,7 @@ export default function VillaDistancesSection({
         <div className="flex items-center gap-2.5 mb-3">
           <span
             aria-hidden="true"
-            className="h-px w-9 bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+            className="h-px w-9 bg-brand "
           />
           <span className="text-[11px] font-semibold tracking-[0.16em] text-[var(--color-stone-400)]">
             {dict.villa.distancesEyebrow}
@@ -138,9 +138,9 @@ export default function VillaDistancesSection({
               >
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-2.5 -left-px w-[2.5px] rounded-full bg-gradient-to-b from-[#ED7926] to-[#0973BA] opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none"
+                  className="pointer-events-none absolute inset-y-2.5 -left-px w-[2.5px] rounded-full bg-brand opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none"
                 />
-                <span className="relative shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-[#ED7926]/10 to-[#0973BA]/10 text-[#0973BA] flex items-center justify-center transition-colors duration-300 motion-reduce:transition-none group-hover:from-[#ED7926]/20 group-hover:to-[#0973BA]/20">
+                <span className="relative shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-full bg-brand/10 text-brand flex items-center justify-center transition-colors duration-300 motion-reduce:transition-none group-hover:bg-brand/20 ">
                   <IconCmp size={15} strokeWidth={1.75} />
                 </span>
                 <p className="relative min-w-0 flex-1 text-[14px] md:text-[15px] font-medium text-[var(--color-stone-700)] truncate tracking-[-0.005em]">

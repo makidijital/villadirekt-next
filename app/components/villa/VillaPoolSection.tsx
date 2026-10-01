@@ -45,7 +45,7 @@ export default function VillaPoolSection({ villa, locale }: Props) {
   return (
     <section>
       <div className="flex items-center gap-2.5 mb-4">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0973BA]/10 text-[#0973BA]">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
           <Waves size={16} strokeWidth={1.8} />
         </span>
         <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em]">
@@ -66,7 +66,7 @@ export default function VillaPoolSection({ villa, locale }: Props) {
               <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--color-stone-500)]">
                 <span
                   aria-hidden="true"
-                  className="inline-block w-1.5 h-1.5 rounded-full bg-[#ED7926]"
+                  className="inline-block w-1.5 h-1.5 rounded-full bg-accent"
                 />
                 {getPoolTypeLabel(c.type, locale)}
               </p>

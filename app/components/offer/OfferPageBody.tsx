@@ -25,7 +25,7 @@ export default function OfferPageBody({
   const dict = getDictionary(locale).offer;
 
   return (
-    <div className="px-5 md:px-10 lg:px-16 pt-10 md:pt-14 pb-20 md:pb-28 bg-gradient-to-b from-[var(--color-sand-50)] via-white to-white">
+    <div className="px-5 md:px-10 lg:px-16 pt-10 md:pt-14 pb-20 md:pb-28 bg-white ">
       <div className="site-container">
         {/* ════════════════════════════════════════════════════
             INTRO + TRUST CARD (asimetrik 2-col, light luxury)

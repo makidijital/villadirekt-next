@@ -100,13 +100,13 @@ export default function HeroImageCard({
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "linear-gradient(to right, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.22) 10%, rgba(255,255,255,0.15) 22%, rgba(255,255,255,0.09) 34%, rgba(255,255,255,0.05) 46%, rgba(255,255,255,0.02) 60%, rgba(255,255,255,0) 76%)",
+                "rgb(255 255 255 / 0.1)",
             }}
           />
           {/* Subtle bottom vignette — daha ince, daha luxury */}
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/[0.18] via-black/[0.05] to-transparent pointer-events-none"
+            className="absolute inset-x-0 bottom-0 h-32 bg-black/10 pointer-events-none"
           />
           {/* Inner ring — premium card stroke */}
           <div

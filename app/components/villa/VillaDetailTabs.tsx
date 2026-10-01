@@ -72,8 +72,8 @@ export default function VillaDetailTabs({
                     className={
                       "flex items-center md:w-full md:justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] tracking-[0.01em] transition-colors duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-coral)]/40 " +
                       (isActive
-                        ? "bg-[var(--color-stone-50)] text-[#ED7926] font-semibold"
-                        : "text-[var(--color-stone-500)] font-medium hover:text-[#ED7926] hover:bg-[var(--color-stone-50)]/60")
+                        ? "bg-[var(--color-stone-50)] text-brand font-semibold"
+                        : "text-[var(--color-stone-500)] font-medium hover:text-brand hover:bg-[var(--color-stone-50)]/60")
                     }
                   >
                     {t.label}

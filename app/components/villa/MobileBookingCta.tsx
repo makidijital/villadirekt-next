@@ -148,11 +148,11 @@ export default function MobileBookingCta({
           flex-1 min-w-0
           inline-flex items-center justify-center gap-2
           rounded-full px-5 py-3
-          bg-[#ED7926] hover:bg-[#D96B1D] active:bg-[#C25F16]
-          text-white font-semibold text-[13.5px] tracking-[0.005em]
+          bg-accent hover:bg-accent-strong active:bg-accent-strong
+          text-[var(--color-stone-900)] font-semibold text-[13.5px] tracking-[0.005em]
           border border-transparent
           transition-colors duration-200
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED7926]/50
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50
         "
       >
         {dict.booking.bookNow}

@@ -191,7 +191,7 @@ export default function Header({
         aria-hidden
         className="
           pointer-events-none absolute -inset-1.5 rounded-full
-          bg-gradient-to-r from-[#ED7926] to-[#0973BA]
+          bg-accent
           opacity-40 blur-md
           animate-pulse [animation-duration:2.8s]
           group-hover:opacity-70 group-hover:blur-lg
@@ -204,14 +204,14 @@ export default function Header({
         className="
           relative inline-flex items-center justify-center
           px-4 py-[7px] rounded-full
-          text-[12.5px] font-semibold tracking-[0.01em] text-white
-          bg-gradient-to-r from-[#ED7926] to-[#0973BA]
-          shadow-[0_6px_16px_-4px_rgba(237,121,38,0.45),0_6px_16px_-4px_rgba(9,115,186,0.35)]
-          hover:shadow-[0_10px_26px_-4px_rgba(237,121,38,0.6),0_10px_26px_-4px_rgba(9,115,186,0.5)]
+          text-[12.5px] font-semibold tracking-[0.01em] text-[var(--color-stone-900)]
+          bg-accent
+          shadow-[0_6px_16px_-4px_color-mix(in_srgb,var(--color-accent)_45%,transparent),0_6px_16px_-4px_color-mix(in_srgb,var(--color-brand)_35%,transparent)]
+          hover:shadow-[0_10px_26px_-4px_color-mix(in_srgb,var(--color-accent)_60%,transparent),0_10px_26px_-4px_color-mix(in_srgb,var(--color-brand)_50%,transparent)]
           hover:-translate-y-[1px]
           transition-[box-shadow,transform] duration-300
           motion-reduce:transition-none motion-reduce:hover:translate-y-0
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0973BA]/50
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand/60
         "
       >
         {dictionary.header.offer}
@@ -380,7 +380,7 @@ export default function Header({
                   aria-hidden
                   className="
                     pointer-events-none absolute -inset-1 rounded-full
-                    bg-gradient-to-r from-[#ED7926] to-[#0973BA]
+                    bg-accent
                     opacity-40 blur-md
                     animate-pulse [animation-duration:2.8s]
                     group-hover:opacity-70 group-hover:blur-lg
@@ -394,12 +394,12 @@ export default function Header({
                     relative inline-flex items-center justify-center
                     whitespace-nowrap
                     px-3.5 py-2 rounded-full
-                    text-[12px] font-semibold text-white
-                    bg-gradient-to-r from-[#ED7926] to-[#0973BA]
-                    shadow-[0_4px_14px_-4px_rgba(237,121,38,0.5),0_4px_14px_-4px_rgba(9,115,186,0.4)]
+                    text-[12px] font-semibold text-[var(--color-stone-900)]
+                    bg-accent
+                    shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-accent)_50%,transparent),0_4px_14px_-4px_color-mix(in_srgb,var(--color-brand)_40%,transparent)]
                     active:scale-[0.97]
                     transition-transform duration-150 motion-reduce:transition-none
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0973BA]/50
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand/60
                   "
                 >
                   {dictionary.header.offer}
@@ -499,7 +499,7 @@ export default function Header({
                           text-[var(--color-stone-500)]
                           hover:bg-[var(--color-sand-50)] hover:text-[var(--color-stone-900)]
                           transition-colors motion-reduce:transition-none
-                          focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/40
+                          focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
                         "
                       >
                         <ChevronDown

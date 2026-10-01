@@ -368,7 +368,7 @@ function StarRow({
   const rounded = Math.round(value);
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-amber-500"
+      className="inline-flex items-center gap-0.5 text-accent"
       aria-label={formatDictionaryString(dict.reviews.ratingAriaLabel, {
         value: value.toFixed(1),
       })}
@@ -430,7 +430,7 @@ function StarPicker({
               "p-1 rounded-md transition-colors motion-reduce:transition-none " +
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-300)] " +
               "disabled:opacity-50 disabled:cursor-not-allowed " +
-              (filled ? "text-amber-500" : "text-[var(--color-stone-300)]")
+              (filled ? "text-accent" : "text-[var(--color-stone-300)]")
             }
             aria-label={formatDictionaryString(dict.reviews.starAriaLabel, {
               n: i,

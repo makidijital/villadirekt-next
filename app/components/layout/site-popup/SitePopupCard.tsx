@@ -80,7 +80,7 @@ export default function SitePopupCard({
       <div
         className={
           "relative w-full min-h-[300px] sm:min-h-[340px] aspect-[4/5] sm:aspect-[16/10] max-h-[62vh] sm:max-h-[66vh] " +
-          (imageUrl ? "bg-[var(--color-stone-900)]" : "bg-gradient-to-br from-[#ED7926] to-[#0973BA]")
+          (imageUrl ? "bg-[var(--color-stone-900)]" : "bg-brand ")
         }
       >
         {imageUrl && (
@@ -96,7 +96,7 @@ export default function SitePopupCard({
         {hasOverlayText && (
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5"
+            className="absolute inset-0 bg-black/35 "
           />
         )}
 

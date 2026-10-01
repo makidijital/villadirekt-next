@@ -45,29 +45,29 @@ export default function PrepaymentBadge({ rate }: { rate: number }) {
         {/* Yumuşak amber glow — blur'lu alt katman, opacity pulse. */}
         <div
           aria-hidden="true"
-          className="absolute -inset-1.5 rounded-[1.25rem] bg-[#ff8a3d]/45 blur-lg opacity-70 animate-pulse [animation-duration:2.8s] motion-reduce:animate-none"
+          className="absolute -inset-1.5 rounded-[1.25rem] bg-accent/45 blur-lg opacity-70 animate-pulse [animation-duration:2.8s] motion-reduce:animate-none"
         />
 
         {/* DÖNEN IŞIKLI BORDER — konik-gradient wrapper. overflow-hidden +
             p-[1.5px] ile yalnız ince kenar ışığı görünür; iç gövde üstte. */}
-        <div className="relative overflow-hidden rounded-2xl p-[1.5px] shadow-[0_12px_26px_-12px_rgba(234,88,12,0.6)]">
+        <div className="relative overflow-hidden rounded-2xl p-[1.5px] shadow-[0_12px_26px_-12px_color-mix(in_srgb,var(--color-brand)_55%,transparent)]">
           {/* Dönen konik ışık (turuncu → altın → açık turuncu). */}
           <div
             aria-hidden="true"
-            className="absolute left-1/2 top-1/2 h-[230%] w-[230%] -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#ff6a2b,#ffb45c,#ffe3a8,#ffb45c,#ff6a2b)] animate-spin [animation-duration:3s] motion-reduce:animate-none"
+            className="absolute left-1/2 top-1/2 h-[230%] w-[230%] -translate-x-1/2 -translate-y-1/2 bg-brand animate-spin [animation-duration:3s] motion-reduce:animate-none"
           />
 
           {/* İÇ GÖVDE — koyu sıcak turuncu → amber gradient. */}
-          <div className="relative overflow-hidden rounded-[14px] bg-gradient-to-br from-[#c2410c] via-[#ea580c] to-[#f59e0b] px-3 py-1.5 text-white">
+          <div className="relative overflow-hidden rounded-[14px] bg-accent px-3 py-1.5 text-[var(--color-stone-900)]">
             {/* Üst iç highlight — cam/premium his. */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent"
+              className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-white/10 "
             />
-            <p className="relative text-[12px] md:text-[13px] font-bold leading-tight tracking-tight drop-shadow-[0_1px_1px_rgba(120,40,0,0.35)]">
+            <p className="relative text-[12px] md:text-[13px] font-bold leading-tight tracking-tight">
               %{pct} şimdi
             </p>
-            <p className="relative text-[9.5px] md:text-[10px] font-medium leading-tight text-white/90 whitespace-nowrap">
+            <p className="relative text-[9.5px] md:text-[10px] font-medium leading-tight text-[var(--color-stone-900)]/80 whitespace-nowrap">
               kalanını tatilde ödeme fırsatı!
             </p>
           </div>

@@ -102,7 +102,7 @@ export default async function DiscountCollection({
           left: -60%;
           width: 40%;
           height: 100%;
-          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+          background: rgba(255,255,255,0.35);
           transform: skewX(-20deg);
           animation: dc-shimmer-sweep 3.6s ease-in-out infinite;
           pointer-events: none;
@@ -118,7 +118,7 @@ export default async function DiscountCollection({
           position: absolute;
           inset: -6px;
           border-radius: 9999px;
-          background: radial-gradient(circle, rgba(237,121,38,0.38), rgba(9,115,186,0.24) 60%, transparent 72%);
+          background: color-mix(in srgb, var(--color-accent) 35%, transparent);
           animation: dc-badge-glow 2.8s ease-in-out infinite;
           z-index: -1;
           pointer-events: none;
@@ -128,7 +128,7 @@ export default async function DiscountCollection({
           50% { opacity: 0.8; transform: scale(1.08); }
         }
         .dc-glow-ring {
-          background: linear-gradient(135deg, rgba(237,121,38,0.55), rgba(9,115,186,0.55));
+          background: color-mix(in srgb, var(--color-brand) 55%, transparent);
           background-size: 200% 200%;
           animation: dc-glow-shift 7s ease-in-out infinite;
         }

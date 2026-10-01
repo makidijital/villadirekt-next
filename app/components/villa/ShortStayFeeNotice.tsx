@@ -156,7 +156,7 @@ export default function ShortStayFeeNotice({
           ssfn-pulse
           group/notice relative w-full text-left overflow-hidden
           rounded-2xl border border-red-200
-          bg-gradient-to-br from-red-50 via-white to-red-50/50
+          bg-red-50
           px-4 py-4 md:px-5 md:py-5
           transition-[border-color,box-shadow] duration-300
           hover:border-red-300
@@ -168,7 +168,7 @@ export default function ShortStayFeeNotice({
             destek (marka imzasının bu uyarı kartındaki karşılığı). */}
         <span
           aria-hidden="true"
-          className="absolute inset-x-5 top-0 h-[2.5px] rounded-full bg-gradient-to-r from-red-500 via-red-400/60 to-[#0973BA]/50"
+          className="absolute inset-x-5 top-0 h-[2.5px] rounded-full bg-brand/50 "
         />
 
         <div className="flex items-start gap-3">

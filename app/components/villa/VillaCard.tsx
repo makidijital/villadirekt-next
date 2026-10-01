@@ -667,7 +667,7 @@ export default function VillaCard({
         <div
           className={
             "relative overflow-hidden " +
-            "bg-gradient-to-br from-[var(--color-sand-100)] via-[var(--color-sand-50)] to-[var(--color-sand-100)] " +
+            "bg-[var(--color-sand-100)] " +
             (isCuration ? "aspect-[4/5]" : "aspect-[5/6]")
           }
         >
@@ -718,7 +718,7 @@ export default function VillaCard({
             aria-hidden="true"
             className="
               absolute inset-x-0 bottom-0 h-[65%]
-              bg-gradient-to-t from-black/78 via-black/42 to-transparent
+              bg-black/40
               pointer-events-none
             "
           />
@@ -727,7 +727,7 @@ export default function VillaCard({
             aria-hidden="true"
             className="
               absolute inset-x-0 bottom-0 h-[65%]
-              bg-gradient-to-t from-black/14 to-transparent
+              bg-black/5
               pointer-events-none
               opacity-0 group-hover:opacity-100
               transition-opacity duration-500 motion-reduce:transition-none
@@ -736,7 +736,7 @@ export default function VillaCard({
           {/* Top vignette — badge legibility */}
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/[0.18] via-black/[0.04] to-transparent pointer-events-none"
+            className="absolute inset-x-0 top-0 h-24 bg-black/5 pointer-events-none"
           />
           {/* Inner premium ring stroke */}
           <div
@@ -816,7 +816,7 @@ export default function VillaCard({
                 >
                   <Star
                     size={11}
-                    className="text-amber-400 shrink-0"
+                    className="text-accent shrink-0"
                     fill="currentColor"
                     strokeWidth={1.5}
                     aria-hidden
@@ -1041,15 +1041,15 @@ export default function VillaCard({
       <div
         className={
           "relative rounded-[28px] p-[1.5px] overflow-hidden dc-glow-ring " +
-          "shadow-[0_14px_34px_-18px_rgba(11,31,58,0.24)] " +
-          "group-hover:shadow-[0_28px_54px_-22px_rgba(9,115,186,0.32)] " +
+          "shadow-[0_14px_34px_-18px_rgba(0,0,0,0.24)] " +
+          "group-hover:shadow-[0_28px_54px_-22px_color-mix(in_srgb,var(--color-brand)_32%,transparent)] " +
           "transition-[box-shadow,transform] duration-500 motion-reduce:transition-none " +
           "group-hover:-translate-y-[3px]"
         }
       >
       <article className="relative overflow-hidden bg-white rounded-[26.5px]">
         {/* ── IMAGE BLOCK — aspect-[4/3], premium showcase, dominant görsel ── */}
-        <div className="relative overflow-hidden aspect-[4/3] bg-gradient-to-br from-[var(--color-sand-100)] via-[var(--color-sand-50)] to-[var(--color-sand-100)]">
+        <div className="relative overflow-hidden aspect-[4/3] bg-[var(--color-sand-100)] ">
           {showImage ? (
             <Image
               src={cover}
@@ -1080,12 +1080,12 @@ export default function VillaCard({
           {/* Bottom scrim — başlık/bölge legibility */}
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/[0.78] via-black/[0.28] to-transparent pointer-events-none"
+            className="absolute inset-x-0 bottom-0 h-[62%] bg-black/35 pointer-events-none"
           />
           {/* Top vignette — badge legibility */}
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/[0.24] via-black/[0.04] to-transparent pointer-events-none"
+            className="absolute inset-x-0 top-0 h-20 bg-black/10 pointer-events-none"
           />
           {/* Inner premium ring stroke */}
           <div
@@ -1132,13 +1132,13 @@ export default function VillaCard({
             </p>
             <div
               aria-hidden="true"
-              className="mt-2 h-[3px] w-12 rounded-full bg-gradient-to-r from-[#ED7926] to-[#0973BA] mx-auto"
+              className="mt-2 h-[3px] w-12 rounded-full bg-brand mx-auto"
             />
           </div>
         </div>
 
         {/* ── CONTENT AREA — kampanya hissi veren hafif gradient wash ── */}
-        <div className="p-3.5 md:p-4 bg-gradient-to-br from-[#FFF6F0] via-white to-[#F0F8FC]">
+        <div className="p-3.5 md:p-4 bg-[var(--color-stone-50)] ">
           {/* 🔄 SADELEŞTİRME (bu tur): yıldız/puan/yorum sayısı bloğu
               kullanıcı talebiyle YALNIZ bu discount variant'ta kaldırıldı
               — default/curation branch'lerdeki review meta AYNEN duruyor
@@ -1154,7 +1154,7 @@ export default function VillaCard({
                 n: guests,
               })}
             >
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-[#0973BA]/10 text-[#0973BA] shrink-0" aria-hidden>
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-brand/10 text-brand shrink-0" aria-hidden>
                 <Users size={17} strokeWidth={2.2} />
               </span>
               <span className="tabular-nums">
@@ -1167,7 +1167,7 @@ export default function VillaCard({
                 n: bedrooms,
               })}
             >
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-[#0973BA]/10 text-[#0973BA] shrink-0" aria-hidden>
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-brand/10 text-brand shrink-0" aria-hidden>
                 <BedDouble size={17} strokeWidth={2.2} />
               </span>
               <span className="tabular-nums">
@@ -1182,7 +1182,7 @@ export default function VillaCard({
                 n: bathrooms,
               })}
             >
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-[#0973BA]/10 text-[#0973BA] shrink-0" aria-hidden>
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-brand/10 text-brand shrink-0" aria-hidden>
                 <Bath size={17} strokeWidth={2.2} />
               </span>
               <span className="tabular-nums">
@@ -1205,7 +1205,7 @@ export default function VillaCard({
             <div className="min-w-0 text-center">
               {stayTotal !== null ? (
                 <>
-                  <div className="font-display font-bold text-[18px] md:text-[19px] text-[#ED7926] tracking-[-0.015em] tabular-nums leading-none">
+                  <div className="font-display font-bold text-[18px] md:text-[19px] text-brand tracking-[-0.015em] tabular-nums leading-none">
                     {formatCurrency(stayTotal, currency, effectiveLocale)}
                   </div>
                   <div className="mt-1 text-[10.5px] tracking-[0.04em] uppercase text-[var(--color-stone-500)] tabular-nums">
@@ -1250,13 +1250,13 @@ export default function VillaCard({
                       daha küçük punto. Tutar SABİT DEĞİL: nightlySavingsLabel
                       (yukarıda hesaplandı) null ise satır HİÇ render edilmez. */}
                   {nightlySavingsLabel && (
-                    <p className="mt-1 text-[11.5px] font-medium text-[#0973BA] text-center">
+                    <p className="mt-1 text-[11.5px] font-medium text-brand text-center">
                       {nightlySavingsLabel}
                     </p>
                   )}
                 </>
               ) : (
-                <div className="font-display font-bold text-[18px] md:text-[19px] text-[#ED7926] tracking-[-0.015em] tabular-nums leading-none">
+                <div className="font-display font-bold text-[18px] md:text-[19px] text-brand tracking-[-0.015em] tabular-nums leading-none">
                   {price
                     ? formatCurrency(convertedPrice, currency, effectiveLocale)
                     : dict.card.priceOnRequest}
@@ -1284,7 +1284,7 @@ export default function VillaCard({
                    tarihlerle; yoksa MEVCUT davranış (villa detayı). */
                 router.push(discountReserveHref ?? detailHref);
               }}
-              className="mt-3 w-full inline-flex items-center justify-center h-11 rounded-xl bg-[#ED7926] hover:bg-[#D96A1F] text-white uppercase font-semibold text-[11.5px] tracking-[0.08em] shadow-[0_10px_24px_-8px_rgba(237,121,38,0.45)] hover:shadow-[0_14px_30px_-10px_rgba(237,121,38,0.55)] hover:-translate-y-px active:translate-y-0 transition-[box-shadow,transform,background-color] duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED7926]/40"
+              className="mt-3 w-full inline-flex items-center justify-center h-11 rounded-xl bg-accent hover:bg-accent-strong text-[var(--color-stone-900)] uppercase font-semibold text-[11.5px] tracking-[0.08em] shadow-[0_10px_24px_-8px_color-mix(in_srgb,var(--color-accent)_45%,transparent)] hover:shadow-[0_14px_30px_-10px_color-mix(in_srgb,var(--color-accent)_55%,transparent)] hover:-translate-y-px active:translate-y-0 transition-[box-shadow,transform,background-color] duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             >
               {dict.card.bookNow}
             </button>
@@ -1297,9 +1297,9 @@ export default function VillaCard({
         className={
           "relative overflow-hidden bg-white " +
           "rounded-[22px] border border-[var(--color-stone-100)] " +
-          "shadow-[0_14px_34px_-22px_rgba(11,31,58,0.22)] " +
-          "group-hover:shadow-[0_28px_56px_-24px_rgba(11,31,58,0.32),0_0_0_1px_rgba(9,115,186,0.14)] " +
-          "group-hover:border-[#0973BA]/25 " +
+          "shadow-[0_14px_34px_-22px_rgba(0,0,0,0.22)] " +
+          "group-hover:shadow-[0_28px_56px_-24px_rgba(0,0,0,0.32),0_0_0_1px_color-mix(in_srgb,var(--color-brand)_14%,transparent)] " +
+          "group-hover:border-brand/25 " +
           "transition-[box-shadow,transform,border-color] duration-500 motion-reduce:transition-none " +
           "group-hover:-translate-y-[3px]"
         }
@@ -1309,7 +1309,7 @@ export default function VillaCard({
           className={
             "relative overflow-hidden " +
             "aspect-[4/3] " +
-            "bg-gradient-to-br from-[var(--color-sand-100)] via-[var(--color-sand-50)] to-[var(--color-sand-100)]"
+            "bg-[var(--color-sand-100)] "
           }
         >
           {showImage ? (
@@ -1346,7 +1346,7 @@ export default function VillaCard({
           {/* Top vignette — badge/fav buton legibility */}
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/[0.22] via-black/[0.05] to-transparent pointer-events-none"
+            className="absolute inset-x-0 top-0 h-20 bg-black/10 pointer-events-none"
           />
           {/* Inner premium ring stroke */}
           <div
@@ -1359,7 +1359,7 @@ export default function VillaCard({
             <span className="absolute top-3.5 left-3.5 z-10 inline-flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-[var(--color-stone-900)] text-[10px] tracking-[0.16em] uppercase font-semibold px-2.5 py-1.5 rounded-full shadow-[0_6px_18px_-6px_rgb(27_26_23/0.28)] ring-1 ring-white/50">
               <span
                 aria-hidden="true"
-                className="inline-block w-1.5 h-1.5 rounded-full bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+                className="inline-block w-1.5 h-1.5 rounded-full bg-accent "
               />
               {badge}
             </span>
@@ -1378,7 +1378,7 @@ export default function VillaCard({
               taşındı. Discount/curation variant'ları ETKİLENMEDİ. */}
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-t from-black/75 via-black/30 to-transparent pointer-events-none"
+            className="absolute inset-x-0 bottom-0 h-[58%] bg-black/35 pointer-events-none"
           />
           <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 md:p-4 pr-20 md:pr-24">
             <h3
@@ -1423,7 +1423,7 @@ export default function VillaCard({
               >
                 <Star
                   size={11}
-                  className="text-amber-500 shrink-0"
+                  className="text-accent shrink-0"
                   fill="currentColor"
                   strokeWidth={1.5}
                   aria-hidden
@@ -1487,7 +1487,7 @@ export default function VillaCard({
                       </span>{" "}
                     </>
                   )}
-                  <span className="font-display text-[15px] font-semibold text-[#ED7926] tabular-nums">
+                  <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
                     {formatCurrency(stayTotal, currency, effectiveLocale)}
                   </span>
                   {hasCleaning ? (
@@ -1515,7 +1515,7 @@ export default function VillaCard({
               <p className="mt-2 text-[13px] text-[var(--color-stone-500)]">
                 {price ? (
                   <>
-                    <span className="font-display text-[15px] font-semibold text-[#ED7926] tabular-nums">
+                    <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
                       {formatCurrency(convertedPrice, currency, effectiveLocale)}
                     </span>{" "}
                     {dict.card.startingFromLower}
@@ -1537,7 +1537,7 @@ export default function VillaCard({
                 n: guests,
               })}
             >
-              <Users size={15} className="text-[#0973BA]" strokeWidth={1.9} aria-hidden />
+              <Users size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
               <span className="tabular-nums">
                 {formatDictionaryString(dict.card.guestsValue, { n: guests })}
               </span>
@@ -1548,7 +1548,7 @@ export default function VillaCard({
                 n: bedrooms,
               })}
             >
-              <BedDouble size={15} className="text-[#0973BA]" strokeWidth={1.9} aria-hidden />
+              <BedDouble size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
               <span className="tabular-nums">
                 {formatDictionaryString(dict.card.bedroomsValue, {
                   n: bedrooms,
@@ -1561,7 +1561,7 @@ export default function VillaCard({
                 n: bathrooms,
               })}
             >
-              <Bath size={15} className="text-[#0973BA]" strokeWidth={1.9} aria-hidden />
+              <Bath size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
               <span className="tabular-nums">
                 {formatDictionaryString(dict.card.bathroomsValue, {
                   n: bathrooms,
@@ -1573,7 +1573,7 @@ export default function VillaCard({
           {/* Marka rengi imza çizgisi — küçük vurgu */}
           <div
             aria-hidden="true"
-            className="mt-3.5 h-[2px] w-10 rounded-full bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+            className="mt-3.5 h-[2px] w-10 rounded-full bg-brand "
           />
 
           {/* BOTTOM ROW — fiyat (sol, varsa) + booking CTA. Handler/aria-label/
@@ -1590,8 +1590,8 @@ export default function VillaCard({
               /* 🛡️ ESNEK EK SONUÇ — fiyat gösterilmez; fiyat motoru
                  çağrılmaz, ana tarih/href akışı korunur. */
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#ED7926]/10 to-[#0973BA]/10 ring-1 ring-[#0973BA]/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#0973BA]">
-                  <Sparkles size={11} strokeWidth={2} className="text-[#ED7926]" aria-hidden />
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 ring-1 ring-brand/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand">
+                  <Sparkles size={11} strokeWidth={2} className="text-brand" aria-hidden />
                   {dict.card.flexibleTitle}
                 </div>
                 <div className="mt-1 text-[11px] font-medium text-[var(--color-stone-600)]">
@@ -1626,10 +1626,10 @@ export default function VillaCard({
                 "shrink-0 mx-auto inline-flex items-center justify-center gap-1.5 whitespace-nowrap " +
                 "h-9 px-4 rounded-full " +
                 "text-white uppercase font-medium text-[11px] tracking-[0.06em] " +
-                "bg-gradient-to-r from-[#ED7926] to-[#0973BA] " +
-                "shadow-[0_10px_22px_-10px_rgba(9,115,186,0.45)] " +
-                "hover:shadow-[0_14px_28px_-10px_rgba(9,115,186,0.55)] hover:-translate-y-[1px] " +
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/40 focus-visible:ring-offset-1 " +
+                "bg-brand " +
+                "shadow-[0_10px_22px_-10px_color-mix(in_srgb,var(--color-brand)_45%,transparent)] " +
+                "hover:shadow-[0_14px_28px_-10px_color-mix(in_srgb,var(--color-brand)_55%,transparent)] hover:-translate-y-[1px] " +
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-1 " +
                 "transition-[box-shadow,transform] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               }
             >
@@ -1745,10 +1745,10 @@ const AMENITY_TONE: Record<
   { surface: string; icon: string; numText: string; label: string }
 > = {
   coral: {
-    surface: "bg-[#FFF1EB] group-hover:bg-[#FFE6D9]",
-    icon: "text-[#c84a20]",
-    numText: "text-[#7a2c12]",
-    label: "text-[#c25a30]",
+    surface: "bg-accent/10 group-hover:bg-accent/20",
+    icon: "text-[var(--color-stone-900)]",
+    numText: "text-[var(--color-stone-900)]",
+    label: "text-[var(--color-stone-700)]",
   },
   green: {
     surface: "bg-[#EEF8F0] group-hover:bg-[#E2F2E6]",
@@ -1757,10 +1757,10 @@ const AMENITY_TONE: Record<
     label: "text-[#36805a]",
   },
   blue: {
-    surface: "bg-[#EEF4FF] group-hover:bg-[#E1ECFB]",
-    icon: "text-[#1d6492]",
-    numText: "text-[#0e3a59]",
-    label: "text-[#356f96]",
+    surface: "bg-[var(--color-champagne-50)] group-hover:bg-[var(--color-champagne-100)]",
+    icon: "text-brand-strong",
+    numText: "text-[var(--color-champagne-800)]",
+    label: "text-[var(--color-champagne-800)]",
   },
 };
 

@@ -87,7 +87,7 @@ export default async function ShortGapsSection({
   return (
     <section
       id="kisa-sureli-firsatlar"
-      className="scroll-mt-24 md:scroll-mt-28 px-5 md:px-10 lg:px-16 pt-14 md:pt-20 pb-14 md:pb-20 bg-gradient-to-b from-[#f5f7fa] to-[#e8eef6]"
+      className="scroll-mt-24 md:scroll-mt-28 px-5 md:px-10 lg:px-16 pt-14 md:pt-20 pb-14 md:pb-20 bg-[var(--color-stone-50)] "
     >
       {/* 🛡️ Component-scoped premium hover styles — globals.css'e
           dokunulmadı; yalnız bu section'daki .sg-* class'larını
@@ -103,7 +103,7 @@ export default async function ShortGapsSection({
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.10) 48%, rgba(255,255,255,0.16) 52%, transparent 65%);
+          background: transparent;
           transform: translateX(-100%);
           transition: transform 900ms ease;
           pointer-events: none;
@@ -142,10 +142,10 @@ export default async function ShortGapsSection({
                 <div
                   className={
                     "group relative overflow-hidden rounded-[26px] p-5 h-full flex flex-col " +
-                    "bg-gradient-to-br from-[#0B1F3A] via-[#0F2540] to-[#132A46] " +
-                    "shadow-[0_18px_40px_-22px_rgba(11,31,58,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] " +
+                    "bg-brand " +
+                    "shadow-[0_18px_40px_-22px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] " +
                     "ring-1 ring-white/10 " +
-                    "hover:shadow-[0_28px_54px_-22px_rgba(11,31,58,0.65)] hover:ring-[var(--brand-coral)]/30 " +
+                    "hover:shadow-[0_28px_54px_-22px_rgba(0,0,0,0.65)] hover:ring-accent/50 " +
                     "hover:-translate-y-[3px] " +
                     "transition-[transform,box-shadow] duration-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0 " +
                     "sg-shine"
@@ -154,7 +154,7 @@ export default async function ShortGapsSection({
                   {/* ── HEADER — büyük editorial ay tipografisi + fırsat rozeti ── */}
                   <div className="flex items-start justify-between gap-3 mb-1">
                     <div className="min-w-0">
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--brand-coral)]">
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
                         <Sparkles size={11} strokeWidth={2.2} aria-hidden />
                         {dict.badge}
                       </span>
@@ -170,7 +170,7 @@ export default async function ShortGapsSection({
                   {/* Brand accent underline — turuncu→mavi, ince */}
                   <div
                     aria-hidden="true"
-                    className="mt-3 mb-4 h-[3px] w-14 rounded-full bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+                    className="mt-3 mb-4 h-[3px] w-14 rounded-full bg-accent"
                   />
 
                   {/* ── GECE LİSTESİ — mevcut veri/link/sayı BİREBİR aynı ── */}
@@ -190,10 +190,10 @@ export default async function ShortGapsSection({
                               })}
                             </span>
                             <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold tabular-nums">
-                              <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[#ED7926]/20 to-[#0973BA]/20 text-white ring-1 ring-white/10 leading-none">
+                              <span className="px-2 py-0.5 rounded-full bg-white/15 text-white ring-1 ring-white/10 leading-none">
                                 {count}
                               </span>
-                              <ArrowUpRight className="w-3.5 h-3.5 text-white/40 group-hover/row:text-[var(--brand-coral)] group-hover/row:translate-x-0.5 transition-[color,transform] motion-reduce:transition-none" />
+                              <ArrowUpRight className="w-3.5 h-3.5 text-white/40 group-hover/row:text-accent group-hover/row:translate-x-0.5 transition-[color,transform] motion-reduce:transition-none" />
                             </span>
                           </Link>
                         </li>

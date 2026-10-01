@@ -55,9 +55,9 @@ export default function HeroReviewCard({
       <span
         className="
           w-9 h-9 rounded-xl
-          bg-amber-50/90 border border-amber-100/80
+          bg-accent/15 border border-accent/40
           flex items-center justify-center
-          text-amber-500
+          text-accent
         "
         aria-hidden
       >

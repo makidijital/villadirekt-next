@@ -210,7 +210,7 @@ export default async function ContactPageBody({
       {/* ============================================================
           CONTACT EXPERIENCE — dekoratif gradient + glass form
       ============================================================ */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-white via-[var(--color-sand-50)]/40 to-white">
+      <div className="relative overflow-hidden bg-white ">
         {/* DECOR — hafif gradient blur küreler (pointer-events yok) */}
         <div
           aria-hidden="true"
@@ -264,7 +264,7 @@ export default async function ContactPageBody({
                     {/* iç parıltı */}
                     <div
                       aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
+                      className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/25 "
                     />
                     <div className="mb-7 md:mb-9">
                       <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-champagne-700)]">
@@ -303,7 +303,7 @@ export default async function ContactPageBody({
               </h2>
             </div>
           </div>
-          <div className="relative rounded-[28px] p-1.5 bg-gradient-to-br from-[var(--color-sand-100)] via-white to-[var(--color-sand-50)] border border-[var(--color-stone-100)] shadow-[0_28px_80px_-40px_rgba(27,26,23,0.3)]">
+          <div className="relative rounded-[28px] p-1.5 bg-[var(--color-sand-100)] border border-[var(--color-stone-100)] shadow-[0_28px_80px_-40px_rgba(27,26,23,0.3)]">
             <div className="relative aspect-[16/10] md:aspect-[21/9] rounded-[22px] overflow-hidden bg-[var(--color-sand-50)]">
               <iframe
                 title={dict.map.iframeTitle}
@@ -362,15 +362,15 @@ export default async function ContactPageBody({
       ============================================================ */}
       <section className="px-5 md:px-10 lg:px-16 pb-32 md:pb-44">
         <div className="site-container">
-          <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#0B1F3A] to-[#132A46] px-8 md:px-16 py-16 md:py-24 text-center shadow-[0_40px_100px_-40px_rgba(11,31,58,0.6)]">
+          <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-brand px-8 md:px-16 py-16 md:py-24 text-center shadow-[0_40px_100px_-40px_rgba(0,0,0,0.6)]">
             {/* dekoratif coral glow */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[320px] rounded-full bg-[var(--brand-coral)]/20 blur-[120px]"
+              className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[320px] rounded-full bg-accent/20 blur-[120px]"
             />
             <div className="relative">
-              <p className="inline-flex items-center gap-2 text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--brand-coral)]">
-                <span className="inline-block w-6 h-px bg-[var(--brand-coral)]/60" />
+              <p className="inline-flex items-center gap-2 text-[11px] tracking-[0.28em] uppercase font-medium text-accent">
+                <span className="inline-block w-6 h-px bg-accent/60" />
                 {dict.cta.eyebrow}
               </p>
               <h2 className="font-display text-[32px] md:text-[54px] lg:text-[60px] text-white mt-6 leading-[1.03] tracking-[-0.03em]">
@@ -433,7 +433,7 @@ function InfoRow({
           : "")
       }
     >
-      <span className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-[var(--color-sand-100)] to-white ring-1 ring-[var(--color-stone-100)] text-[var(--color-champagne-700)] transition-colors duration-300 group-hover:from-[var(--brand-coral)] group-hover:to-[var(--brand-coral-deep)] group-hover:text-white group-hover:ring-transparent">
+      <span className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--color-sand-100)] ring-1 ring-[var(--color-stone-100)] text-[var(--color-champagne-700)] transition-colors duration-300 group-hover:bg-brand group-hover:text-white group-hover:ring-transparent">
         {icon}
       </span>
       <div className="min-w-0 flex-1">

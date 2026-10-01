@@ -126,7 +126,7 @@ export default function ReviewsCarousel({
             className="mt-9 md:mt-11 h-[2px] w-full max-w-[240px] bg-[var(--color-stone-100)] rounded-full overflow-hidden"
           >
             <div
-              className="h-full bg-gradient-to-r from-[#ED7926] to-[#0973BA] transition-[width] duration-500 ease-out motion-reduce:transition-none"
+              className="h-full bg-brand transition-[width] duration-500 ease-out motion-reduce:transition-none"
               style={{ width: `${((selectedIndex + 1) / total) * 100}%` }}
             />
           </div>
@@ -158,7 +158,7 @@ function ActiveTestimonial({
       <div className="grid grid-cols-[auto_1fr] gap-3 md:gap-5">
         <span
           aria-hidden="true"
-          className="font-display text-[56px] md:text-[84px] leading-[0.8] text-transparent bg-clip-text bg-gradient-to-br from-[#ED7926] to-[#0973BA] select-none"
+          className="font-display text-[56px] md:text-[84px] leading-[0.8] text-brand select-none"
         >
           &ldquo;
         </span>
@@ -186,7 +186,7 @@ function ActiveTestimonial({
               onClick={() => setExpanded((v) => !v)}
               className="
                 mt-3 text-[12.5px] font-medium
-                text-[#0973BA] hover:text-[#ED7926]
+                text-brand hover:text-brand
                 transition-colors motion-reduce:transition-none
                 focus:outline-none focus-visible:underline
               "
@@ -223,7 +223,7 @@ function ActiveTestimonial({
             >
               <Star
                 size={13}
-                className="text-amber-500"
+                className="text-accent"
                 fill="currentColor"
                 strokeWidth={1.5}
                 aria-hidden
@@ -235,7 +235,7 @@ function ActiveTestimonial({
 
             {review.villaTitle && (
               <span className="inline-flex items-center gap-2 text-[13px] text-[var(--color-stone-500)] min-w-0">
-                <span className="relative shrink-0 w-7 h-7 overflow-hidden rounded-full bg-gradient-to-br from-[var(--color-sand-100)] via-[var(--color-sand-50)] to-[var(--color-sand-100)]">
+                <span className="relative shrink-0 w-7 h-7 overflow-hidden rounded-full bg-[var(--color-sand-100)] ">
                   {review.villaCover ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img

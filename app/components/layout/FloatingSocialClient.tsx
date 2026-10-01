@@ -53,11 +53,11 @@ export default function FloatingSocialClient({
           50% { opacity: 0.85; transform: scale(1.1); }
         }
         .fc-fab-glow--orange {
-          background: radial-gradient(circle, rgba(237,121,38,0.6) 0%, rgba(237,121,38,0) 72%);
+          background: color-mix(in srgb, var(--color-accent) 50%, transparent);
           filter: blur(11px);
         }
         .fc-fab-glow--green {
-          background: radial-gradient(circle, rgba(37,211,102,0.6) 0%, rgba(37,211,102,0) 72%);
+          background: rgba(37,211,102,0.35);
           filter: blur(11px);
         }
       `}</style>
@@ -81,24 +81,24 @@ export default function FloatingSocialClient({
             className="
               fc-fab group/fab relative isolate inline-flex items-center gap-2.5
               rounded-full pl-2.5 pr-2.5 sm:pr-4 py-2.5
-              bg-gradient-to-br from-[#ED7926] to-[#c85f16] text-white
-              ring-1 ring-white/15
-              shadow-[0_16px_36px_-14px_rgba(237,121,38,0.6),0_10px_24px_-12px_rgba(9,115,186,0.32)]
-              hover:shadow-[0_22px_46px_-14px_rgba(237,121,38,0.75),0_14px_30px_-12px_rgba(9,115,186,0.42)]
+              bg-accent text-[var(--color-stone-900)]
+              ring-1 ring-black/10
+              shadow-[0_16px_36px_-14px_color-mix(in_srgb,var(--color-accent)_60%,transparent),0_10px_24px_-12px_color-mix(in_srgb,var(--color-brand)_32%,transparent)]
+              hover:shadow-[0_22px_46px_-14px_color-mix(in_srgb,var(--color-accent)_75%,transparent),0_14px_30px_-12px_color-mix(in_srgb,var(--color-brand)_42%,transparent)]
               transition-transform duration-300 motion-reduce:transition-none
               hover:scale-[1.06] hover:-translate-y-0.5
               motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED7926]/60 focus-visible:ring-offset-2
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2
             "
           >
             <span
               aria-hidden="true"
               className="fc-fab-glow fc-fab-glow--orange absolute -inset-2 rounded-full -z-10"
             />
-            <span className="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/95 text-[#ED7926] shrink-0 overflow-hidden shadow-[inset_0_-2px_3px_rgba(0,0,0,0.08)]">
+            <span className="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/95 text-brand shrink-0 overflow-hidden shadow-[inset_0_-2px_3px_rgba(0,0,0,0.08)]">
               <span
                 aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/80 to-transparent"
+                className="absolute inset-x-0 top-0 h-1/2 bg-white/40 "
               />
               <Phone size={16} strokeWidth={2.1} className="relative" aria-hidden />
             </span>
@@ -124,8 +124,8 @@ export default function FloatingSocialClient({
               rounded-full pl-2.5 pr-2.5 sm:pr-4 py-2.5
               bg-[#25D366] text-white
               ring-1 ring-[#1da851]/40
-              shadow-[0_16px_36px_-14px_rgba(37,211,102,0.6),0_10px_24px_-12px_rgba(9,115,186,0.28)]
-              hover:shadow-[0_22px_46px_-14px_rgba(37,211,102,0.75),0_14px_30px_-12px_rgba(9,115,186,0.38)]
+              shadow-[0_16px_36px_-14px_rgba(37,211,102,0.6),0_10px_24px_-12px_color-mix(in_srgb,var(--color-brand)_28%,transparent)]
+              hover:shadow-[0_22px_46px_-14px_rgba(37,211,102,0.75),0_14px_30px_-12px_color-mix(in_srgb,var(--color-brand)_38%,transparent)]
               transition-transform duration-300 motion-reduce:transition-none
               hover:scale-[1.06] hover:-translate-y-0.5
               motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0
@@ -139,7 +139,7 @@ export default function FloatingSocialClient({
             <span className="relative inline-flex items-center justify-center w-9 h-9 rounded-full shrink-0 overflow-hidden">
               <span
                 aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent"
+                className="absolute inset-x-0 top-0 h-1/2 bg-white/10 "
               />
               {/* Solid WHITE WhatsApp glyph — yeşil zeminde net görünür. */}
               <svg

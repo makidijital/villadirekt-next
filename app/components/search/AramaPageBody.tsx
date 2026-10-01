@@ -1282,14 +1282,14 @@ export default async function AramaPageBody({
                 hero'nun her tonunda okunur. Ana başlıktan belirgin küçük;
                 ikincil bilgi. Layout shift yok (title akışında). */}
             {flexActive && flexibleCount > 0 && (
-              <span className="mt-3 mx-auto flex w-fit max-w-full items-center gap-2 rounded-full bg-[#1a1206]/55 px-3.5 py-1.5 ring-1 ring-[#f59e0b]/45 backdrop-blur-md shadow-[0_10px_24px_-12px_rgba(0,0,0,0.6)]">
+              <span className="mt-3 mx-auto flex w-fit max-w-full items-center gap-2 rounded-full bg-black/55 px-3.5 py-1.5 ring-1 ring-accent/50 backdrop-blur-md shadow-[0_10px_24px_-12px_rgba(0,0,0,0.6)]">
                 <Sparkles
                   size={15}
                   strokeWidth={2}
-                  className="shrink-0 text-[#fbbf24]"
+                  className="shrink-0 text-accent"
                   aria-hidden
                 />
-                <span className="text-[13px] md:text-[15px] font-semibold tracking-normal text-[#ffe0b3] whitespace-normal">
+                <span className="text-[13px] md:text-[15px] font-semibold tracking-normal text-white/90 whitespace-normal">
                   <span className="tabular-nums text-white">
                     {flexibleCount}
                   </span>{" "}

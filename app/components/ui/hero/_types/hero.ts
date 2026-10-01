@@ -45,11 +45,11 @@ export const TRUST_TONE_CLASSES: Record<
 > = {
   coral: {
     surface:
-      "bg-[#fff5ef] border-[#fde0d0] hover:border-[#f9b89a]",
-    iconBox: "bg-[#ffe0d0] ring-1 ring-inset ring-[#f9b89a]",
-    iconText: "text-[#c84a20]",
+      "bg-accent/10 border-accent/30 hover:border-accent/70",
+    iconBox: "bg-accent/25 ring-1 ring-inset ring-accent/70",
+    iconText: "text-[var(--color-stone-900)]",
     hoverShadow:
-      "hover:shadow-[0_22px_44px_-22px_rgba(255,101,63,0.30)]",
+      "hover:shadow-[0_22px_44px_-22px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]",
   },
   emerald: {
     surface:
@@ -61,10 +61,10 @@ export const TRUST_TONE_CLASSES: Record<
   },
   sky: {
     surface:
-      "bg-[#f0f7fb] border-[#d2e6f1] hover:border-[#9cc7e0]",
-    iconBox: "bg-[#dbecf6] ring-1 ring-inset ring-[#9cc7e0]",
-    iconText: "text-[#1d6492]",
+      "bg-[var(--color-champagne-50)] border-[var(--color-champagne-100)] hover:border-[var(--color-champagne-200)]",
+    iconBox: "bg-[var(--color-champagne-100)] ring-1 ring-inset ring-[var(--color-champagne-200)]",
+    iconText: "text-brand-strong",
     hoverShadow:
-      "hover:shadow-[0_22px_44px_-22px_rgba(28,103,150,0.28)]",
+      "hover:shadow-[0_22px_44px_-22px_color-mix(in_srgb,var(--color-brand)_28%,transparent)]",
   },
 };

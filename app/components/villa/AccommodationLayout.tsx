@@ -70,7 +70,7 @@ export default function AccommodationLayout({
           return (
             <div
               key={`bed-${i}`}
-              className="group rounded-3xl border border-[var(--color-stone-100)] bg-white px-5 py-5 md:px-6 md:py-6 shadow-[0_6px_18px_-14px_rgba(11,31,58,0.18)] hover:-translate-y-0.5 hover:border-[var(--color-champagne-300)] hover:shadow-[0_16px_34px_-18px_rgba(11,31,58,0.2)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className="group rounded-3xl border border-[var(--color-stone-100)] bg-white px-5 py-5 md:px-6 md:py-6 shadow-[0_6px_18px_-14px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-[var(--color-champagne-300)] hover:shadow-[0_16px_34px_-18px_rgba(0,0,0,0.2)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             >
               <span className="w-10 h-10 rounded-2xl border border-[var(--color-stone-100)] bg-[var(--color-sand-50)] text-[var(--color-stone-600)] flex items-center justify-center">
                 <BedDouble size={17} strokeWidth={1.75} />
@@ -92,7 +92,7 @@ export default function AccommodationLayout({
         {bathrooms.map((b, i) => (
           <div
             key={`bath-${i}`}
-            className="group rounded-3xl border border-[var(--color-stone-100)] bg-white px-5 py-5 md:px-6 md:py-6 shadow-[0_6px_18px_-14px_rgba(11,31,58,0.18)] hover:-translate-y-0.5 hover:border-[var(--color-champagne-300)] hover:shadow-[0_16px_34px_-18px_rgba(11,31,58,0.2)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className="group rounded-3xl border border-[var(--color-stone-100)] bg-white px-5 py-5 md:px-6 md:py-6 shadow-[0_6px_18px_-14px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-[var(--color-champagne-300)] hover:shadow-[0_16px_34px_-18px_rgba(0,0,0,0.2)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
           >
             <span className="w-10 h-10 rounded-2xl border border-[var(--color-stone-100)] bg-[var(--color-sand-50)] text-[var(--color-stone-600)] flex items-center justify-center">
               <Bath size={17} strokeWidth={1.75} />

@@ -143,13 +143,13 @@ function SocialLink({
         w-10 h-10 rounded-full
         border border-[var(--color-stone-200)] bg-white
         text-[var(--color-stone-500)]
-        hover:border-[#ED7926]/45 hover:bg-gradient-to-br hover:from-[#ED7926]/10 hover:to-[#0973BA]/10
-        hover:text-[#ED7926]
+        hover:border-accent/45 hover:bg-brand/10
+        hover:text-brand
         transition-[color,background-color,border-color,transform]
         duration-300 motion-reduce:transition-none
         hover:scale-[1.05]
         focus:outline-none focus-visible:ring-2
-        focus-visible:ring-[#0973BA]/40
+        focus-visible:ring-brand/40
       "
     >
       {children}
@@ -170,7 +170,7 @@ function FooterLink({
       className="
         inline-flex items-center
         text-[14px] text-[var(--color-stone-500)]
-        hover:text-[#ED7926]
+        hover:text-brand
         hover:translate-x-[2px]
         transition-[color,transform] duration-300
         motion-reduce:transition-none motion-reduce:hover:translate-x-0
@@ -251,7 +251,7 @@ export default function Footer({
          atmosferik bir iz olarak kullanılıyor (ağır gradient yok). */
       style={{
         background:
-          "linear-gradient(180deg, #fdfaf5 0%, #faf5ec 55%, #f6efe2 100%)",
+          "var(--color-stone-50)",
       }}
     >
       {/* Turuncu ambient iz — sağ üst, çok hafif. */}
@@ -260,7 +260,7 @@ export default function Footer({
         className="pointer-events-none absolute -top-40 right-[-140px] w-[620px] h-[420px] blur-3xl opacity-[0.10]"
         style={{
           background:
-            "radial-gradient(circle at center, rgba(237,121,38,0.35), transparent 70%)",
+            "transparent",
         }}
       />
       {/* Mavi ambient iz — sol alt, çok hafif. */}
@@ -269,7 +269,7 @@ export default function Footer({
         className="pointer-events-none absolute -bottom-28 left-[-120px] w-[520px] h-[360px] blur-3xl opacity-[0.09]"
         style={{
           background:
-            "radial-gradient(circle at center, rgba(9,115,186,0.32), transparent 70%)",
+            "transparent",
         }}
       />
 
@@ -308,7 +308,7 @@ export default function Footer({
               ) : (
                 <>
                   Villaya
-                  <span className="text-[#ED7926] ml-1">Gel</span>
+                  <span className="text-brand ml-1">Gel</span>
                 </>
               )}
             </Link>
@@ -354,7 +354,7 @@ export default function Footer({
             <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
               <span
                 aria-hidden="true"
-                className="inline-block w-4 h-px bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+                className="inline-block w-4 h-px bg-brand "
               />
               {dictionary.footer.explore}
             </span>
@@ -400,7 +400,7 @@ export default function Footer({
                     ))}
                     <li className="pt-1">
                       <FooterLink href={localeHref("/arama", locale)}>
-                        <span className="text-[13px] text-[#ED7926] inline-flex items-center gap-1">
+                        <span className="text-[13px] text-brand inline-flex items-center gap-1">
                           {dictionary.footer.allRegions}
                           <ArrowRight size={12} strokeWidth={1.75} aria-hidden />
                         </span>
@@ -432,7 +432,7 @@ export default function Footer({
                   <span className="block text-[11px] uppercase tracking-[0.18em] text-[var(--color-stone-400)] mb-1.5">
                     {dictionary.footer.phone}
                   </span>
-                  <span className="font-display text-[26px] md:text-[32px] tracking-[-0.01em] text-[var(--color-stone-900)] group-hover:text-[#ED7926] transition-colors duration-300 motion-reduce:transition-none">
+                  <span className="font-display text-[26px] md:text-[32px] tracking-[-0.01em] text-[var(--color-stone-900)] group-hover:text-brand transition-colors duration-300 motion-reduce:transition-none">
                     {settings.phone}
                   </span>
                 </a>
@@ -442,7 +442,7 @@ export default function Footer({
                   <span className="block text-[11px] uppercase tracking-[0.18em] text-[var(--color-stone-400)] mb-1.5">
                     {dictionary.footer.email}
                   </span>
-                  <span className="text-[16px] md:text-[18px] text-[var(--color-stone-700)] group-hover:text-[#0973BA] transition-colors duration-300 motion-reduce:transition-none break-all">
+                  <span className="text-[16px] md:text-[18px] text-[var(--color-stone-700)] group-hover:text-brand transition-colors duration-300 motion-reduce:transition-none break-all">
                     {settings.email}
                   </span>
                 </a>
@@ -505,7 +505,7 @@ export default function Footer({
                   <Link
                     key={p.id}
                     href={localeHref(`/p/${p.slug}`, locale)}
-                    className="hover:text-[#ED7926] transition-colors duration-300 motion-reduce:transition-none"
+                    className="hover:text-brand transition-colors duration-300 motion-reduce:transition-none"
                   >
                     {/* 🛡️ EN/DE `page_translations.title`; yoksa/boşsa
                         canonical TR `p.title` (villa tipi satırıyla AYNI
@@ -545,10 +545,10 @@ export default function Footer({
               className="
                 group inline-flex items-center justify-center gap-2
                 text-[11.5px] tracking-[0.04em]
-                text-[var(--color-stone-500)] hover:text-[#ED7926]
+                text-[var(--color-stone-500)] hover:text-brand
                 transition-colors duration-300 motion-reduce:transition-none
                 focus:outline-none focus-visible:ring-2
-                focus-visible:ring-[#0973BA]/40 rounded-full px-1
+                focus-visible:ring-brand/40 rounded-full px-1
               "
             >
               <span>{dictionary.footer.webDevelopment}</span>

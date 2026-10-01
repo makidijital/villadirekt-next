@@ -89,15 +89,8 @@ const LOCALE_FLAGS: Record<Locale, string> = {
    ═══════════════════════════════════════════════════════════════ */
 const InstagramIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
-    <defs>
-      <linearGradient id="topbar-ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#FEE411" />
-        <stop offset="25%" stopColor="#FD5949" />
-        <stop offset="55%" stopColor="#D6249F" />
-        <stop offset="100%" stopColor="#285AEB" />
-      </linearGradient>
-    </defs>
-    <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#topbar-ig-grad)" />
+    {/* Düz renk (gradient yok) — Instagram magenta. */}
+    <rect x="2" y="2" width="20" height="20" rx="6" fill="#D6249F" />
     <rect
       x="6.3"
       y="6.3"
@@ -225,7 +218,7 @@ function LocaleSwitchOptions({
     <ul
       role="listbox"
       aria-label={label}
-      className="absolute right-0 mt-2 z-50 min-w-[90px] bg-white rounded-xl border border-[var(--color-stone-100)] shadow-[0_16px_36px_-14px_rgb(11_31_58/0.35)] overflow-hidden py-1"
+      className="absolute right-0 mt-2 z-50 min-w-[90px] bg-white rounded-xl border border-[var(--color-stone-100)] shadow-[0_16px_36px_-14px_rgb(0_0_0/0.35)] overflow-hidden py-1"
     >
       {SUPPORTED_LOCALES.map((l: Locale) =>
         l === locale ? (
@@ -234,7 +227,7 @@ function LocaleSwitchOptions({
               role="option"
               aria-selected="true"
               aria-current="true"
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-medium text-left bg-gradient-to-r from-[#ED7926]/10 to-[#0973BA]/10 text-[var(--color-stone-900)]"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-medium text-left bg-brand/10 text-[var(--color-stone-900)]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -391,7 +384,7 @@ export default function TopBar() {
     <div
       className="
         px-4 md:px-10 lg:px-16
-        bg-[var(--color-stone-900)]
+        bg-brand
         text-white
       "
     >
@@ -409,8 +402,8 @@ export default function TopBar() {
         {/* 7/24 DESTEK — premium, küçük; pulse abartısız (tek küçük nokta). */}
         <div className="flex items-center gap-1.5 text-white/85">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-[#ED7926] opacity-70 animate-ping motion-reduce:animate-none" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#ED7926]" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-70 animate-ping motion-reduce:animate-none" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent" />
           </span>
           <span className="font-medium tracking-[0.14em] uppercase text-[11.5px] whitespace-nowrap">
             {dictionary.header.supportBadge}
@@ -430,7 +423,7 @@ export default function TopBar() {
               transition-colors motion-reduce:transition-none
             "
           >
-            <Phone size={15} strokeWidth={1.85} className="text-[#ED7926]" aria-hidden />
+            <Phone size={15} strokeWidth={1.85} className="text-accent" aria-hidden />
             <span className="font-medium tabular-nums whitespace-nowrap">
               {settings.phone}
             </span>
@@ -446,7 +439,7 @@ export default function TopBar() {
               transition-colors motion-reduce:transition-none
             "
           >
-            <Mail size={15} strokeWidth={1.85} className="text-[#0973BA]" aria-hidden />
+            <Mail size={15} strokeWidth={1.85} className="text-accent" aria-hidden />
             <span className="max-w-[170px] truncate">{settings.email}</span>
           </a>
         )}
@@ -464,8 +457,8 @@ export default function TopBar() {
               tracking-[0.015em]
               leading-tight
               whitespace-nowrap truncate max-w-full
-              bg-clip-text text-transparent
-              bg-gradient-to-r from-[#ED7926] to-[#0973BA]
+
+              text-accent
             "
           >
             Costeralla Travel
@@ -497,7 +490,7 @@ export default function TopBar() {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(100deg, transparent 42%, rgba(255,255,255,0.45) 50%, transparent 58%)",
+                  "transparent",
                 transform: "translateX(-100%)",
                 animation: "shimmer 4s ease-in-out infinite",
               }}
@@ -562,7 +555,7 @@ export default function TopBar() {
               text-[14px] font-medium cursor-pointer
               transition-colors
               focus:outline-none focus-visible:ring-2
-              focus-visible:ring-[#0973BA]/60
+              focus-visible:ring-accent/70
             "
           >
             {/* 🔄 Seçili kurun SEMBOLÜ (₺ / $ / € / £). Yalnız görsel —
@@ -579,7 +572,7 @@ export default function TopBar() {
           {curOpen && (
             <ul
               role="listbox"
-              className="absolute right-0 mt-2 z-50 min-w-[110px] bg-white rounded-xl border border-[var(--color-stone-100)] shadow-[0_16px_36px_-14px_rgb(11_31_58/0.35)] overflow-hidden py-1"
+              className="absolute right-0 mt-2 z-50 min-w-[110px] bg-white rounded-xl border border-[var(--color-stone-100)] shadow-[0_16px_36px_-14px_rgb(0_0_0/0.35)] overflow-hidden py-1"
             >
               {CURRENCY_OPTIONS.map((c) => (
                 <li key={c.code}>
@@ -594,7 +587,7 @@ export default function TopBar() {
                     className={
                       "w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-medium text-left transition-colors " +
                       (c.code === currency
-                        ? "bg-gradient-to-r from-[#ED7926]/10 to-[#0973BA]/10 text-[var(--color-stone-900)]"
+                        ? "bg-brand/10 text-[var(--color-stone-900)]"
                         : "text-[var(--color-stone-700)] hover:bg-[var(--color-stone-50)]")
                     }
                   >
@@ -641,7 +634,7 @@ export default function TopBar() {
                 text-[14px] font-medium cursor-pointer
                 transition-colors
                 focus:outline-none focus-visible:ring-2
-                focus-visible:ring-[#0973BA]/60
+                focus-visible:ring-accent/70
               "
             >
               {/* 🔄 Seçili DİLİN bayrağı — kur seçicinin `<img>` deseniyle

@@ -135,7 +135,7 @@ export default function BookingSummary({
           ile aynı desen). Salt dekoratif; layout/ölçüye etkisi yok. */}
       <span
         aria-hidden="true"
-        className="absolute inset-x-4 top-0 h-[2.5px] rounded-full bg-gradient-to-r from-[#ED7926] via-[#ED7926]/50 to-[#0973BA]"
+        className="absolute inset-x-4 top-0 h-[2.5px] rounded-full bg-brand "
       />
 
       {/* Konaklama Tutarı — gece sayısı dinamik (Gece satırı kaldırıldı).
@@ -162,7 +162,7 @@ export default function BookingSummary({
                 notu). Gradient YOK, sade dolgu renk. Yalnız indirim
                 gerçekten aktifse (activeStayDiscount != null) render edilir;
                 indirim yoksa bu blok hiç yok, `Row` dalı BİREBİR aynı. */}
-            <span className="mt-1 inline-block rounded-full bg-[#0973BA] px-2.5 py-0.5 text-[10px] font-semibold text-white text-center whitespace-nowrap">
+            <span className="mt-1 inline-block rounded-full bg-brand px-2.5 py-0.5 text-[10px] font-semibold text-white text-center whitespace-nowrap">
               {dict.booking.discountedTotal}
             </span>
           </div>
@@ -253,10 +253,10 @@ export default function BookingSummary({
       {/* HASAR DEPOZİTOSU — ayrı, soft mavi tonlu bilgi kutusu (toplama
           dahil değil, hesap aynı). Açıklama metni BİREBİR AYNI. */}
       {deposit > 0 && (
-        <div className="rounded-xl border border-[#0973BA]/15 bg-[#0973BA]/[0.04] p-3">
+        <div className="rounded-xl border border-brand/15 bg-brand/[0.04] p-3">
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 font-medium text-[var(--color-stone-900)]">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0973BA]/10 text-[#0973BA]">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand/10 text-brand">
                 <ShieldCheck size={11} strokeWidth={2} aria-hidden />
               </span>
               {dict.booking.depositLabel}

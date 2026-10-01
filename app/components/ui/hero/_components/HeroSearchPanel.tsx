@@ -259,10 +259,10 @@ export default function HeroSearchPanel({
       <div
         className="
           relative isolate z-30
-          bg-gradient-to-b from-white/30 to-white/[0.14] backdrop-blur-xl
+          bg-white/20 backdrop-blur-xl
           border border-white/30
           rounded-[16px]
-          shadow-[0_20px_50px_-24px_rgba(9,115,186,0.35),0_14px_38px_-26px_rgba(237,121,38,0.3)]
+          shadow-[0_20px_50px_-24px_color-mix(in_srgb,var(--color-brand)_35%,transparent),0_14px_38px_-26px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]
           px-2 md:px-2.5 pb-2 md:pb-2.5 pt-2 md:pt-2.5
           gap-1.5 md:gap-2
           flex flex-col md:flex-row items-stretch
@@ -278,13 +278,13 @@ export default function HeroSearchPanel({
         "
       />
       {/* DATE */}
-      <div className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/75 hover:border-[#ED7926]/35 transition flex items-center gap-3">
+      <div className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/75 hover:border-accent/35 transition flex items-center gap-3">
         <span
           className="
             w-9 h-9 rounded-xl shrink-0
-            bg-[#ED7926]/12
+            bg-accent/12
             flex items-center justify-center
-            text-[#ED7926]
+            text-brand
           "
           aria-hidden
         >
@@ -330,13 +330,13 @@ export default function HeroSearchPanel({
 
 
       {/* GUESTS */}
-      <div className="px-4 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/75 hover:border-[#ED7926]/35 transition flex items-center gap-3">
+      <div className="px-4 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/75 hover:border-accent/35 transition flex items-center gap-3">
         <span
           className="
             w-9 h-9 rounded-xl shrink-0
-            bg-[#ED7926]/12
+            bg-accent/12
             flex items-center justify-center
-            text-[#ED7926]
+            text-brand
           "
           aria-hidden
         >
@@ -374,18 +374,18 @@ export default function HeroSearchPanel({
           className="
             w-full px-4 py-3 rounded-xl
             bg-white/40 border border-white/50
-            hover:bg-white/75 hover:border-[#0973BA]/35
+            hover:bg-white/75 hover:border-brand/35
             transition flex items-center gap-3 text-left
             focus:outline-none focus-visible:ring-2
-            focus-visible:ring-[#0973BA]/30
+            focus-visible:ring-brand/30
           "
         >
           <span
             className="
               w-9 h-9 rounded-xl shrink-0
-              bg-[#0973BA]/10
+              bg-brand/10
               flex items-center justify-center
-              text-[#0973BA]
+              text-brand
             "
             aria-hidden
           >
@@ -425,8 +425,8 @@ export default function HeroSearchPanel({
                   key={item.id}
                   className={`flex items-center gap-3 text-sm px-3 py-2.5 rounded-xl cursor-pointer transition ${
                     checked
-                      ? "bg-[#0973BA]/10 text-[var(--color-stone-900)]"
-                      : "hover:bg-[#0973BA]/5 text-[var(--color-stone-700)]"
+                      ? "bg-brand/10 text-[var(--color-stone-900)]"
+                      : "hover:bg-brand/5 text-[var(--color-stone-700)]"
                   }`}
                 >
                   <input
@@ -436,7 +436,7 @@ export default function HeroSearchPanel({
                       toggleItem(item.id, categories, setCategories)
                     }
                     className="!w-4 !h-4 !rounded"
-                    style={{ accentColor: "#0973BA" }}
+                    style={{ accentColor: "var(--color-brand)" }}
                   />
                   {item.name}
                 </label>
@@ -458,18 +458,18 @@ export default function HeroSearchPanel({
           className="
             w-full px-4 py-3 rounded-xl
             bg-white/40 border border-white/50
-            hover:bg-white/75 hover:border-[#0973BA]/35
+            hover:bg-white/75 hover:border-brand/35
             transition flex items-center gap-3 text-left
             focus:outline-none focus-visible:ring-2
-            focus-visible:ring-[#0973BA]/30
+            focus-visible:ring-brand/30
           "
         >
           <span
             className="
               w-9 h-9 rounded-xl shrink-0
-              bg-[#0973BA]/10
+              bg-brand/10
               flex items-center justify-center
-              text-[#0973BA]
+              text-brand
             "
             aria-hidden
           >
@@ -509,8 +509,8 @@ export default function HeroSearchPanel({
                   key={item.id}
                   className={`flex items-center gap-3 text-sm px-3 py-2.5 rounded-xl cursor-pointer transition ${
                     checked
-                      ? "bg-[#0973BA]/10 text-[var(--color-stone-900)]"
-                      : "hover:bg-[#0973BA]/5 text-[var(--color-stone-700)]"
+                      ? "bg-brand/10 text-[var(--color-stone-900)]"
+                      : "hover:bg-brand/5 text-[var(--color-stone-700)]"
                   }`}
                 >
                   <input
@@ -520,7 +520,7 @@ export default function HeroSearchPanel({
                       toggleItem(item.id, regions, setRegions)
                     }
                     className="!w-4 !h-4 !rounded"
-                    style={{ accentColor: "#0973BA" }}
+                    style={{ accentColor: "var(--color-brand)" }}
                   />
                   {item.name}
                 </label>
@@ -540,14 +540,14 @@ export default function HeroSearchPanel({
           !rounded-xl !px-7 md:!px-8 !py-4
           mt-1.5 md:mt-0 md:ml-1.5
           text-white font-medium text-[14px] tracking-[0.02em]
-          bg-gradient-to-r from-[#ED7926] to-[#0973BA]
-          shadow-[0_20px_44px_-12px_rgba(237,121,38,0.5),0_10px_26px_-8px_rgba(9,115,186,0.45),inset_0_1px_0_rgba(255,255,255,0.28)]
-          hover:shadow-[0_26px_54px_-12px_rgba(237,121,38,0.6),0_12px_30px_-8px_rgba(9,115,186,0.55),inset_0_1px_0_rgba(255,255,255,0.34)]
+          bg-brand
+          shadow-[0_20px_44px_-12px_color-mix(in_srgb,var(--color-accent)_50%,transparent),0_10px_26px_-8px_color-mix(in_srgb,var(--color-brand)_45%,transparent),inset_0_1px_0_rgba(255,255,255,0.28)]
+          hover:shadow-[0_26px_54px_-12px_color-mix(in_srgb,var(--color-accent)_60%,transparent),0_12px_30px_-8px_color-mix(in_srgb,var(--color-brand)_55%,transparent),inset_0_1px_0_rgba(255,255,255,0.34)]
           hover:-translate-y-[1px]
           transition-[transform,box-shadow] duration-300
           motion-reduce:transition-none motion-reduce:hover:translate-y-0
           focus:outline-none focus-visible:ring-2
-          focus-visible:ring-[#0973BA]/50
+          focus-visible:ring-brand/50
           focus-visible:ring-offset-2 focus-visible:ring-offset-white
         "
       >
@@ -555,7 +555,7 @@ export default function HeroSearchPanel({
           aria-hidden
           className="
             pointer-events-none absolute -inset-1 !rounded-xl
-            bg-gradient-to-r from-[#ED7926] to-[#0973BA]
+            bg-brand
             opacity-30 blur-md
             animate-pulse [animation-duration:2.8s]
             group-hover:opacity-55
@@ -590,7 +590,7 @@ export default function HeroSearchPanel({
           type="button"
           onClick={() => setAdvOpen((o) => !o)}
           aria-expanded={advOpen}
-          className="inline-flex items-center gap-1.5 rounded-full bg-white/75 backdrop-blur-md px-4 py-2 text-[12.5px] font-medium text-[var(--color-stone-700)] border border-white/60 shadow-sm hover:bg-white transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/40"
+          className="inline-flex items-center gap-1.5 rounded-full bg-white/75 backdrop-blur-md px-4 py-2 text-[12.5px] font-medium text-[var(--color-stone-700)] border border-white/60 shadow-sm hover:bg-white transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
         >
           <ChevronDown
             size={15}
@@ -604,14 +604,14 @@ export default function HeroSearchPanel({
         </button>
 
         {advOpen && (
-          <div className="mt-2 w-[min(92vw,420px)] rounded-2xl bg-white/95 backdrop-blur-md border border-[var(--color-stone-100)] shadow-[0_20px_44px_-20px_rgba(11,31,58,0.35)] px-4 py-3.5">
+          <div className="mt-2 w-[min(92vw,420px)] rounded-2xl bg-white/95 backdrop-blur-md border border-[var(--color-stone-100)] shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)] px-4 py-3.5">
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={flexible}
                 onChange={(e) => setFlexible(e.target.checked)}
                 className="mt-0.5 h-4 w-4 shrink-0 rounded cursor-pointer"
-                style={{ accentColor: "#ED7926" }}
+                style={{ accentColor: "var(--color-brand)" }}
               />
               <span className="text-[13px] leading-snug text-[var(--color-stone-700)]">
                 {dict.flexibleHint}
@@ -633,7 +633,7 @@ export default function HeroSearchPanel({
                   {dict.featuresLabel}
                 </div>
                 {features.length > 0 && (
-                  <div className="text-[11.5px] font-medium text-[#0973BA]">
+                  <div className="text-[11.5px] font-medium text-brand">
                     {formatDictionaryString(dict.featuresSelected, {
                       n: features.length,
                     })}
@@ -654,8 +654,8 @@ export default function HeroSearchPanel({
                         key={item.id}
                         className={`flex items-center gap-3 text-[13.5px] px-2.5 py-2 rounded-xl cursor-pointer transition ${
                           checked
-                            ? "bg-[#0973BA]/10 text-[var(--color-stone-900)]"
-                            : "hover:bg-[#0973BA]/5 text-[var(--color-stone-700)]"
+                            ? "bg-brand/10 text-[var(--color-stone-900)]"
+                            : "hover:bg-brand/5 text-[var(--color-stone-700)]"
                         }`}
                       >
                         <input
@@ -665,7 +665,7 @@ export default function HeroSearchPanel({
                             toggleItem(item.id, features, setFeatures)
                           }
                           className="!w-4 !h-4 !rounded"
-                          style={{ accentColor: "#0973BA" }}
+                          style={{ accentColor: "var(--color-brand)" }}
                         />
                         {item.name}
                       </label>

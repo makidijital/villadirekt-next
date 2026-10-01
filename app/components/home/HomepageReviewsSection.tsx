@@ -64,7 +64,7 @@ export default async function HomepageReviewsSection({
           <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
             <span
               aria-hidden="true"
-              className="inline-block w-4 h-px bg-gradient-to-r from-[#ED7926] to-[#0973BA]"
+              className="inline-block w-4 h-px bg-brand "
             />
             {dict.eyebrow}
           </span>

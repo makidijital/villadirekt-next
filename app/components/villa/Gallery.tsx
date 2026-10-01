@@ -215,7 +215,7 @@ export default function Gallery({
                   hover:shadow-[0_14px_28px_-8px_rgb(27_26_23/0.55)]
                   transition-all duration-200 motion-reduce:transition-none
                   hover:-translate-y-[1px] motion-reduce:hover:translate-y-0
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/40
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
                 "
               >
                 <span
@@ -372,9 +372,9 @@ export default function Gallery({
               px-3.5 py-2
               text-[12.5px] font-semibold text-[var(--color-stone-800)]
               ring-1 ring-black/5
-              shadow-[0_8px_20px_-8px_rgba(11,31,58,0.35)]
+              shadow-[0_8px_20px_-8px_rgba(0,0,0,0.35)]
               hover:bg-white transition-colors duration-200 motion-reduce:transition-none
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0973BA]/50
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50
             "
           >
             <svg

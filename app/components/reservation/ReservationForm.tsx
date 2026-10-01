@@ -737,7 +737,7 @@ export default function ReservationForm({
                   imzası (turuncu → mavi). Salt dekoratif. */}
               <span
                 aria-hidden="true"
-                className="absolute inset-x-4 top-0 h-[2.5px] rounded-full bg-gradient-to-r from-[#ED7926] via-[#ED7926]/50 to-[#0973BA]"
+                className="absolute inset-x-4 top-0 h-[2.5px] rounded-full bg-brand "
               />
 
               {/* 🛡️ EKSİK SEZON FİYATI — yanlış/düşük tutar göstermek
@@ -774,7 +774,7 @@ export default function ReservationForm({
                     <span className="block text-[var(--color-stone-900)] font-medium tabular-nums">
                       {formatCurrency(result?.stay || 0, currency, activeLocale)}
                     </span>
-                    <span className="mt-1 inline-block rounded-full bg-[#0973BA] px-2.5 py-0.5 text-[10px] font-semibold text-white text-center whitespace-nowrap">
+                    <span className="mt-1 inline-block rounded-full bg-brand px-2.5 py-0.5 text-[10px] font-semibold text-white text-center whitespace-nowrap">
                       {bookingDict.discountedTotal}
                     </span>
                   </div>

@@ -64,9 +64,9 @@ export default async function PageHero({
   const cCrumbSep = hasBg ? "text-white/40" : "text-[var(--color-stone-300)]";
   const cCrumbHover = hasBg ? "hover:text-white" : "hover:text-[var(--color-stone-900)]";
   const cCrumbActive = hasBg ? "text-white" : "text-[var(--color-stone-600)]";
-  const cEyebrow = hasBg ? "text-sky-300" : "text-[var(--brand-coral)]";
-  const cDivider = hasBg ? "bg-sky-400/70" : "bg-[var(--brand-coral)]/40";
-  const cTick = hasBg ? "bg-sky-400/70" : "bg-[var(--brand-coral)]/50";
+  const cEyebrow = hasBg ? "text-accent" : "text-[var(--brand-coral)]";
+  const cDivider = hasBg ? "bg-accent/70" : "bg-[var(--brand-coral)]/40";
+  const cTick = hasBg ? "bg-accent/70" : "bg-[var(--brand-coral)]/50";
   const cTitle = hasBg ? "text-white" : "text-[var(--color-stone-900)]";
   const cDesc = hasBg ? "text-white/85" : "text-[var(--color-stone-500)]";
   const cPill = hasBg
@@ -74,7 +74,7 @@ export default async function PageHero({
     : "bg-white/70 ring-black/[0.05] text-[var(--color-stone-600)]";
   const cStatValue = hasBg ? "text-white" : "text-[var(--color-stone-900)]";
   const cStatLabel = hasBg ? "text-white/70" : "text-[var(--color-stone-500)]";
-  const cBadgeEyebrow = hasBg ? "text-sky-300" : "text-[var(--brand-coral)]";
+  const cBadgeEyebrow = hasBg ? "text-accent" : "text-[var(--brand-coral)]";
   const cBadgeLine = hasBg ? "text-white" : "text-[var(--color-stone-800)]";
   const cBadgeSep = hasBg ? "text-white/40" : "text-[var(--color-stone-300)]";
 
@@ -97,7 +97,7 @@ export default async function PageHero({
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg, rgba(5,18,40,0.45), rgba(5,18,40,0.30)), linear-gradient(180deg, rgba(6,12,24,0.58) 0%, rgba(8,15,30,0.48) 35%, rgba(10,18,35,0.42) 65%, rgba(8,14,28,0.55) 100%)",
+                "rgb(0 0 0 / 0.5)",
             }}
           />
         </div>
