@@ -457,6 +457,14 @@ export const de: Dictionary = {
       carouselAriaLabel: "Villentypen",
       countBadge: "{count} Villen",
     },
+    categoryVillas: {
+      sectionAriaLabel: "Villen nach Kategorie",
+      title: "Villen nach Kategorie",
+      tabsAriaLabel: "Villenkategorien",
+      resultsAriaLabel: "Villen: {name}",
+      empty: "In dieser Kategorie gibt es derzeit keine Villen.",
+      viewAll: "Alle Villen anzeigen: {name}",
+    },
     villas: {
       title: "Unsere Auswahl für Sie",
       ctaAll: "Alle Villen ansehen",

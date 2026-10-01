@@ -468,6 +468,14 @@ export const tr: Dictionary = {
       carouselAriaLabel: "Villa tipleri",
       countBadge: "{count} Villa",
     },
+    categoryVillas: {
+      sectionAriaLabel: "Kategoriye göre villalar",
+      title: "Kategoriye Göre Villalar",
+      tabsAriaLabel: "Villa kategorileri",
+      resultsAriaLabel: "{name} villaları",
+      empty: "Bu kategoride şu an gösterilecek villa bulunmuyor.",
+      viewAll: "Tüm {name} villalarını gör",
+    },
     villas: {
       title: "Sizin için seçtiklerimiz",
       ctaAll: "Tüm Villaları Gör",

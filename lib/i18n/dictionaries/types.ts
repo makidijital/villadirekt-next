@@ -645,6 +645,18 @@ export type Dictionary = {
       /** template: {count} */
       countBadge: string;
     };
+    /** 🛡️ Ana sayfa "kategoriye göre villalar" — kategori kartları +
+     *  seçili kategorinin ilk 8 villası (aynı sayfada, route değişmez). */
+    categoryVillas: {
+      sectionAriaLabel: string;
+      title: string;
+      tabsAriaLabel: string;
+      /** template: {name} */
+      resultsAriaLabel: string;
+      empty: string;
+      /** template: {name} */
+      viewAll: string;
+    };
     villas: {
       title: string;
       ctaAll: string;
