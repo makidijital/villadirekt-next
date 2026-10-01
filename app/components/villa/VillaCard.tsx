@@ -1225,6 +1225,12 @@ export default function VillaCard({
             className="absolute inset-0 ring-1 ring-inset ring-white/15 pointer-events-none"
           />
 
+          {/* Alt okunabilirlik gradient'i — üst %45 şeffaf, yalnız alt kısım kararır. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(#0000_45%,#0000002e_72%,#0000009e_100%)]"
+          />
+
           {/* 🔄 SADELEŞTİRME (bu tur): "Özel Fırsat · İndirimli" rozeti VE
               favori kalp butonu, kullanıcı talebiyle YALNIZ bu discount
               variant'ta kaldırıldı — normal/curation branch'lerdeki badge
@@ -1290,9 +1296,8 @@ export default function VillaCard({
               Normal public karttan (VillaCard default) ayırt etmek için altina
               turuncu→mavi ince accent çizgisi eklendi. */}
           <div className="absolute inset-x-0 bottom-0 p-4 pointer-events-none text-center">
-            {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge arkasında; blur ayrı katmanda, metin keskin kalır */}
+            {/* Başlık + bölge — doğrudan alt gradient overlay üzerinde (ayrı patch YOK) */}
             <div className="relative isolate mx-auto w-fit max-w-full px-3 py-2">
-              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/20 blur-[10px]" />
               <h3 className="font-display text-[19px] md:text-[20px] font-bold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
                 {title}
               </h3>
@@ -1508,6 +1513,12 @@ export default function VillaCard({
             className="absolute inset-0 ring-1 ring-inset ring-white/15 pointer-events-none"
           />
 
+          {/* Alt okunabilirlik gradient'i — üst %45 şeffaf, yalnız alt kısım kararır. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(#0000_45%,#0000002e_72%,#0000009e_100%)]"
+          />
+
           {/* BADGE — sarı (accent) pill, indicator dot kaldırıldı. */}
           {badge && (
             <span className="absolute top-3.5 left-3.5 z-10 inline-flex items-center gap-1.5 bg-accent backdrop-blur-md text-[var(--color-stone-900)] text-[8px] tracking-[0.16em] uppercase font-semibold px-2.5 py-1.5 rounded-md shadow-[0_6px_18px_-6px_rgb(27_26_23/0.28)] ring-1 ring-white/50">
@@ -1527,9 +1538,8 @@ export default function VillaCard({
               CONTENT AREA'da kalmaya devam ediyor — yalnız bu iki alan
               taşındı. Discount/curation variant'ları ETKİLENMEDİ. */}
           <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 md:p-4 pr-20 md:pr-24">
-            {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge arkasında; blur ayrı katmanda, metin keskin kalır */}
+            {/* Başlık + bölge — doğrudan alt gradient overlay üzerinde (ayrı patch YOK) */}
             <div className="relative isolate w-fit max-w-full px-3 py-2">
-              <span aria-hidden="true" className="pointer-events-none absolute -inset-1.5 -z-10 rounded-full bg-black/20 blur-[10px]" />
               <h3
                 className={
                   "font-display text-white font-bold " +

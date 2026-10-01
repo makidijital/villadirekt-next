@@ -358,3 +358,22 @@ describe("🔄 DEFAULT kart sıralaması — özellikler ÜSTTE, fiyat + müsait
     expect(screen.queryByLabelText("Müsaitlik ve tarih seçimi modalını aç")).toBeNull();
   });
 });
+
+describe("🌫️ Başlık/bölge — alt gradient overlay, ayrı siyah patch YOK", () => {
+  const props = {
+    id: "v-4", slug: "v4", title: "V4", location: "Kaş", price: 5000,
+    currency: "TRY", images: [] as string[], bedrooms: 2, bathrooms: 1,
+    guests: 4, locale: "tr" as const,
+  };
+  for (const variant of ["default", "discount"] as const) {
+    it(`${variant}: gradient var, blur patch yok`, () => {
+      const { container } = render(
+        <VillaCard {...props} variant={variant} discount={variant === "discount" ? BASE_DISCOUNT : undefined} />
+      );
+      const html = container.innerHTML;
+      expect(html).toContain("bg-[linear-gradient(#0000_45%,#0000002e_72%,#0000009e_100%)]");
+      expect(html).not.toContain("bg-black/20");
+      expect(html).not.toContain("blur-[10px]");
+    });
+  }
+});
