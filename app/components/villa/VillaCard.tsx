@@ -1322,13 +1322,9 @@ export default function VillaCard({
             className="absolute inset-0 ring-1 ring-inset ring-white/15 pointer-events-none"
           />
 
-          {/* BADGE — glass pill + turuncu→mavi gradient indicator dot. */}
+          {/* BADGE — sarı (accent) pill, indicator dot kaldırıldı. */}
           {badge && (
-            <span className="absolute top-3.5 left-3.5 z-10 inline-flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-[var(--color-stone-900)] text-[10px] tracking-[0.16em] uppercase font-semibold px-2.5 py-1.5 rounded-full shadow-[0_6px_18px_-6px_rgb(27_26_23/0.28)] ring-1 ring-white/50">
-              <span
-                aria-hidden="true"
-                className="inline-block w-1.5 h-1.5 rounded-full bg-accent "
-              />
+            <span className="absolute top-3.5 left-3.5 z-10 inline-flex items-center gap-1.5 bg-accent backdrop-blur-md text-[var(--color-stone-900)] text-[8px] tracking-[0.16em] uppercase font-semibold px-2.5 py-1.5 rounded-full shadow-[0_6px_18px_-6px_rgb(27_26_23/0.28)] ring-1 ring-white/50">
               {badge}
             </span>
           )}
@@ -1486,7 +1482,7 @@ export default function VillaCard({
                     <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
                       {formatCurrency(convertedPrice, currency, effectiveLocale)}
                     </span>{" "}
-                    {dict.card.startingFromLower}
+                    <span className="text-[11px]">{dict.card.startingFromLower}</span>
                   </>
                 ) : (
                   dict.card.priceOnRequest
