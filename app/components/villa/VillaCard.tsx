@@ -1574,12 +1574,6 @@ export default function VillaCard({
             </span>
           </div>
 
-          {/* Marka rengi imza çizgisi — küçük vurgu */}
-          <div
-            aria-hidden="true"
-            className="mt-3.5 h-[2px] w-10 rounded-full bg-brand "
-          />
-
           {/* 🛡️ ESNEK EK SONUÇ satırı — yalnız isFlexible; takvim ikonu sağda.
               Tarihsiz / tarih seçili durumlarda ikon FİYAT satırının sağında. */}
           {isFlexible && (
