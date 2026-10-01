@@ -209,11 +209,11 @@ export default async function LocationCollection({
           </p>
         </div>
 
-        {/* CIRCULAR AVATAR CAROUSEL — yatay kaydırma, HorizontalCarousel
-            (DEĞİŞTİRİLMEDİ) üzerinden. Kartlar küçük olduğu için geniş
-            boşluk bırakılıyor (gap-7/8/9) ve aynı anda çok daha fazla
-            bölge görünüyor — VillaTypeCarousel'in geniş kartlarının
-            tersine. */}
+        {/* BÖLGE CAROUSEL — mevcut HorizontalCarousel (scroll-snap, mobil
+            swipe, desktop'ta yalnız overflow varsa oklar). TEK satır
+            (flex-nowrap + min-w-max), sabit kart genişlikleri. py-2:
+            hover lift / focus ring / gölge scroll alanında kırpılmasın.
+            "Tüm bölgeler" CTA'sı kaldırıldı. */}
         <HorizontalCarousel
           showArrows
           ariaLabel={dict.carouselAriaLabel}
@@ -221,7 +221,7 @@ export default async function LocationCollection({
           nextLabel={carouselDict.next}
           className="pb-1"
         >
-          <ul role="list" className="flex flex-nowrap min-w-max gap-7 md:gap-8 lg:gap-9">
+          <ul role="list" className="flex flex-nowrap min-w-max gap-7 md:gap-8 lg:gap-9 py-2 px-1">
             {items.map((item) => (
               <li key={item.key} className="snap-start shrink-0">
                 <LocationCard item={item} locale={locale} />
@@ -230,30 +230,6 @@ export default async function LocationCollection({
           </ul>
         </HorizontalCarousel>
 
-        {/* 🛡️ CTA — grid altında, tüm ekranlarda centered (header'dan taşındı). */}
-        <div className="mt-9 md:mt-10 flex justify-center">
-          <Link
-            href={localeHref("/arama", locale)}
-            className="
-              group inline-flex items-center gap-2
-              px-4 py-2 rounded-full
-              border border-[var(--color-stone-200)]
-              text-[12.5px] font-medium tracking-[0.02em]
-              text-[var(--color-stone-700)]
-              hover:border-[var(--brand-coral)] hover:text-[var(--color-stone-900)]
-              hover:bg-[var(--brand-coral-tint)]
-              transition-colors motion-reduce:transition-none
-            "
-          >
-            <span>{dict.ctaAll}</span>
-            <span
-              aria-hidden="true"
-              className="text-[var(--color-stone-500)] group-hover:text-[var(--brand-coral)]"
-            >
-              →
-            </span>
-          </Link>
-        </div>
       </div>
     </section>
   );
