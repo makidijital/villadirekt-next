@@ -75,9 +75,10 @@ describe("A) TR dictionary değerleri, taşınmadan önceki hardcoded metinlerle
   it("3) Empty state + avantaj kartları + arama paneli", () => {
     expect(h.villas.emptyEyebrow).toBe("Koleksiyon");
     expect(h.villas.emptyTitle).toBe("Yakında burada.");
-    expect(h.advantages.experienceTitle).toBe("14 Yıllık Tecrübe");
-    expect(h.advantages.priceTitle).toBe("En Uygun Fiyat Garantisi");
-    expect(h.advantages.trustTitle).toBe("Güvenli Rezervasyon");
+    expect(h.advantages.priceTitle).toBe("En İyi Fiyat Garantisi");
+    expect(h.advantages.easyTitle).toBe("Kolay Rezervasyon");
+    expect(h.advantages.secureTitle).toBe("Güvenli Rezervasyon");
+    expect(h.advantages.cancellationLink).toBe("İptal Şartları");
     expect(h.search.datePlaceholder).toBe("Tarih seçin");
     expect(h.search.villaType).toBe("Tüm türler");
     expect(h.search.allRegions).toBe("Tüm bölgeler");

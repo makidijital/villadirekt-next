@@ -449,15 +449,16 @@ export const tr: Dictionary = {
     },
     advantages: {
       sectionAriaLabel: "Neden bizi tercih etmelisiniz",
-      experienceTitle: "14 Yıllık Tecrübe",
-      experienceDescription:
-        "14 yıllık sektör deneyimiyle tatilinizi güvenle planlayın.",
-      priceTitle: "En Uygun Fiyat Garantisi",
+      priceTitle: "En İyi Fiyat Garantisi",
       priceDescription:
-        "En doğru villa, en avantajlı fiyat. Tatiliniz için en iyi seçimi yapın.",
-      trustTitle: "Güvenli Rezervasyon",
-      trustDescription:
-        "Rezervasyon sürecinizi güvenilir ve şeffaf bir hizmet anlayışıyla kolayca tamamlayın.",
+        "Sahibinden direkt ilanlar ile aracısız rezervasyon ile en iyi fiyat.",
+      easyTitle: "Kolay Rezervasyon",
+      easyDescription:
+        "Güncel takvimler, gerçek yorumlar ve anında destek ile daha kolay rezervasyon.",
+      secureTitle: "Güvenli Rezervasyon",
+      secureDescription:
+        "%100 Ücreti iade garantisi, 128 bit güvenlik sistemi ile güvenli ödeme",
+      cancellationLink: "İptal Şartları",
     },
     discount: {
       title: "İndirimli Kiralık Villalar",

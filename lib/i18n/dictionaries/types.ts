@@ -624,12 +624,14 @@ export type Dictionary = {
     };
     advantages: {
       sectionAriaLabel: string;
-      experienceTitle: string;
-      experienceDescription: string;
       priceTitle: string;
       priceDescription: string;
-      trustTitle: string;
-      trustDescription: string;
+      easyTitle: string;
+      easyDescription: string;
+      secureTitle: string;
+      secureDescription: string;
+      /** Güvenli Rezervasyon kartındaki iptal koşulları linki. */
+      cancellationLink: string;
     };
     discount: {
       title: string;

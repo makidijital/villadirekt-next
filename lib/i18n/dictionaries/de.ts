@@ -437,15 +437,16 @@ export const de: Dictionary = {
     },
     advantages: {
       sectionAriaLabel: "Warum Sie uns wählen sollten",
-      experienceTitle: "14 Jahre Erfahrung",
-      experienceDescription:
-        "Planen Sie Ihren Urlaub sicher — mit 14 Jahren Branchenerfahrung.",
       priceTitle: "Bestpreis-Garantie",
       priceDescription:
-        "Die richtige Villa zum besten Preis. Treffen Sie die beste Wahl für Ihren Urlaub.",
-      trustTitle: "Sichere Buchung",
-      trustDescription:
-        "Schließen Sie Ihre Buchung einfach ab — zuverlässig und transparent.",
+        "Direkt beim Eigentümer buchen – ohne Vermittler und zum besten Preis.",
+      easyTitle: "Einfache Buchung",
+      easyDescription:
+        "Aktuelle Kalender, echte Bewertungen und sofortiger Support für eine einfachere Buchung.",
+      secureTitle: "Sichere Buchung",
+      secureDescription:
+        "100 % Rückerstattungsgarantie und sichere Zahlung mit 128-Bit-Verschlüsselung",
+      cancellationLink: "Stornobedingungen",
     },
     discount: {
       title: "Villen mit Rabatt",
