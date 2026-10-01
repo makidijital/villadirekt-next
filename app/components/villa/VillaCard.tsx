@@ -749,32 +749,35 @@ export default function VillaCard({
               (isCuration ? "p-4" : "p-5 md:p-6")
             }
           >
-            {/* LOCATION */}
-            <p className="flex items-center gap-1.5 text-[10.5px] tracking-[0.18em] uppercase font-medium text-white/75 min-w-0 truncate [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
-              <MapPin
-                size={11}
-                className="text-white/70 shrink-0"
-                strokeWidth={1.75}
-                aria-hidden
-              />
-              <span className="truncate">{location || dict.card.noLocation}</span>
-            </p>
+            {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge bloğunun arkasında */}
+            <div className="w-fit max-w-full rounded-lg bg-black/50 px-3 py-2">
+              {/* LOCATION */}
+              <p className="flex items-center gap-1.5 text-[10.5px] tracking-[0.18em] uppercase font-medium text-white/75 min-w-0 truncate [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+                <MapPin
+                  size={11}
+                  className="text-white/70 shrink-0"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+                <span className="truncate">{location || dict.card.noLocation}</span>
+              </p>
 
-            {/* TITLE — editorial white serif */}
-            <h3
-              className={
-                "font-display text-white " +
-                (isCuration
-                  ? "text-[17px] md:text-[18px] mt-2 "
-                  : "text-[22px] md:text-[26px] mt-2.5 ") +
-                "leading-[1.08] tracking-[-0.022em] line-clamp-2 " +
-                "group-hover:text-white/95 " +
-                "transition-colors motion-reduce:transition-none " +
-                "[text-shadow:0_1px_4px_rgba(0,0,0,0.45)]"
-              }
-            >
-              {title}
-            </h3>
+              {/* TITLE — editorial white serif */}
+              <h3
+                className={
+                  "font-display text-white " +
+                  (isCuration
+                    ? "text-[17px] md:text-[18px] mt-2 "
+                    : "text-[22px] md:text-[26px] mt-2.5 ") +
+                  "leading-[1.08] tracking-[-0.022em] line-clamp-2 " +
+                  "group-hover:text-white/95 " +
+                  "transition-colors motion-reduce:transition-none " +
+                  "[text-shadow:0_1px_4px_rgba(0,0,0,0.45)]"
+                }
+              >
+                {title}
+              </h3>
+            </div>
 
             {/* REVIEW META — amber star + compact */}
             {typeof reviewCount === "number" && reviewCount > 0 &&
@@ -1088,13 +1091,16 @@ export default function VillaCard({
               Normal public karttan (VillaCard default) ayırt etmek için altina
               turuncu→mavi ince accent çizgisi eklendi. */}
           <div className="absolute inset-x-0 bottom-0 p-4 pointer-events-none text-center">
-            <h3 className="font-display text-[19px] md:text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
-              {title}
-            </h3>
-            <p className="mt-1 inline-flex items-center gap-1 text-[11.5px] text-white/85 uppercase tracking-[0.05em] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
-              <MapPin size={11} className="shrink-0" strokeWidth={2} aria-hidden />
-              <span className="truncate">{location || dict.card.noLocation}</span>
-            </p>
+            {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge bloğunun arkasında */}
+            <div className="mx-auto w-fit max-w-full rounded-lg bg-black/50 px-3 py-2">
+              <h3 className="font-display text-[19px] md:text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
+                {title}
+              </h3>
+              <p className="mt-1 inline-flex items-center gap-1 text-[11.5px] text-white/85 uppercase tracking-[0.05em] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+                <MapPin size={11} className="shrink-0" strokeWidth={2} aria-hidden />
+                <span className="truncate">{location || dict.card.noLocation}</span>
+              </p>
+            </div>
             <div
               aria-hidden="true"
               className="mt-2 h-[3px] w-12 rounded-full bg-brand mx-auto"
@@ -1337,26 +1343,29 @@ export default function VillaCard({
               CONTENT AREA'da kalmaya devam ediyor — yalnız bu iki alan
               taşındı. Discount/curation variant'ları ETKİLENMEDİ. */}
           <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 md:p-4 pr-20 md:pr-24">
-            <h3
-              className={
-                "font-display text-white font-semibold " +
-                "text-[17px] md:text-[19px] leading-[1.15] tracking-[-0.02em] " +
-                "line-clamp-1 group-hover:text-white/90 " +
-                "transition-colors duration-300 motion-reduce:transition-none " +
-                "[text-shadow:0_1px_4px_rgba(0,0,0,0.45)]"
-              }
-            >
-              {title}
-            </h3>
-            <p className="mt-1 flex items-center gap-1.5 text-[10.5px] tracking-[0.14em] uppercase font-medium text-white/80 min-w-0 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
-              <MapPin
-                size={11}
-                className="text-white/75 shrink-0"
-                strokeWidth={1.9}
-                aria-hidden
-              />
-              <span className="truncate">{location || dict.card.noLocation}</span>
-            </p>
+            {/* Lokal okunabilirlik zemini — yalnızca villa adı + bölge bloğunun arkasında */}
+            <div className="w-fit max-w-full rounded-lg bg-black/50 px-3 py-2">
+              <h3
+                className={
+                  "font-display text-white font-semibold " +
+                  "text-[17px] md:text-[19px] leading-[1.15] tracking-[-0.02em] " +
+                  "line-clamp-1 group-hover:text-white/90 " +
+                  "transition-colors duration-300 motion-reduce:transition-none " +
+                  "[text-shadow:0_1px_4px_rgba(0,0,0,0.45)]"
+                }
+              >
+                {title}
+              </h3>
+              <p className="mt-1 flex items-center gap-1.5 text-[10.5px] tracking-[0.14em] uppercase font-medium text-white/80 min-w-0 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+                <MapPin
+                  size={11}
+                  className="text-white/75 shrink-0"
+                  strokeWidth={1.9}
+                  aria-hidden
+                />
+                <span className="truncate">{location || dict.card.noLocation}</span>
+              </p>
+            </div>
           </div>
 
           {/* REVIEW BADGE — görselin sağ altı (villa adı/bölge sol altta
