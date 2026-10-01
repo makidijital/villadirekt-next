@@ -174,7 +174,7 @@ export default function Hero({
               <h1
                 className="
                   font-display
-                  text-[32px] sm:text-[38px] md:text-[46px] lg:text-[52px]
+                  text-[36px]
                   leading-[1.02] tracking-[-0.03em]
                   text-[var(--color-stone-900)]
                   mt-5 md:mt-6
@@ -195,7 +195,7 @@ export default function Hero({
             {hero.subtitle && (
               <p
                 className="
-                  text-[15px] md:text-[16.5px] leading-[1.7]
+                  text-[14px] leading-[1.7]
                   text-[var(--color-stone-500)]
                   mt-5 md:mt-6
                   max-w-xl whitespace-pre-line

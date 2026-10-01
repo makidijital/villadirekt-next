@@ -402,7 +402,7 @@ export default function HeroSearchPanel({
         {openCat && (
           <div className="absolute top-full mt-2 left-0 w-full md:w-72 min-w-[16rem] max-w-[calc(100vw-2.5rem)] bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_24px_48px_-16px_rgb(27_26_23/0.18)] p-2 z-[60] max-h-72 overflow-auto">
             {categoryOptions.length === 0 && (
-              <div className="text-sm text-[var(--color-stone-400)] p-3">
+              <div className="text-[12px] text-[var(--color-stone-400)] p-3">
                 {dict.optionsLoading}
               </div>
             )}
@@ -411,7 +411,7 @@ export default function HeroSearchPanel({
               return (
                 <label
                   key={item.id}
-                  className={`flex items-center gap-3 text-sm px-3 py-2.5 rounded-xl cursor-pointer transition ${
+                  className={`flex items-center gap-3 text-[12px] px-3 py-2.5 rounded-xl cursor-pointer transition ${
                     checked
                       ? "bg-brand/10 text-[var(--color-stone-900)]"
                       : "hover:bg-brand/5 text-[var(--color-stone-700)]"
@@ -484,7 +484,7 @@ export default function HeroSearchPanel({
         {openRegion && (
           <div className="absolute top-full mt-2 left-0 w-full md:w-72 min-w-[16rem] max-w-[calc(100vw-2.5rem)] bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_24px_48px_-16px_rgb(27_26_23/0.18)] p-2 z-[60] max-h-72 overflow-auto">
             {regionOptions.length === 0 && (
-              <div className="text-sm text-[var(--color-stone-400)] p-3">
+              <div className="text-[12px] text-[var(--color-stone-400)] p-3">
                 {dict.optionsLoading}
               </div>
             )}
@@ -493,7 +493,7 @@ export default function HeroSearchPanel({
               return (
                 <label
                   key={item.id}
-                  className={`flex items-center gap-3 text-sm px-3 py-2.5 rounded-xl cursor-pointer transition ${
+                  className={`flex items-center gap-3 text-[12px] px-3 py-2.5 rounded-xl cursor-pointer transition ${
                     checked
                       ? "bg-brand/10 text-[var(--color-stone-900)]"
                       : "hover:bg-brand/5 text-[var(--color-stone-700)]"
