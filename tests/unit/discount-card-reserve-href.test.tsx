@@ -327,3 +327,34 @@ describe("🎨 İndirimli kart — görsel sadeleştirme", () => {
     expect(container.querySelector(".dc-glow-ring")).toBeNull();
   });
 });
+
+describe("🔄 DEFAULT kart sıralaması — özellikler ÜSTTE, fiyat + müsaitlik ALTTA", () => {
+  const baseProps = {
+    id: "v-3",
+    slug: "v3",
+    title: "V3",
+    location: "Kaş",
+    price: 5000,
+    currency: "TRY",
+    images: [] as string[],
+    bedrooms: 2,
+    bathrooms: 1,
+    guests: 4,
+    locale: "tr" as const,
+  };
+  const pos = (a: Node, b: Node) => a.compareDocumentPosition(b);
+
+  it("normal public kart: Kişi/Yatak/Banyo DOM'da fiyat + takvimden ÖNCE", () => {
+    render(<VillaCard {...baseProps} />);
+    const guests = screen.getByLabelText("4 kişi kapasitesi");
+    const price = screen.getByText(/başlayan fiyatlarla/);
+    const cal = screen.getByLabelText("Müsaitlik ve tarih seçimi modalını aç");
+    expect(pos(guests, price) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(pos(guests, cal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("discount kartta bu sıralama UYGULANMAZ (fiyat bloğu aynen alt kısımda)", () => {
+    render(<VillaCard {...baseProps} variant="discount" discount={BASE_DISCOUNT} />);
+    expect(screen.queryByLabelText("Müsaitlik ve tarih seçimi modalını aç")).toBeNull();
+  });
+});

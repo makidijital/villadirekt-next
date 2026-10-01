@@ -671,6 +671,134 @@ export default function VillaCard({
     </button>
   );
 
+  /* 🛡️ DEFAULT (PUBLIC) — fiyat satırı ve özellikler satırı; sıra
+     render'da reserveInfo'ya göre seçilir (aşağıya bkz.). İçerik,
+     hesap ve sınıflar önceki inline hâliyle BİREBİR. */
+  const defaultPriceRow = (
+    !isFlexible && (
+      <div className={(reserveInfo ? "mt-2" : "mt-3.5") + " flex items-center justify-between gap-3"}>
+      <div className="min-w-0">
+      {stayTotal !== null ? (
+        /* 🛡️ TARİH SEÇİLİ — konaklama TOPLAMI artık BU alanda
+           gösterilir (eskiden BOTTOM ROW'da, müsaitlik CTA'sının
+           solundaydı; çift gösterim olmasın diye oradan kaldırıldı).
+           SADECE KONUM DEĞİŞTİ: aynı `stayTotal` / `stayNights` /
+           `hasCleaning` değerleri, aynı `formatCurrency`, aynı
+           currency ve aynı sözlük anahtarları. calculateGrandTotal
+           çağrısına, indirim/kur/temizlik hesabına DOKUNULMADI. */
+        <div>
+          {/* ÜST SATIR — seçilen giriş/çıkış tarihleri. */}
+          {stayDateLabel && (
+            <p className="text-[11.5px] tracking-[0.04em] text-[var(--color-stone-500)] tabular-nums">
+              {stayDateLabel}
+            </p>
+          )}
+  
+          {/* ORTA SATIR — fiyat. "N gece" KALDIRILDI (tarih artık
+              üst satırda); "Temizlik dahil" MEVCUT koşuluyla
+              (hasCleaning) ve MEVCUT sözlük metniyle aynen kalır. */}
+          <p className="mt-0.5 text-[13px] text-[var(--color-stone-500)]">
+            {/* 🛡️ İNDİRİMSİZ TOPLAM — yalnız gerçek bir fark varsa
+                render edilir (bkz. stayTotalBeforeDiscount). Üstü
+                çizili stil villa detaydaki BookingSummary ile aynı
+                dil: küçük punto + stone-400 + line-through. */}
+            {stayTotalBeforeDiscount !== null && (
+              <>
+                <span className="text-[12px] text-[var(--color-stone-400)] line-through tabular-nums">
+                  {formatCurrency(
+                    stayTotalBeforeDiscount,
+                    currency,
+                    effectiveLocale
+                  )}
+                </span>{" "}
+              </>
+            )}
+            <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
+              {formatCurrency(stayTotal, currency, effectiveLocale)}
+            </span>
+            {hasCleaning ? (
+              <span>{dict.card.cleaningIncludedSuffix}</span>
+            ) : null}
+          </p>
+  
+          {/* ALT SATIR — indirim tutarı. Yalnız gerçek indirim
+              varsa; yoksa bu satır HİÇ render edilmez. */}
+          {stayDiscountSavings !== null && (
+            <p className="mt-0.5 text-[12px] font-medium text-red-600 tabular-nums">
+              {formatDictionaryString(dict.card.totalSavings, {
+                amount: formatCurrency(
+                  stayDiscountSavings,
+                  currency,
+                  effectiveLocale
+                ),
+              })}
+            </p>
+          )}
+        </div>
+      ) : (
+        /* Tarih seçilmemiş — MEVCUT davranış BİREBİR:
+           "X başlayan fiyatlarla" veya "Fiyat sorunuz". */
+        <p className="text-[13px] text-[var(--color-stone-500)]">
+          {price ? (
+            <>
+              <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
+                {formatCurrency(convertedPrice, currency, effectiveLocale)}
+              </span>{" "}
+              <span className="text-[11px]">{dict.card.startingFromLower}</span>
+            </>
+          ) : (
+            dict.card.priceOnRequest
+          )}
+        </p>
+      )}
+      </div>
+      {availabilityIconButton}
+      </div>
+    )
+  );
+
+  const defaultAmenitiesRow = (
+    <div className={(reserveInfo ? "mt-3.5" : "mt-2") + " flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[10px] font-medium text-[var(--color-stone-800)]"}>
+      <span
+        className="inline-flex items-center gap-1.5"
+        aria-label={formatDictionaryString(dict.card.guestsAriaLabel, {
+          n: guests,
+        })}
+      >
+        <Users size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
+        <span className="tabular-nums">
+          {formatDictionaryString(dict.card.guestsValue, { n: guests })}
+        </span>
+      </span>
+      <span
+        className="inline-flex items-center gap-1.5"
+        aria-label={formatDictionaryString(dict.card.bedroomsAriaLabel, {
+          n: bedrooms,
+        })}
+      >
+        <BedDouble size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
+        <span className="tabular-nums">
+          {formatDictionaryString(dict.card.bedroomsValue, {
+            n: bedrooms,
+          })}
+        </span>
+      </span>
+      <span
+        className="inline-flex items-center gap-1.5"
+        aria-label={formatDictionaryString(dict.card.bathroomsAriaLabel, {
+          n: bathrooms,
+        })}
+      >
+        <Bath size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
+        <span className="tabular-nums">
+          {formatDictionaryString(dict.card.bathroomsValue, {
+            n: bathrooms,
+          })}
+        </span>
+      </span>
+    </div>
+  );
+
   return (
     <>
     <CardOuter isCuration={isCuration} href={detailHref}>
@@ -1473,132 +1601,24 @@ export default function VillaCard({
               olmasın diye oradan kaldırıldı (stayTotal!==null tarih-seçili
               toplam ve isFlexible esnek-sonuç senaryoları BOTTOM ROW'da
               AYNEN kalmaya devam ediyor — mutually exclusive, çakışma yok). */}
-          {/* 🛡️ FİYAT SATIRI — fiyat solda, takvim ikonu (müsaitlik/tarih
-              seç; handler AYNEN) en sağda. */}
-          {!isFlexible && (
-            <div className="mt-2 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-            {stayTotal !== null ? (
-              /* 🛡️ TARİH SEÇİLİ — konaklama TOPLAMI artık BU alanda
-                 gösterilir (eskiden BOTTOM ROW'da, müsaitlik CTA'sının
-                 solundaydı; çift gösterim olmasın diye oradan kaldırıldı).
-                 SADECE KONUM DEĞİŞTİ: aynı `stayTotal` / `stayNights` /
-                 `hasCleaning` değerleri, aynı `formatCurrency`, aynı
-                 currency ve aynı sözlük anahtarları. calculateGrandTotal
-                 çağrısına, indirim/kur/temizlik hesabına DOKUNULMADI. */
-              <div>
-                {/* ÜST SATIR — seçilen giriş/çıkış tarihleri. */}
-                {stayDateLabel && (
-                  <p className="text-[11.5px] tracking-[0.04em] text-[var(--color-stone-500)] tabular-nums">
-                    {stayDateLabel}
-                  </p>
-                )}
-
-                {/* ORTA SATIR — fiyat. "N gece" KALDIRILDI (tarih artık
-                    üst satırda); "Temizlik dahil" MEVCUT koşuluyla
-                    (hasCleaning) ve MEVCUT sözlük metniyle aynen kalır. */}
-                <p className="mt-0.5 text-[13px] text-[var(--color-stone-500)]">
-                  {/* 🛡️ İNDİRİMSİZ TOPLAM — yalnız gerçek bir fark varsa
-                      render edilir (bkz. stayTotalBeforeDiscount). Üstü
-                      çizili stil villa detaydaki BookingSummary ile aynı
-                      dil: küçük punto + stone-400 + line-through. */}
-                  {stayTotalBeforeDiscount !== null && (
-                    <>
-                      <span className="text-[12px] text-[var(--color-stone-400)] line-through tabular-nums">
-                        {formatCurrency(
-                          stayTotalBeforeDiscount,
-                          currency,
-                          effectiveLocale
-                        )}
-                      </span>{" "}
-                    </>
-                  )}
-                  <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
-                    {formatCurrency(stayTotal, currency, effectiveLocale)}
-                  </span>
-                  {hasCleaning ? (
-                    <span>{dict.card.cleaningIncludedSuffix}</span>
-                  ) : null}
-                </p>
-
-                {/* ALT SATIR — indirim tutarı. Yalnız gerçek indirim
-                    varsa; yoksa bu satır HİÇ render edilmez. */}
-                {stayDiscountSavings !== null && (
-                  <p className="mt-0.5 text-[12px] font-medium text-red-600 tabular-nums">
-                    {formatDictionaryString(dict.card.totalSavings, {
-                      amount: formatCurrency(
-                        stayDiscountSavings,
-                        currency,
-                        effectiveLocale
-                      ),
-                    })}
-                  </p>
-                )}
-              </div>
-            ) : (
-              /* Tarih seçilmemiş — MEVCUT davranış BİREBİR:
-                 "X başlayan fiyatlarla" veya "Fiyat sorunuz". */
-              <p className="text-[13px] text-[var(--color-stone-500)]">
-                {price ? (
-                  <>
-                    <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
-                      {formatCurrency(convertedPrice, currency, effectiveLocale)}
-                    </span>{" "}
-                    <span className="text-[11px]">{dict.card.startingFromLower}</span>
-                  </>
-                ) : (
-                  dict.card.priceOnRequest
-                )}
-              </p>
-            )}
-            </div>
-            {availabilityIconButton}
-            </div>
+          {/* 🔄 SIRALAMA — normal public kartta ÜSTTE kişi/yatak/banyo, ALTTA
+              fiyat + müsaitlik (DOM sırası = görsel sıra → screen reader
+              uyumlu). Kısa Süreli Fırsatlar kartları (reserveInfo verilen
+              default variant) ESKİ sırada kalır. Discount/curation
+              variant'ları bu branch'te DEĞİL. İçerik/hesap AYNEN. */}
+          {reserveInfo ? (
+            <>
+              {defaultPriceRow}
+              <div aria-hidden="true" className="mt-3.5 h-px bg-[var(--color-stone-100)]" />
+              {defaultAmenitiesRow}
+            </>
+          ) : (
+            <>
+              {defaultAmenitiesRow}
+              <div aria-hidden="true" className="mt-3.5 h-px bg-[var(--color-stone-100)]" />
+              {defaultPriceRow}
+            </>
           )}
-
-          {/* Divider — üst bilgi bloğu ↔ özellikler */}
-          <div aria-hidden="true" className="mt-3.5 h-px bg-[var(--color-stone-100)]" />
-
-          {/* AMENITIES — guests / bedrooms / bathrooms, marka rengi ikon vurgusu */}
-          <div className="mt-3.5 flex items-center gap-x-4 gap-y-1.5 flex-wrap text-[10px] font-medium text-[var(--color-stone-800)]">
-            <span
-              className="inline-flex items-center gap-1.5"
-              aria-label={formatDictionaryString(dict.card.guestsAriaLabel, {
-                n: guests,
-              })}
-            >
-              <Users size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
-              <span className="tabular-nums">
-                {formatDictionaryString(dict.card.guestsValue, { n: guests })}
-              </span>
-            </span>
-            <span
-              className="inline-flex items-center gap-1.5"
-              aria-label={formatDictionaryString(dict.card.bedroomsAriaLabel, {
-                n: bedrooms,
-              })}
-            >
-              <BedDouble size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
-              <span className="tabular-nums">
-                {formatDictionaryString(dict.card.bedroomsValue, {
-                  n: bedrooms,
-                })}
-              </span>
-            </span>
-            <span
-              className="inline-flex items-center gap-1.5"
-              aria-label={formatDictionaryString(dict.card.bathroomsAriaLabel, {
-                n: bathrooms,
-              })}
-            >
-              <Bath size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
-              <span className="tabular-nums">
-                {formatDictionaryString(dict.card.bathroomsValue, {
-                  n: bathrooms,
-                })}
-              </span>
-            </span>
-          </div>
 
           {/* 🛡️ ESNEK EK SONUÇ satırı — yalnız isFlexible; takvim ikonu sağda.
               Tarihsiz / tarih seçili durumlarda ikon FİYAT satırının sağında. */}
