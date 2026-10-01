@@ -1077,11 +1077,6 @@ export default function VillaCard({
             </div>
           )}
 
-          {/* Bottom scrim — başlık/bölge legibility */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-[62%] bg-black/35 pointer-events-none"
-          />
           {/* Top vignette — badge legibility */}
           <div
             aria-hidden="true"
@@ -1376,10 +1371,6 @@ export default function VillaCard({
               Diğer her şey (review/amenities/fiyat/CTA/favori) AYNEN
               CONTENT AREA'da kalmaya devam ediyor — yalnız bu iki alan
               taşındı. Discount/curation variant'ları ETKİLENMEDİ. */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-[58%] bg-black/35 pointer-events-none"
-          />
           <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 md:p-4 pr-20 md:pr-24">
             <h3
               className={

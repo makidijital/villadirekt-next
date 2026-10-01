@@ -129,8 +129,8 @@ import { POST as upload } from "@/app/api/admin/storage/upload/route";
 import { POST as remove } from "@/app/api/admin/storage/remove/route";
 import { GET as voucher } from "@/app/api/voucher/[id]/route";
 
-const VILLA_BUCKET = "tatilinyeri-villa-images";
-const ASSET_BUCKET = "tatilinyeri-site-assets";
+const VILLA_BUCKET = "villadirekt-villa-images";
+const ASSET_BUCKET = "villadirekt-site-assets";
 const idCtx = (id = "x1") => ({ params: Promise.resolve({ id }) });
 const json = (url: string, method: string, body?: unknown) =>
   new Request(url, {

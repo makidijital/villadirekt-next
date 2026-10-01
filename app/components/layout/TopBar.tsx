@@ -40,15 +40,8 @@ import {
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 /* 🛡️ TopBar statik metinleri — `{no}` gibi token'lar MEVCUT helper ile
    doldurulur (yeni bir i18n mekanizması EKLENMEDİ). */
-import { formatDictionaryString } from "@/lib/i18n/format-dictionary-string";
 import { getLocaleSwitchTargets } from "@/lib/i18n/locale-switch.helper";
 import { resolvePublicHome } from "@/lib/i18n/public-home";
-
-/* 🛡️ TURSAB belge numarası — ÖNCEDEN de bu dosyada HARDCODED'di
-   (settings şemasına dokunulmadı). Çeviri metninden AYRI tutulur ki
-   numara üç dilde tekrarlanmasın; `header.agencyCredential`'ın `{no}`
-   token'ına enjekte edilir. */
-const TURSAB_LICENSE_NO = "13303";
 
 /* `symbol` — kapalı tetikleyicide VE dropdown seçeneklerinde gösterilen
    para birimi sembolü (₺ / $ / € / £); ikisi de AYNI sunumu kullanır.
@@ -361,11 +354,11 @@ export default function TopBar() {
        - TRY/USD/EUR/GBP seçenekleri AYNEN
 
      YENİ (yalnız UI/render/stil):
-       - SOL: 7/24 Destek (küçük pulse-dot) + WhatsApp/Telefon/E-posta
+       - SOL: Telefon/E-posta
          (settings-driven, md+ görünür — mobilde alanı sıkıştırmamak
          için gizli; kapsam notunda belirtildiği gibi izinli).
-       - ORTA: "Costeralla Travel" + "TURSAB A Grubu Acenta · Belge No:
-         13303" — bu aşamada HARDCODED (settings şemasına dokunulmadı).
+       - ORTA: "Costeralla Travel" — HARDCODED (settings şemasına
+         dokunulmadı).
          Artık TÜM breakpoint'lerde görünür (eski `hidden md:flex`
          kaldırıldı). Hafif ışıltı: turuncu→mavi (#ED7926→#0973BA)
          gradient metin + ince, yavaş (4s) ışık geçişi sweep — mevcut
@@ -395,25 +388,10 @@ export default function TopBar() {
           py-[6px]
         "
       >
-      {/* SOL — İletişim (7/24 Destek + Telefon + E-posta). WhatsApp bu
+      {/* SOL — İletişim (Telefon + E-posta). WhatsApp bu
           bölümden kaldırıldı (SAĞ sosyal medya grubunda aynen kalıyor).
           Mobilde sıkışmayı/taşmayı önlemek için md+ görünür. */}
       <div className="hidden md:flex items-center gap-4 lg:gap-5 shrink-0 text-[14px]">
-        {/* 7/24 DESTEK — premium, küçük; pulse abartısız (tek küçük nokta). */}
-        <div className="flex items-center gap-1.5 text-white/85">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-70 animate-ping motion-reduce:animate-none" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent" />
-          </span>
-          <span className="font-medium tracking-[0.14em] uppercase text-[11.5px] whitespace-nowrap">
-            {dictionary.header.supportBadge}
-          </span>
-        </div>
-
-        {(phoneHref || emailHref) && (
-          <span aria-hidden className="h-3 w-px bg-white/15" />
-        )}
-
         {phoneHref && (
           <a
             href={phoneHref}
@@ -445,7 +423,7 @@ export default function TopBar() {
         )}
       </div>
 
-      {/* ORTA — Costeralla Travel · TURSAB (hardcoded, bkz. yorum bloğu).
+      {/* ORTA — Costeralla Travel (hardcoded, bkz. yorum bloğu).
           TÜM breakpoint'lerde görünür (zorunlu mobil görünürlük). */}
       <div className="relative flex-1 min-w-0 flex flex-col items-center justify-center overflow-hidden py-px">
         <div className="relative inline-flex flex-col items-center max-w-full">
@@ -462,21 +440,6 @@ export default function TopBar() {
             "
           >
             Costeralla Travel
-          </span>
-          <span
-            className="
-              relative z-10
-              text-[9px] sm:text-[10px] md:text-[10.5px]
-              tracking-[0.06em]
-              leading-tight
-              whitespace-nowrap truncate max-w-full
-              text-white/55
-              mt-0.5
-            "
-          >
-            {formatDictionaryString(dictionary.header.agencyCredential, {
-              no: TURSAB_LICENSE_NO,
-            })}
           </span>
 
           {/* Işıltı — çok hafif, yavaş (4s) ışık geçişi. Mevcut globals.css

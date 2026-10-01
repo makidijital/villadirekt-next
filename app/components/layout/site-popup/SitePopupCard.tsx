@@ -93,13 +93,6 @@ export default function SitePopupCard({
           />
         )}
 
-        {hasOverlayText && (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-black/35 "
-          />
-        )}
-
         {(hasOverlayText || button) && (
           <>
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 md:p-9 text-white">

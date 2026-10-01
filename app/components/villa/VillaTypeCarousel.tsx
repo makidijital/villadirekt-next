@@ -258,11 +258,6 @@ function VillaTypeCard({
           </span>
         )}
 
-        {/* Badge legibility — hafif üst gradient */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-16 bg-black/15 pointer-events-none"
-        />
 
         {/* Villa sayısı — gerçek DB verisi (item.count), gradient pill badge */}
         <span

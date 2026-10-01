@@ -280,7 +280,7 @@ describe("saveSitePopup (servis doğrulaması)", () => {
 
   it("görsel kaldırılınca eski dosya R2'den silinir; aynı yol korunursa silinmez", async () => {
     await saveSitePopup({ ...base, imagePath: null });
-    expect(removeServer).toHaveBeenCalledWith("tatilinyeri-site-assets", ["popup/popup.webp"]);
+    expect(removeServer).toHaveBeenCalledWith("villadirekt-site-assets", ["popup/popup.webp"]);
     removeServer.mockClear();
     await saveSitePopup(base);
     expect(removeServer).not.toHaveBeenCalled();

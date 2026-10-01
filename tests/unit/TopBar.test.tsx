@@ -17,8 +17,8 @@
      1-3)   Görünürlük: multilingual kapalı/açık/settings-null.
      4-9)   Aktif locale + hedef URL'ler (ana sayfa, villa detay, TR/EN/DE).
      10-12) Fallback-to-home (locale karşılığı olmayan route'lar).
-     13-16) Regresyon: currency seçici, sosyal ikonlar, 7/24 destek,
-            telefon/e-posta ETKİLENMEDİ.
+     13-16) Regresyon: currency seçici, sosyal ikonlar, telefon/e-posta
+            ETKİLENMEDİ (7/24 Destek ve TURSAB satırı TopBar'dan KALDIRILDI).
      17-19) Dropdown mekaniği: aç/kapa, dışa-tık, aktif locale
             tıklanamaz + aria-current.
    =============================================================== */
@@ -282,12 +282,12 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
     expect(screen.queryByRole("option", { name: /USD/ })).not.toBeInTheDocument();
   });
 
-  it("15) sosyal ikonlar, 7/24 destek, telefon/e-posta — multilingual açıkken de DEĞİŞMEDİ", async () => {
+  it("15) sosyal ikonlar, telefon/e-posta — multilingual açıkken de DEĞİŞMEDİ", async () => {
     usePathnameMock.mockReturnValue("/");
     getPublicSettingsMock.mockResolvedValue(settingsWith({ multilingual_enabled: true }));
     render(<TopBar />);
     await screen.findByLabelText(LANGUAGE_LABEL.tr);
-    expect(screen.getByText("7/24 Destek")).toBeInTheDocument();
+    expect(screen.queryByText("7/24 Destek")).not.toBeInTheDocument();
     expect(screen.getByText(BASE_SETTINGS.phone)).toBeInTheDocument();
     expect(screen.getByText(BASE_SETTINGS.email)).toBeInTheDocument();
     expect(screen.getByLabelText("Instagram")).toBeInTheDocument();
@@ -296,12 +296,12 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
     expect(screen.getByLabelText("TikTok")).toBeInTheDocument();
   });
 
-  it("16) sosyal ikonlar, 7/24 destek, telefon/e-posta — multilingual KAPALİYKEN de DEĞİŞMEDİ (regresyon)", async () => {
+  it("16) sosyal ikonlar, telefon/e-posta — multilingual KAPALİYKEN de DEĞİŞMEDİ (regresyon)", async () => {
     usePathnameMock.mockReturnValue("/");
     getPublicSettingsMock.mockResolvedValue(settingsWith({ multilingual_enabled: false }));
     render(<TopBar />);
-    await screen.findByText("7/24 Destek");
-    expect(screen.getByText(BASE_SETTINGS.phone)).toBeInTheDocument();
+    await screen.findByText(BASE_SETTINGS.phone);
+    expect(screen.queryByText("7/24 Destek")).not.toBeInTheDocument();
     expect(screen.getByText(BASE_SETTINGS.email)).toBeInTheDocument();
     expect(screen.getByText("TRY")).toBeInTheDocument();
   });
@@ -485,11 +485,12 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
   });
 
   /* ═══════════════════════════════════════════════════════════════
-     29-40) STATİK METİN ÇOKLU DİLİ (TR/EN/DE)
+     29-43) STATİK METİN (TR/EN/DE)
      ═══════════════════════════════════════════════════════════════
-     TopBar'ın hardcoded TR metinleri MEVCUT `header` namespace'ine
-     taşındı (yeni namespace/provider/hook YOK). Marka adı "Costeralla
-     Travel" ÖZEL İSİM olduğu için ÇEVRİLMEZ; sosyal medya etiketleri
+     "7/24 Destek" rozeti ve "TURSAB … Belge No" satırı TopBar'dan
+     KALDIRILDI (sözlük key'leri de silindi) → testler bu metinlerin
+     hiçbir dilde görünmediğini kilitler. Marka adı "Costeralla Travel"
+     ÖZEL İSİM olduğu için ÇEVRİLMEZ; sosyal medya etiketleri
      (Instagram/Facebook/...) de marka adıdır. */
 
   /** Belirtilen path + multilingual bayrağı ile TopBar'ı mount eder. */
@@ -502,45 +503,20 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
     await screen.findByText("Costeralla Travel");
   }
 
-  it("29) TR ('/') → '7/24 Destek' ve TR belge satırı BİREBİR (regresyon)", async () => {
-    await mountAt("/");
-    expect(screen.getByText("7/24 Destek")).toBeInTheDocument();
-    expect(
-      screen.getByText("TURSAB A Grubu Acenta · Belge No: 13303")
-    ).toBeInTheDocument();
-  });
-
-  it("29b) TR alt sayfada da ('/kiralik-villalar') TR metinler", async () => {
-    await mountAt("/kiralik-villalar");
-    expect(screen.getByText("7/24 Destek")).toBeInTheDocument();
-  });
-
-  it("30) EN ('/en') → '24/7 Support' + EN belge satırı", async () => {
-    await mountAt("/en");
-    expect(screen.getByText("24/7 Support")).toBeInTheDocument();
-    expect(
-      screen.getByText("TURSAB Group A Agency · License No: 13303")
-    ).toBeInTheDocument();
-    expect(screen.queryByText("7/24 Destek")).not.toBeInTheDocument();
-  });
-
-  it("31) DE ('/de') → '24/7 Support' + DE belge satırı", async () => {
-    await mountAt("/de");
-    expect(screen.getByText("24/7 Support")).toBeInTheDocument();
-    expect(
-      screen.getByText("TURSAB Agentur der Gruppe A · Lizenznr.: 13303")
-    ).toBeInTheDocument();
-    expect(screen.queryByText("7/24 Destek")).not.toBeInTheDocument();
-  });
-
-  it("32) EN/DE alt sayfalarda da locale'e göre çözülür", async () => {
-    await mountAt("/en/kiralik-villa/test");
-    expect(screen.getByText("24/7 Support")).toBeInTheDocument();
-    cleanup();
-    await mountAt("/de/arama");
-    expect(
-      screen.getByText("TURSAB Agentur der Gruppe A · Lizenznr.: 13303")
-    ).toBeInTheDocument();
+  it("29) 7/24 Destek ve TURSAB belge satırı HİÇBİR dilde/sayfada GÖRÜNMEZ (kaldırıldı)", async () => {
+    for (const p of [
+      "/",
+      "/kiralik-villalar",
+      "/en",
+      "/de",
+      "/en/kiralik-villa/test",
+      "/de/arama",
+    ]) {
+      await mountAt(p);
+    expect(screen.queryByText(/7\/24 Destek|24\/7 Support/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/TURSAB|13303/)).not.toBeInTheDocument();
+      cleanup();
+    }
   });
 
   it("33) MARKA ADI hiçbir dilde çevrilmez (özel isim)", async () => {
@@ -558,34 +534,22 @@ describe("TopBar — Phase 10C dil değiştirici", () => {
     }
   });
 
-  it("35) multilingual KAPALI + TR → metinler BİREBİR eskisi gibi", async () => {
+  it("35) multilingual KAPALI + TR → kaldırılan metinler yok, dil değiştirici görünmez", async () => {
     await mountAt("/", false);
-    expect(screen.getByText("7/24 Destek")).toBeInTheDocument();
-    expect(
-      screen.getByText("TURSAB A Grubu Acenta · Belge No: 13303")
-    ).toBeInTheDocument();
+    expect(screen.queryByText(/7\/24 Destek|24\/7 Support/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/TURSAB|13303/)).not.toBeInTheDocument();
     /* Dil değiştirici görünmez (mevcut davranış DEĞİŞMEDİ). */
     expect(screen.queryByLabelText(LANGUAGE_LABEL.tr)).not.toBeInTheDocument();
   });
 
-  it("36) belge NUMARASI üç dilde de AYNI (yalnız etiket çevrilir)", async () => {
-    for (const p of ["/", "/en", "/de"]) {
-      await mountAt(p);
-      expect(screen.getByText(/13303/)).toBeInTheDocument();
-      expect(screen.getByText(/TURSAB/)).toBeInTheDocument();
-      cleanup();
-    }
-  });
-
-  it("37) EN metinleri ile locale switch query koruması BİRLİKTE çalışır", async () => {
+  it("37) EN sayfasında locale switch query koruması çalışır", async () => {
     usePathnameMock.mockReturnValue("/en/arama");
     useSearchParamsMock.mockReturnValue(new URLSearchParams(ARAMA_QUERY));
     getPublicSettingsMock.mockResolvedValue(
       settingsWith({ multilingual_enabled: true })
     );
     render(<TopBar />);
-    await screen.findByText("24/7 Support");
-    fireEvent.click(screen.getByLabelText(LANGUAGE_LABEL.en));
+    fireEvent.click(await screen.findByLabelText(LANGUAGE_LABEL.en));
     expect(screen.getByRole("option", { name: "DE" })).toHaveAttribute(
       "href",
       `/de/arama?${ARAMA_QUERY}`
@@ -755,58 +719,34 @@ describe("TopBar — dictionary bütünlüğü ve source-lock", () => {
     fs.readFileSync(path.join(process.cwd(), TOPBAR_SRC), "utf-8")
   );
 
-  it("38) TR değerleri ESKİ hardcoded metinlerle BİREBİR", () => {
-    expect(tr.header.supportBadge).toBe("7/24 Destek");
-    expect(tr.header.agencyCredential).toBe(
-      "TURSAB A Grubu Acenta · Belge No: {no}"
-    );
-  });
-
-  it("39) yeni key'ler TR/EN/DE'de MEVCUT ve dolu", () => {
+  it("38) kaldırılan TopBar key'leri (supportBadge/agencyCredential) TR/EN/DE sözlüklerinde YOK", () => {
     for (const [name, d] of [
       ["tr", tr],
       ["en", en],
       ["de", de],
     ] as const) {
-      for (const k of ["supportBadge", "agencyCredential"] as const) {
-        expect(typeof d.header[k], `${name}.${k}`).toBe("string");
-        expect(d.header[k].trim().length, `${name}.${k}`).toBeGreaterThan(0);
+      for (const k of ["supportBadge", "agencyCredential"]) {
+        expect(Object.prototype.hasOwnProperty.call(d.header, k), `${name}.${k}`).toBe(false);
       }
     }
   });
 
-  it("40) `{no}` placeholder üç dilde de KORUNUYOR", () => {
-    for (const d of [tr, en, de]) {
-      expect(d.header.agencyCredential).toContain("{no}");
-      /* Numara çeviri metnine GÖMÜLMEZ (tek kaynak component'te). */
-      expect(d.header.agencyCredential).not.toContain("13303");
-    }
-  });
-
-  it("41) EN'de Türkçe karakter yok; DE'de Türkçeye ÖZGÜ karakter yok", () => {
-    for (const k of ["supportBadge", "agencyCredential"] as const) {
-      expect(/[çÇğĞıİöÖşŞüÜ]/.test(en.header[k]), `en.${k}`).toBe(false);
-      expect(/[çÇğĞıİşŞ]/.test(de.header[k]), `de.${k}`).toBe(false);
-    }
-  });
-
-  it("42) SOURCE-LOCK — TopBar kodunda hardcoded TR metin KALMADI", () => {
+  it("42) SOURCE-LOCK — TopBar kodunda 7/24 Destek / TURSAB metni ve referansı YOK", () => {
     for (const s of [
       "7/24 Destek",
       "TURSAB A Grubu Acenta",
       "Belge No",
       "Destek",
+      "13303",
+      "supportBadge",
+      "agencyCredential",
     ]) {
       expect(code.includes(s), s).toBe(false);
     }
-    /* Dictionary üzerinden okunuyor. */
-    expect(code.includes("dictionary.header.supportBadge")).toBe(true);
-    expect(code.includes("dictionary.header.agencyCredential")).toBe(true);
   });
 
-  it("43) marka adı ve belge numarası KODDA kalır (çeviri kapsamı dışı)", () => {
+  it("43) marka adı KODDA kalır (çeviri kapsamı dışı)", () => {
     expect(code.includes("Costeralla Travel")).toBe(true);
-    expect(code.includes("13303")).toBe(true);
   });
 
 });

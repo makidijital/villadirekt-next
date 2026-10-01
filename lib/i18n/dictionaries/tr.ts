@@ -47,10 +47,6 @@ export const tr: Dictionary = {
     logoAlt: "Site logosu",
     submenuOpenAriaLabel: "Aç: {label} alt menüsü",
     submenuCloseAriaLabel: "Kapat: {label} alt menüsü",
-    /* 🛡️ TopBar — TR değerleri ESKİ hardcoded metinlerin BİREBİR
-       kopyasıdır; render çıktısı byte-identical. */
-    supportBadge: "7/24 Destek",
-    agencyCredential: "TURSAB A Grubu Acenta · Belge No: {no}",
   },
   footer: {
     explore: "Keşfet",

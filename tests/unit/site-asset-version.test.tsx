@@ -100,7 +100,7 @@ describe("C) server versiyon (R2 ETag)", () => {
     expect(a).toBe("195d7893b629");
     expect(a2).toBe(a);
     expect(b).toBe("a564cda083d9");
-    expect(headMock).toHaveBeenCalledWith("tatilinyeri-site-assets", "blog/x.webp");
+    expect(headMock).toHaveBeenCalledWith("villadirekt-site-assets", "blog/x.webp");
   });
 
   it("nesne yok → null; R2 hatası → null (sayfa bozulmaz)", async () => {
@@ -128,10 +128,10 @@ describe("C) server versiyon (R2 ETag)", () => {
 
 describe("D) invalidation", () => {
   it("yalnız site-assets path tag'i; villa bucket'ı dokunulmaz", () => {
-    invalidateSiteAssetVersions("tatilinyeri-site-assets", ["blog/x.webp", "https://x/y"]);
+    invalidateSiteAssetVersions("villadirekt-site-assets", ["blog/x.webp", "https://x/y"]);
     expect(revalidateTagMock).toHaveBeenCalledTimes(1);
     expect(revalidateTagMock).toHaveBeenCalledWith("site-asset-version:blog/x.webp", { expire: 0 });
-    invalidateSiteAssetVersions("tatilinyeri-villa-images", ["villas/a/b.webp"]);
+    invalidateSiteAssetVersions("villadirekt-villa-images", ["villas/a/b.webp"]);
     expect(revalidateTagMock).toHaveBeenCalledTimes(1);
   });
 
@@ -139,7 +139,7 @@ describe("D) invalidation", () => {
     revalidateTagMock.mockImplementation(() => {
       throw new Error("outside request scope");
     });
-    expect(() => invalidateSiteAssetVersions("tatilinyeri-site-assets", ["blog/x.webp"])).not.toThrow();
+    expect(() => invalidateSiteAssetVersions("villadirekt-site-assets", ["blog/x.webp"])).not.toThrow();
   });
 });
 
@@ -158,7 +158,7 @@ describe("E) upload route", () => {
     const { POST } = await import("@/app/api/admin/storage/upload/route");
     const fd = new FormData();
     fd.append("file", new Blob([new Uint8Array([1, 2, 3])], { type: "image/webp" }), "a.webp");
-    fd.append("bucket", "tatilinyeri-site-assets");
+    fd.append("bucket", "villadirekt-site-assets");
     fd.append("path", "blog/x.webp");
     fd.append("cacheControl", "3600");
     fd.append("upsert", "true");
@@ -169,7 +169,7 @@ describe("E) upload route", () => {
   it("başarı → aynı path'in versiyonu invalidate; yanıt { ok: true } AYNI; path/cacheControl aynen", async () => {
     const r = await post(true);
     expect(r).toEqual({ status: 200, json: { ok: true } });
-    expect(uploadMock.mock.calls[0][0]).toBe("tatilinyeri-site-assets");
+    expect(uploadMock.mock.calls[0][0]).toBe("villadirekt-site-assets");
     expect(uploadMock.mock.calls[0][1]).toBe("blog/x.webp");
     expect(uploadMock.mock.calls[0][3]).toMatchObject({ cacheControl: "3600", upsert: true });
     expect(revalidateTagMock).toHaveBeenCalledWith("site-asset-version:blog/x.webp", { expire: 0 });

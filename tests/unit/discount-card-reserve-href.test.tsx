@@ -178,7 +178,7 @@ describe("İndirimli kart CTA — fırsat tarihlerini rezervasyona taşır", () 
     renderDiscountCard({ locale: "de" });
     const btn = screen.getAllByRole("button").find((b) =>
       (b.textContent || "").trim().length > 0 &&
-      (b.getAttribute("class") || "").includes("bg-[#ED7926]")
+      (b.getAttribute("class") || "").includes("bg-accent")
     )!;
     fireEvent.click(btn);
     expect(pushSpy.mock.calls[0][0]).toBe(
@@ -208,11 +208,11 @@ describe("İndirimli kart CTA — fırsat tarihlerini rezervasyona taşır", () 
     expect(pushSpy.mock.calls[0][0]).toBe("/kiralik-villa/ornek-villa");
   });
 
-  it("13) CTA tasarımı DEĞİŞMEDİ — turuncu marka butonu aynı sınıflarla duruyor", () => {
+  it("13) CTA tasarımı DEĞİŞMEDİ — vurgu rengi (bg-accent) CTA butonu aynı sınıflarla duruyor", () => {
     renderDiscountCard();
     const btn = screen.getByRole("button", { name: "Hemen Rezervasyon Yap" });
     const cls = btn.getAttribute("class") || "";
-    expect(cls).toContain("bg-[#ED7926]");
+    expect(cls).toContain("bg-accent");
     expect(cls).toContain("h-11");
     expect(cls).toContain("rounded-xl");
     expect(btn.getAttribute("type")).toBe("button");
@@ -253,7 +253,7 @@ describe("İndirimli kart CTA — fırsat tarihlerini rezervasyona taşır", () 
     renderDiscountCard({ discountAvailable: false });
     const btn = screen.getByRole("button", { name: "Hemen Rezervasyon Yap" });
     const cls = btn.getAttribute("class") || "";
-    expect(cls).toContain("bg-[#ED7926]");
+    expect(cls).toContain("bg-accent");
     expect(cls).toContain("h-11");
     expect(cls).toContain("rounded-xl");
     expect(btn.hasAttribute("disabled")).toBe(false);

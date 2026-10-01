@@ -262,10 +262,6 @@ export default function VillaVideoSection({ videos, villaTitle }: Props) {
                   decoding="async"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                <span
-                  aria-hidden
-                  className="absolute inset-0 bg-black/15"
-                />
               </button>
             );
           })}

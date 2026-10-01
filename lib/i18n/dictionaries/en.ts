@@ -44,9 +44,6 @@ export const en: Dictionary = {
     logoAlt: "Site logo",
     submenuOpenAriaLabel: "Open: {label} submenu",
     submenuCloseAriaLabel: "Close: {label} submenu",
-    /* 🛡️ TopBar statik metinleri. */
-    supportBadge: "24/7 Support",
-    agencyCredential: "TURSAB Group A Agency · License No: {no}",
   },
   footer: {
     explore: "Explore",
