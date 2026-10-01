@@ -349,6 +349,8 @@ export const en: Dictionary = {
     bedroomsValue: "{n} Bedrooms",
     bathroomsValue: "{n} Bathrooms",
     discountBadge: "{percent}% OFF",
+    discountBadgeValue: "{percent}%",
+    discountBadgeLabel: "OFF",
     discountBadgeAriaLabel: "{percent} percent discount",
     nightlySavings: "{amount} off per night",
     totalSavings: "{amount} off",

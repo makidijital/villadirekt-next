@@ -1106,17 +1106,26 @@ export default function VillaCard({
               render edilmez. Kartın içine taşmaması için image bloğunun kendi
               `relative overflow-hidden` alanına, `absolute top-3 right-3` ile
               konumlandırıldı. */}
+          {/* 🏷️ KÖŞE ETİKETİ — kartın üst + sağ kenarına sıfır oturan kompakt
+              dikey kırmızı blok; sağ üst köşe kartın radius'unu (12.5px)
+              takip eder, sol alt köşe yumuşak. Üstte oran, altta "İNDİRİM". */}
           {discountBadgePercent !== null && (
             <div
-              className="absolute top-3 right-3 z-10 inline-flex items-center rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-semibold tracking-[0.02em] text-white shadow-[0_4px_10px_-2px_rgba(220,38,38,0.5)]"
+              role="img"
+              className="absolute top-0 right-0 z-10 flex min-w-[58px] flex-col items-center justify-center rounded-tr-[12.5px] rounded-bl-[12px] bg-red-600 px-3 pt-2.5 pb-2 text-center text-white shadow-[0_6px_14px_-6px_rgba(220,38,38,0.55)]"
               aria-label={formatDictionaryString(
                 dict.card.discountBadgeAriaLabel,
                 { percent: discountBadgePercent }
               )}
             >
-              {formatDictionaryString(dict.card.discountBadge, {
-                percent: discountBadgePercent,
-              })}
+              <span aria-hidden="true" className="font-display text-[20px] font-extrabold leading-none tracking-[-0.02em] tabular-nums">
+                {formatDictionaryString(dict.card.discountBadgeValue, {
+                  percent: discountBadgePercent,
+                })}
+              </span>
+              <span aria-hidden="true" className="mt-1 text-[9px] font-bold leading-none tracking-[0.14em] uppercase">
+                {dict.card.discountBadgeLabel}
+              </span>
             </div>
           )}
 

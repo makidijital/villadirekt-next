@@ -484,6 +484,10 @@ export type Dictionary = {
     bathroomsValue: string;
     /** template: {percent} */
     discountBadge: string;
+    /** İndirimli kart köşe etiketi — üst satır (oran). template: {percent} */
+    discountBadgeValue: string;
+    /** İndirimli kart köşe etiketi — alt satır. */
+    discountBadgeLabel: string;
     /** template: {percent} */
     discountBadgeAriaLabel: string;
     /** template: {amount} */
