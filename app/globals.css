@@ -249,12 +249,26 @@
   /* Eski "sunset" overlay token'ı → düz overlay (gradient yok) */
   --gradient-hero-warm: rgb(0 0 0 / 0.35);
 
+  /* Tipografi — başlık: Plus Jakarta Sans · başlık dışı: Manrope.
+     `.font-display`, public h1-h6 kuralı ve Tailwind `font-sans` bu
+     token'ları kullandığı için component'lere tek tek font yazılmadı. */
+  --font-display: var(--font-jakarta), "Plus Jakarta Sans", sans-serif;
+  --font-sans: var(--font-manrope), "Manrope", system-ui, -apple-system,
+    sans-serif;
+
   --background: var(--color-stone-50);
   --foreground: var(--color-stone-800);
   --muted: var(--color-stone-500);
   --border: #e8e8e8;
   --ring: var(--color-brand);
   --dp-day-hover: var(--color-champagne-50);
+}
+
+/* Public tipografi — rakam/fiyat gösterimleri (`.font-display` +
+   `tabular-nums`: fiyat, puan, sayaç, saat) başlık değil → Manrope.
+   `:where()` ile özgüllük (0,2,0); component'e tek tek font yazılmadı. */
+:where(:root:not(:has(.admin-shell))) .font-display.tabular-nums {
+  font-family: var(--font-sans);
 }
 
 /* Public başlık rengi (eski lacivert #082060 → nötr koyu) */
@@ -326,7 +340,7 @@ body {
    `.public-shell` altındaki (app/(public)/layout.tsx kök wrapper'ı —
    yani TÜM public sayfalar: anasayfa, villa listeleme/arama, villa
    detay, teklif al, favoriler, public header/topbar/footer) HER h1-h6
-   otomatik olarak --font-display (Outfit + Outfit Fallback) kullanır.
+   otomatik olarak --font-display (public: Plus Jakarta Sans) kullanır.
    Böylece `.font-display` class'ı olmayan başlıklar (ör. küçük eyebrow
    h2/h3 etiketleri) da kapsanır — tek tek component'e font-family
    YAZILMADI. Yalnızca `font-family`; font-size/weight/line-height/

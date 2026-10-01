@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Geist_Mono } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans, Manrope, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -17,6 +17,24 @@ import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
+  display: "swap",
+});
+
+/* 🛡️ PUBLIC TİPOGRAFİ — başlık: Plus Jakarta Sans (--font-jakarta),
+   başlık dışı her şey: Manrope (--font-manrope). Public kapsamda
+   --font-display / --font-sans bu iki değişkene bağlanır (globals.css,
+   `:root:not(:has(.admin-shell))` bloğu). Outfit yalnız admin'in
+   mevcut kök fallback'i için yüklü kalır → admin BİREBİR aynı.
+   latin-ext: Türkçe karakterler (ğ, ş, ı, İ …) için. */
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
@@ -143,7 +161,7 @@ export default async function RootLayout({
   return (
     <html
       lang="tr"
-      className={`${outfit.variable} ${geistMono.variable}`}
+      className={`${outfit.variable} ${jakarta.variable} ${manrope.variable} ${geistMono.variable}`}
     >
       <head />
       <body className="min-h-screen bg-[var(--color-ivory)] text-[var(--color-stone-900)] antialiased font-sans">
