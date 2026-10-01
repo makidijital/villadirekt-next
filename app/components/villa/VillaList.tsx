@@ -77,7 +77,7 @@ export default async function VillaList({
   if (!villas.length) {
     return (
       <section className="px-5 md:px-10 lg:px-16 py-28 md:py-40">
-        <div className="max-w-[1280px] mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="max-w-xl">
             <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)]">
               <span className="inline-block w-8 h-px bg-[var(--color-stone-300)] align-middle mr-3" />
@@ -97,7 +97,7 @@ export default async function VillaList({
 
   return (
     <section className="px-5 md:px-10 lg:px-16 py-14 md:py-20">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* 🛡️ FAZ 39L — Normalized section header.
            Hero ile yarışan 80px serif dev başlık kaldırıldı. Tek
            başlık + subtitle yapısı (CategoryCollection parity).

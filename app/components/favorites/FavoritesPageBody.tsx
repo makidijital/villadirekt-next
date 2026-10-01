@@ -40,7 +40,7 @@ export default function FavoritesPageBody({
       />
 
       <section className="px-5 md:px-10 lg:px-16 pt-12 md:pt-16 pb-24 md:pb-32">
-        <div className="max-w-[1280px] mx-auto">
+        <div className="max-w-6xl mx-auto">
           <FavoritesGrid locale={locale} />
         </div>
       </section>

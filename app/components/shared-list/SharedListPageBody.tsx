@@ -182,7 +182,7 @@ export default async function SharedListPageBody({
 
   return (
     <div className="min-h-screen bg-[var(--color-stone-50,#fafaf9)]">
-      <div className="max-w-[1280px] mx-auto px-5 md:px-10 lg:px-16 py-12 md:py-20">
+      <div className="max-w-6xl mx-auto px-5 md:px-10 lg:px-16 py-12 md:py-20">
         {/* ════════ HERO ════════ */}
         <header className="max-w-3xl">
           <p className="

@@ -72,7 +72,7 @@ export default async function BlogIndexPageBody({
         description={dict.heroDescription}
       />
     <main className="px-5 md:px-10 lg:px-16 pt-8 md:pt-12 pb-12 md:pb-20">
-      <div className="max-w-[1280px] mx-auto">
+      <div className="max-w-6xl mx-auto">
 
         {posts.length === 0 ? (
           <div className="rounded-2xl border border-[var(--color-stone-200)] bg-white p-10 text-center text-[var(--color-stone-500)]">

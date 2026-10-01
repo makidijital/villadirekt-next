@@ -71,7 +71,7 @@ export default function WhyUsSection({ brandName, phone }: Props) {
       {/* AYRI YÜZEY — kırık beyaz card; sayfadan ayrışır */}
       <div
         className="
-          max-w-[1280px] mx-auto
+          max-w-6xl mx-auto
           rounded-3xl border border-black/[0.06]
           bg-[#FAF8F5]
           shadow-[0_24px_60px_-32px_rgba(27,26,23,0.18)]

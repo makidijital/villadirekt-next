@@ -837,7 +837,7 @@ select.input {
    UTILS
    ---------------------------------------------------------------- */
 .section-narrow {
-  max-width: 1180px;
+  max-width: var(--container-6xl);
   margin-left: auto;
   margin-right: auto;
   padding-left: 1rem;
