@@ -1051,14 +1051,17 @@ export default function VillaCard({
       isDiscount ? (
       <div
         className={
-          "relative rounded-[14px] p-[1.5px] overflow-hidden dc-glow-ring " +
+          /* 🔄 Mavi dış çizgi kaldırıldı: 1.5px padding + `.dc-glow-ring`
+             (brand %55 zemin) birlikte kartın etrafında mavi bir çerçeve
+             oluşturuyordu; hover gölgesi de mavi tonluydu → nötr. */
+          "relative rounded-[14px] overflow-hidden " +
           "shadow-[0_14px_34px_-18px_rgba(0,0,0,0.24)] " +
-          "group-hover:shadow-[0_28px_54px_-22px_color-mix(in_srgb,var(--color-brand)_32%,transparent)] " +
+          "group-hover:shadow-[0_28px_54px_-22px_rgba(0,0,0,0.32)] " +
           "transition-[box-shadow,transform] duration-500 motion-reduce:transition-none " +
           "group-hover:-translate-y-[3px]"
         }
       >
-      <article className="relative overflow-hidden bg-white rounded-[12.5px]">
+      <article className="relative overflow-hidden bg-white rounded-[14px]">
         {/* ── IMAGE BLOCK — aspect-[4/3], premium showcase, dominant görsel ── */}
         <div className="relative overflow-hidden aspect-[4/3] bg-[var(--color-sand-100)] ">
           {showImage ? (
@@ -1119,7 +1122,7 @@ export default function VillaCard({
               className={
                 "dc-badge-shimmer absolute top-0 left-0 z-10 overflow-hidden " +
                 "flex items-center gap-1.5 min-h-[51px] max-w-[calc(100%-84px)] " +
-                "rounded-tl-[12.5px] rounded-br-[12px] bg-green-700 px-3 py-2 text-white " +
+                "rounded-tl-[14px] rounded-br-[12px] bg-green-700 px-3 py-2 text-white " +
                 "shadow-[0_6px_14px_-6px_rgba(21,128,61,0.6)] " +
                 "transition-[filter,box-shadow] duration-500 group-hover:brightness-110 " +
                 "group-hover:shadow-[0_8px_20px_-6px_rgba(21,128,61,0.75)] motion-reduce:transition-none"
@@ -1138,7 +1141,7 @@ export default function VillaCard({
           {discountBadgePercent !== null && (
             <div
               role="img"
-              className="absolute top-0 right-0 z-10 flex min-w-[58px] flex-col items-center justify-center rounded-tr-[12.5px] rounded-bl-[12px] bg-red-600 px-3 pt-2.5 pb-2 text-center text-white shadow-[0_6px_14px_-6px_rgba(220,38,38,0.55)]"
+              className="absolute top-0 right-0 z-10 flex min-w-[58px] flex-col items-center justify-center rounded-tr-[14px] rounded-bl-[12px] bg-red-600 px-3 pt-2.5 pb-2 text-center text-white shadow-[0_6px_14px_-6px_rgba(220,38,38,0.55)]"
               aria-label={formatDictionaryString(
                 dict.card.discountBadgeAriaLabel,
                 { percent: discountBadgePercent }
@@ -1194,9 +1197,7 @@ export default function VillaCard({
                 n: guests,
               })}
             >
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-brand/10 text-brand shrink-0" aria-hidden>
-                <Users size={17} strokeWidth={2.2} />
-              </span>
+              <Users size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
               <span className="tabular-nums">
                 {formatDictionaryString(dict.card.guestsValue, { n: guests })}
               </span>
@@ -1207,9 +1208,7 @@ export default function VillaCard({
                 n: bedrooms,
               })}
             >
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-brand/10 text-brand shrink-0" aria-hidden>
-                <BedDouble size={17} strokeWidth={2.2} />
-              </span>
+              <BedDouble size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
               <span className="tabular-nums">
                 {formatDictionaryString(dict.card.bedroomsValue, {
                   n: bedrooms,
@@ -1222,9 +1221,7 @@ export default function VillaCard({
                 n: bathrooms,
               })}
             >
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-brand/10 text-brand shrink-0" aria-hidden>
-                <Bath size={17} strokeWidth={2.2} />
-              </span>
+              <Bath size={15} className="text-brand" strokeWidth={1.9} aria-hidden />
               <span className="tabular-nums">
                 {formatDictionaryString(dict.card.bathroomsValue, {
                   n: bathrooms,
@@ -1277,11 +1274,12 @@ export default function VillaCard({
                     </span>
                   </div>
                   {/* 💰 GECELİK TASARRUF SATIRI (bu tur) — fiyat satırının
-                      HEMEN ALTINDA, marka mavisi (#0973BA), fiyat satırından
-                      daha küçük punto. Tutar SABİT DEĞİL: nightlySavingsLabel
-                      (yukarıda hesaplandı) null ise satır HİÇ render edilmez. */}
+                      HEMEN ALTINDA; kırmızı + bold + yumuşak `.dc-soft-pulse`
+                      (DiscountCollection <style>; reduced-motion'da kapalı).
+                      Tutar SABİT DEĞİL: nightlySavingsLabel null ise satır
+                      HİÇ render edilmez. */}
                   {nightlySavingsLabel && (
-                    <p className="mt-1 text-[11.5px] font-medium text-brand text-center">
+                    <p className="dc-soft-pulse mt-1 text-[11.5px] font-bold text-red-600 text-center">
                       {nightlySavingsLabel}
                     </p>
                   )}

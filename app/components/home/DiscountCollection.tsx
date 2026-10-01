@@ -136,7 +136,15 @@ export default async function DiscountCollection({
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
         }
+        .dc-soft-pulse {
+          animation: dc-soft-pulse 2.6s ease-in-out infinite;
+        }
+        @keyframes dc-soft-pulse {
+          0%, 100% { opacity: 1; filter: brightness(1); }
+          50% { opacity: 0.72; filter: brightness(1.15); }
+        }
         @media (prefers-reduced-motion: reduce) {
+          .dc-soft-pulse { animation: none; opacity: 1; filter: none; }
           .dc-badge-shimmer::after { animation: none; opacity: 0; }
           .dc-badge-pulse::before { animation: none; opacity: 0.45; transform: scale(1); }
           .dc-glow-ring { animation: none; background-position: 30% 50%; }

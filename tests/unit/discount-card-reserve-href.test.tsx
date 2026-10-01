@@ -295,3 +295,35 @@ describe("🗓️ GEÇERLİLİK ETİKETİ — sol üst yeşil köşe etiketi", (
     expect(screen.queryByText(/arası geçerli/)).toBeNull();
   });
 });
+
+describe("🎨 İndirimli kart — görsel sadeleştirme", () => {
+  it("gecelik tasarruf satırı dinamik, kırmızı + bold + yumuşak pulse", () => {
+    renderDiscountCard();
+    const el = screen.getByText(/Gecelik .*2\.000.* indirimli/);
+    expect(el.className).toContain("text-red-600");
+    expect(el.className).toContain("font-bold");
+    expect(el.className).toContain("dc-soft-pulse");
+  });
+
+  it("kişi/yatak/banyo ikonlarının arkasında kutu yok; dış mavi çerçeve (dc-glow-ring) yok", () => {
+    const { container } = render(
+      <VillaCard
+        variant="discount"
+        id="v-2"
+        slug="v2"
+        title="V2"
+        location="Kaş"
+        price={10000}
+        currency="TRY"
+        images={[]}
+        bedrooms={3}
+        bathrooms={2}
+        guests={6}
+        discount={BASE_DISCOUNT}
+        locale="tr"
+      />
+    );
+    expect(container.querySelector(".bg-brand\\/10.w-7")).toBeNull();
+    expect(container.querySelector(".dc-glow-ring")).toBeNull();
+  });
+});
