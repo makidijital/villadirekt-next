@@ -96,10 +96,14 @@ function renderCard(opts: {
   );
 }
 
-/** Müsaitlik CTA butonunu içeren satırın metni. */
+/** Müsaitlik CTA'sının KENDİ metni.
+ *  ⚠️ GÜNCELLEME: CTA artık yalnız takvim ikonu ve FİYAT SATIRININ sağında
+ *  duruyor (kullanıcı talebi) — satırı fiyatla paylaştığı için kontrol
+ *  butonun kendisine daraltıldı: butonda fiyat/metin YOK (ikon-only). */
 function availabilityRowText(): string {
   const btn = screen.getByLabelText(tr.card.availabilityAriaLabel);
-  return btn.parentElement?.textContent || "";
+  expect(btn.textContent).toBe("");
+  return btn.textContent || "";
 }
 
 /** Fiyat SATIRI = turuncu tutarı (font-display span) içeren `<p>`. */

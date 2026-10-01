@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
   Star,
   CalendarRange,
+  CalendarDays,
   Sparkles,
 } from "lucide-react";
 
@@ -638,6 +639,37 @@ export default function VillaCard({
       </button>
     </div>
   ) : null;
+
+  /* 🛡️ PUBLIC (default variant) — "Müsaitlik / Tarih Seç" artık yalnız
+     takvim ikonu (metin kaldırıldı; aria-label/title korunur). Handler,
+     preload ve lazy modal mantığı BİREBİR aynı. Discount/curation
+     variant'larında KULLANILMAZ. */
+  const availabilityIconButton = (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsBookingOpen(true);
+        ensureBookingModal();
+      }}
+      onPointerEnter={preloadVillaCardBookingModal}
+      onPointerDown={preloadVillaCardBookingModal}
+      onFocus={preloadVillaCardBookingModal}
+      aria-label={dict.card.availabilityAriaLabel}
+      title={dict.card.availabilityAriaLabel}
+      className={
+        "shrink-0 inline-flex items-center justify-center " +
+        "w-9 h-9 rounded-full " +
+        "text-brand bg-brand/[0.07] ring-1 ring-brand/20 " +
+        "hover:bg-brand hover:text-white hover:ring-brand hover:-translate-y-[1px] " +
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-1 " +
+        "transition-[background-color,color,box-shadow,transform] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      }
+    >
+      <CalendarDays size={17} strokeWidth={1.6} aria-hidden />
+    </button>
+  );
 
   return (
     <>
@@ -1415,8 +1447,12 @@ export default function VillaCard({
               olmasın diye oradan kaldırıldı (stayTotal!==null tarih-seçili
               toplam ve isFlexible esnek-sonuç senaryoları BOTTOM ROW'da
               AYNEN kalmaya devam ediyor — mutually exclusive, çakışma yok). */}
-          {!isFlexible &&
-            (stayTotal !== null ? (
+          {/* 🛡️ FİYAT SATIRI — fiyat solda, takvim ikonu (müsaitlik/tarih
+              seç; handler AYNEN) en sağda. */}
+          {!isFlexible && (
+            <div className="mt-2 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+            {stayTotal !== null ? (
               /* 🛡️ TARİH SEÇİLİ — konaklama TOPLAMI artık BU alanda
                  gösterilir (eskiden BOTTOM ROW'da, müsaitlik CTA'sının
                  solundaydı; çift gösterim olmasın diye oradan kaldırıldı).
@@ -1424,7 +1460,7 @@ export default function VillaCard({
                  `hasCleaning` değerleri, aynı `formatCurrency`, aynı
                  currency ve aynı sözlük anahtarları. calculateGrandTotal
                  çağrısına, indirim/kur/temizlik hesabına DOKUNULMADI. */
-              <div className="mt-2">
+              <div>
                 {/* ÜST SATIR — seçilen giriş/çıkış tarihleri. */}
                 {stayDateLabel && (
                   <p className="text-[11.5px] tracking-[0.04em] text-[var(--color-stone-500)] tabular-nums">
@@ -1476,7 +1512,7 @@ export default function VillaCard({
             ) : (
               /* Tarih seçilmemiş — MEVCUT davranış BİREBİR:
                  "X başlayan fiyatlarla" veya "Fiyat sorunuz". */
-              <p className="mt-2 text-[13px] text-[var(--color-stone-500)]">
+              <p className="text-[13px] text-[var(--color-stone-500)]">
                 {price ? (
                   <>
                     <span className="font-display text-[15px] font-semibold text-brand tabular-nums">
@@ -1488,7 +1524,11 @@ export default function VillaCard({
                   dict.card.priceOnRequest
                 )}
               </p>
-            ))}
+            )}
+            </div>
+            {availabilityIconButton}
+            </div>
+          )}
 
           {/* Divider — üst bilgi bloğu ↔ özellikler */}
           <div aria-hidden="true" className="mt-3.5 h-px bg-[var(--color-stone-100)]" />
@@ -1540,67 +1580,22 @@ export default function VillaCard({
             className="mt-3.5 h-[2px] w-10 rounded-full bg-brand "
           />
 
-          {/* BOTTOM ROW — fiyat (sol, varsa) + booking CTA. Handler/aria-label/
-              lazy modal mantığı AYNEN; fiyat hesabı (stayTotal / convertedPrice)
-              üst tanımdan BİREBİR reuse — yeni hesap YOK.
-              🛡️ CTA HİZALAMA — justify-between kaldırıldı; buton `mx-auto`
-              ile fiyat/chip bloğunun (varsa) SAĞINDAKİ boşlukta ortalanır.
-              Fiyat/chip bloğu solda AYNI konumunda kalır (taşınmadı); boş
-              olduğu yaygın durumda (stayTotal===null, isFlexible=false)
-              satırın tamamı boş kaldığı için buton satırın tam ortasına
-              gelir. Buton genişlik/yükseklik/renk/hover/metin AYNEN. */}
-          <div className="mt-3.5 flex items-end gap-3">
-            {isFlexible ? (
-              /* 🛡️ ESNEK EK SONUÇ — fiyat gösterilmez; fiyat motoru
-                 çağrılmaz, ana tarih/href akışı korunur. */
-              <div className="min-w-0">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 ring-1 ring-brand/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand">
-                  <Sparkles size={11} strokeWidth={2} className="text-brand" aria-hidden />
-                  {dict.card.flexibleTitle}
+          {/* 🛡️ ESNEK EK SONUÇ satırı — yalnız isFlexible; takvim ikonu sağda.
+              Tarihsiz / tarih seçili durumlarda ikon FİYAT satırının sağında. */}
+          {isFlexible && (
+            <div className="mt-3.5 flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 ring-1 ring-brand/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-brand">
+                    <Sparkles size={11} strokeWidth={2} className="text-brand" aria-hidden />
+                    {dict.card.flexibleTitle}
+                  </div>
+                  <div className="mt-1 text-[11px] font-medium text-[var(--color-stone-600)]">
+                    {dict.card.flexibleSubtitle}
+                  </div>
                 </div>
-                <div className="mt-1 text-[11px] font-medium text-[var(--color-stone-600)]">
-                  {dict.card.flexibleSubtitle}
-                </div>
-              </div>
-            ) : (
-              /* 🛡️ FİYAT ARTIK BURADA GÖSTERİLMİYOR (bu tur): hem
-                 tarihsiz "başlayan fiyatlarla" hem de tarih seçili
-                 KONAKLAMA TOPLAMI artık CONTENT AREA'nın üstündeki tek
-                 fiyat alanında gösterilir → müsaitlik CTA'sının yanında
-                 ÇİFT fiyat yok. Sarmalayıcı `div` KORUNDU: CTA'nın
-                 `mx-auto` hizalaması ve satır yüksekliği DEĞİŞMESİN.
-                 Fiyat hesabı (stayTotal/hasCleaning/stayNights) YUKARIDA
-                 AYNEN duruyor — motor ve değerler DEĞİŞMEDİ. */
-              <div className="min-w-0" />
-            )}
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsBookingOpen(true);
-                ensureBookingModal();
-              }}
-              onPointerEnter={preloadVillaCardBookingModal}
-              onPointerDown={preloadVillaCardBookingModal}
-              onFocus={preloadVillaCardBookingModal}
-              aria-label={dict.card.availabilityAriaLabel}
-              className={
-                "shrink-0 mx-auto inline-flex items-center justify-center gap-1.5 whitespace-nowrap " +
-                "h-9 px-4 rounded-full " +
-                "text-white uppercase font-medium text-[11px] tracking-[0.06em] " +
-                "bg-brand " +
-                "shadow-[0_10px_22px_-10px_color-mix(in_srgb,var(--color-brand)_45%,transparent)] " +
-                "hover:shadow-[0_14px_28px_-10px_color-mix(in_srgb,var(--color-brand)_55%,transparent)] hover:-translate-y-[1px] " +
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-1 " +
-                "transition-[box-shadow,transform] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-              }
-            >
-              <CalendarRange size={13} strokeWidth={1.9} aria-hidden />
-              {dict.card.availabilityCta}
-            </button>
-          </div>
+              {availabilityIconButton}
+            </div>
+          )}
           {reserveBlock}
         </div>
       </article>
