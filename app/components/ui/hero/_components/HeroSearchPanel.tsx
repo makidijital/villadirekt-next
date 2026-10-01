@@ -525,10 +525,10 @@ export default function HeroSearchPanel({
           aria-expanded={advOpen}
           title={dict.advanced}
           className={
-            "shrink-0 w-14 h-14 inline-flex items-center justify-center rounded-2xl border bg-white text-[var(--color-stone-700)] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 " +
+            "shrink-0 w-14 h-14 inline-flex items-center justify-center rounded-2xl border bg-accent text-[var(--color-stone-700)] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 " +
             (advOpen
-              ? "border-brand/30 bg-brand/[0.06]"
-              : "border-[var(--color-stone-200)] hover:bg-brand/[0.06] hover:border-brand/30")
+              ? "border-brand/30"
+              : "border-[var(--color-stone-200)] hover:border-brand/30")
           }
         >
           <SlidersHorizontal size={18} aria-hidden />

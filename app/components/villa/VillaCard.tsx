@@ -1019,14 +1019,14 @@ export default function VillaCard({
       isDiscount ? (
       <div
         className={
-          "relative rounded-[28px] p-[1.5px] overflow-hidden dc-glow-ring " +
+          "relative rounded-[14px] p-[1.5px] overflow-hidden dc-glow-ring " +
           "shadow-[0_14px_34px_-18px_rgba(0,0,0,0.24)] " +
           "group-hover:shadow-[0_28px_54px_-22px_color-mix(in_srgb,var(--color-brand)_32%,transparent)] " +
           "transition-[box-shadow,transform] duration-500 motion-reduce:transition-none " +
           "group-hover:-translate-y-[3px]"
         }
       >
-      <article className="relative overflow-hidden bg-white rounded-[26.5px]">
+      <article className="relative overflow-hidden bg-white rounded-[12.5px]">
         {/* ── IMAGE BLOCK — aspect-[4/3], premium showcase, dominant görsel ── */}
         <div className="relative overflow-hidden aspect-[4/3] bg-[var(--color-sand-100)] ">
           {showImage ? (
@@ -1098,7 +1098,7 @@ export default function VillaCard({
               <h3 className="font-display text-[19px] md:text-[20px] font-bold leading-[1.15] tracking-[-0.02em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.45)] line-clamp-1">
                 {title}
               </h3>
-              <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-white/85 uppercase tracking-[0.05em] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+              <p className="mt-1 inline-flex items-center gap-1 text-[9px] font-bold text-white/85 uppercase tracking-[0.05em] [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
                 <MapPin size={11} className="shrink-0" strokeWidth={2} aria-hidden />
                 <span className="truncate">{location || dict.card.noLocation}</span>
               </p>
@@ -1269,7 +1269,7 @@ export default function VillaCard({
       <article
         className={
           "relative overflow-hidden bg-white " +
-          "rounded-[22px] border border-[var(--color-stone-100)] " +
+          "rounded-[14px] border border-[var(--color-stone-100)] " +
           "shadow-[0_14px_34px_-22px_rgba(0,0,0,0.22)] " +
           "group-hover:shadow-[0_28px_56px_-24px_rgba(0,0,0,0.32),0_0_0_1px_color-mix(in_srgb,var(--color-brand)_14%,transparent)] " +
           "group-hover:border-brand/25 " +
@@ -1355,7 +1355,7 @@ export default function VillaCard({
               >
                 {title}
               </h3>
-              <p className="mt-1 flex items-center gap-1.5 text-[11px] tracking-[0.14em] uppercase font-bold text-white/80 min-w-0 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+              <p className="mt-1 flex items-center gap-1.5 text-[9px] tracking-[0.14em] uppercase font-bold text-white/80 min-w-0 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
                 <MapPin
                   size={11}
                   className="text-white/75 shrink-0"
@@ -1685,7 +1685,7 @@ function CardOuter({
     <Link
       href={href}
       className="
-        block group rounded-[28px]
+        block group rounded-[14px]
         focus:outline-none focus-visible:ring-2
         focus-visible:ring-[var(--brand-coral)]/40
       "
