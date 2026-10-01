@@ -34,7 +34,7 @@ import {
      - HorizontalCarousel (app/components/villa/HorizontalCarousel.tsx,
        DEĞİŞTİRİLMEDİ) — native scroll-snap, wheel→horizontal, desktop
        showArrows, mobile native touch swipe. Yeni kütüphane YOK.
-     - Kart: KÜÇÜK, DAİRESEL görsel (rounded-full, ~140-180px) + altında
+     - Kart: KÜÇÜK kare görsel (rounded-xl, ~140-180px); ad + sayı görsel üzerinde
        kompakt metin — VillaTypeCarousel'in büyük dikdörtgen kartının,
        beyaz panelinin ve köşe rozet/badge'inin HİÇBİRİ kullanılmadı.
        Büyük gradient overlay YOK, görselin üzerine yazı bindirilmedi —
@@ -260,15 +260,12 @@ export default async function LocationCollection({
 }
 
 /* ===============================================================
-   LocationCard — dairesel "avatar" destination kartı
+   LocationCard — kare görsel destination kartı (rounded-xl)
    ===============================================================
-   VillaTypeCard'dan (VillaTypeCarousel.tsx) BİLİNÇLİ OLARAK farklı:
-   büyük dikdörtgen kart YOK — küçük rounded-full görsel (~140-180px,
-   breakpoint'e göre) + görselin ALTINDA kompakt metin bloğu. Gradient
-   overlay/yazı-üstüne-bindirme YOK, köşe rozet/badge YOK. İnce premium
-   ring (border) + hover'da sade görsel zoom/hafif elevation. Villa
-   sayısı küçük ikincil bilgi, yanında marka-renkli mini gradient nokta.
-   Veri/link/placeholder mantığı DEĞİŞMEDİ (sadece sunum).
+   Kare görsel kart (~140-180px, breakpoint'e göre), hafif radius
+   (rounded-xl). Bölge adı + villa sayısı görselin alt kısmında, alt
+   gradient overlay üzerinde beyaz. İnce ring + hover'da sade zoom /
+   hafif elevation. Veri/link/placeholder mantığı DEĞİŞMEDİ (sadece sunum).
 =============================================================== */
 function LocationCard({ item, locale }: { item: Item; locale: Locale }) {
   /* Grup üyelerinin token'ları (slug|id) virgülle; /arama çoklu değeri
@@ -286,13 +283,14 @@ function LocationCard({ item, locale }: { item: Item; locale: Locale }) {
   return (
     <Link
       href={href}
-      className="group flex w-[140px] sm:w-[150px] md:w-[170px] lg:w-[180px] flex-col items-center text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 rounded-3xl"
+      className="group block w-[140px] sm:w-[150px] md:w-[170px] lg:w-[180px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 rounded-xl"
     >
-      {/* DAİRESEL GÖRSEL — ince premium ring, hover'da sadece zoom +
-          çok hafif elevation (büyük translate/scale YOK). */}
+      {/* KART — hafif radius (rounded-xl), boyutlar AYNEN; bölge adı + villa
+          sayısı görselin ALTINDA, doğrudan görsel üzerinde (alt gradient
+          yalnız okunabilirlik için). Hover: zoom + hafif elevation (mevcut). */}
       <div
         className="
-          relative shrink-0 overflow-hidden rounded-full
+          relative shrink-0 overflow-hidden rounded-xl
           w-[140px] h-[140px] sm:w-[150px] sm:h-[150px]
           md:w-[170px] md:h-[170px] lg:w-[180px] lg:h-[180px]
           bg-[var(--color-sand-100)]
@@ -321,21 +319,22 @@ function LocationCard({ item, locale }: { item: Item; locale: Locale }) {
             </div>
           </div>
         )}
-      </div>
 
-      {/* METİN — görselin ALTINDA: kompakt güçlü başlık + ikincil villa
-          sayısı + marka-renkli minik gradient nokta (rozet/badge YOK). */}
-      <h3 className="mt-3 font-display text-[14.5px] md:text-[15.5px] font-medium leading-[1.2] text-[var(--color-stone-900)] tracking-[-0.01em] line-clamp-2">
-        {item.key}
-      </h3>
-      <div className="mt-1 flex items-center justify-center gap-1.5">
-        <span
+        {/* Alt okunabilirlik gradient'i — üst kısım doğal kalır. */}
+        <div
           aria-hidden="true"
-          className="inline-block h-1.5 w-1.5 rounded-full bg-accent "
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(#0000_45%,#0000002e_72%,#0000009e_100%)]"
         />
-        <span className="text-[11px] text-[var(--color-stone-500)] tabular-nums">
-          {item.count} villa
-        </span>
+
+        {/* METİN — görselin üzerinde, alt kısımda. */}
+        <div className="absolute inset-x-0 bottom-0 px-3 pb-3 text-left">
+          <h3 className="font-display text-[14.5px] md:text-[15.5px] font-bold leading-[1.2] text-white tracking-[-0.01em] line-clamp-2 [text-shadow:0_1px_4px_rgba(0,0,0,0.45)]">
+            {item.key}
+          </h3>
+          <span className="mt-0.5 block text-[11px] font-medium text-white/90 tabular-nums [text-shadow:0_1px_3px_rgba(0,0,0,0.4)]">
+            {item.count} villa
+          </span>
+        </div>
       </div>
     </Link>
   );
