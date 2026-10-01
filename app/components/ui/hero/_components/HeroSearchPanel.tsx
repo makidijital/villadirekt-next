@@ -300,7 +300,7 @@ export default function HeroSearchPanel({
             dateFormat="dd.MM.yyyy"
             minDate={new Date()}
             placeholderText={dict.datePlaceholder}
-            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[12px] font-semibold !text-[var(--color-stone-900)] placeholder-[var(--color-stone-400)] cursor-pointer"
+            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[12px] font-semibold !text-[var(--color-stone-900)] placeholder:!text-[var(--color-stone-900)] placeholder:opacity-100 cursor-pointer"
             /* 🛡️ PHASE 11 — sentinel string karşılaştırması yerine
                DOĞRUDAN state kontrolü: `buildHeroDateLabel` sentinel'i
                TAM OLARAK `!startDate` iken döndürür → davranış birebir
