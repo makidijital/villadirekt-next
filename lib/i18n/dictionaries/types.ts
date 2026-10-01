@@ -496,6 +496,8 @@ export type Dictionary = {
     totalSavings: string;
     bookNow: string;
     bookNowAriaLabel: string;
+    /** İndirimli kart (discount variant) CTA metni. */
+    discountRentNow: string;
     /** template: {n} */
     reserveNights: string;
     flexibleTitle: string;

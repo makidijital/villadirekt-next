@@ -357,6 +357,7 @@ export const de: Dictionary = {
     totalSavings: "{amount} Rabatt",
     bookNow: "Jetzt buchen",
     bookNowAriaLabel: "Jetzt buchen",
+    discountRentNow: "JETZT MIETEN",
     reserveNights: "{n} Nächte",
     flexibleTitle: "Flexibles Datumsangebot",
     flexibleSubtitle: "Verfügbar innerhalb von ±3 Tagen",

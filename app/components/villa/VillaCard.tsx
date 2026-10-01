@@ -1315,9 +1315,11 @@ export default function VillaCard({
                    tarihlerle; yoksa MEVCUT davranış (villa detayı). */
                 router.push(discountReserveHref ?? detailHref);
               }}
-              className="mt-3 w-full inline-flex items-center justify-center h-11 rounded-xl bg-accent hover:bg-accent-strong text-[var(--color-stone-900)] uppercase font-semibold text-[11.5px] tracking-[0.08em] shadow-[0_10px_24px_-8px_color-mix(in_srgb,var(--color-accent)_45%,transparent)] hover:shadow-[0_14px_30px_-10px_color-mix(in_srgb,var(--color-accent)_55%,transparent)] hover:-translate-y-px active:translate-y-0 transition-[box-shadow,transform,background-color] duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+              className="mt-3 w-full inline-flex items-center justify-center h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white uppercase font-bold text-[11.5px] tracking-[0.08em] shadow-[0_10px_24px_-8px_rgba(220,38,38,0.45)] hover:shadow-[0_14px_30px_-10px_rgba(185,28,28,0.55)] hover:-translate-y-px active:translate-y-0 transition-[box-shadow,transform,background-color] duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
             >
-              {dict.card.bookNow}
+              {/* 🛡️ İndirimli karta ÖZEL metin (card.discountRentNow);
+                  card.bookNow kısa-süreli tarihler CTA'sında AYNEN kalır. */}
+              {dict.card.discountRentNow}
             </button>
           )}
         </div>

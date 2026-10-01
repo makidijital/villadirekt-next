@@ -369,6 +369,7 @@ export const tr: Dictionary = {
     totalSavings: "{amount} indirimli",
     bookNow: "Hemen Rezervasyon Yap",
     bookNowAriaLabel: "Hemen rezervasyon yap",
+    discountRentNow: "HEMEN KİRALA",
     reserveNights: "{n} Gece",
     flexibleTitle: "Esnek Tarih Fırsatı",
     flexibleSubtitle: "±3 gün içinde müsait",
