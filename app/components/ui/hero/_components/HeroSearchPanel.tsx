@@ -34,6 +34,7 @@ import {
   Calendar,
   Users,
   ChevronDown,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { buildHeroSearchParams } from "../_helpers/build-search-params";
@@ -99,10 +100,8 @@ registerLocale("de", deLocale);
      - Panel: daha yumuşak radius (28px), turuncu/mavi çok-katmanlı
        glow shadow, ince entrance animasyonu (local `<style>`,
        globals.css'e dokunulmadı, prefers-reduced-motion'da kapanır).
-     - Tarih/Kişi alanları → turuncu ikon vurgusu; Tip/Bölge alanları
-       → mavi ikon vurgusu (tutarlı ikili renk haritası).
-     - "Villa bul" CTA → turuncu→mavi gradient + hafif breathing glow
-       (Header/Hero CTA ile aynı teknik, TopBar shimmer'ı DEĞİL).
+     - Tüm alan ikonları nötr gri (stone-400).
+     - "Villa bul" CTA → koyu düz buton (gradient yok).
    =============================================================== */
 
 export default function HeroSearchPanel({
@@ -229,16 +228,17 @@ export default function HeroSearchPanel({
 
   return (
     /* ═══════════════════════════════════════════════════════
-        🛡️ MARKA REFRESH — FLOATING SEARCH PANEL (premium glass)
+        🛡️ SEARCH BAR — tek parça yatay bar (yalnız görsel)
         ═══════════════════════════════════════════════════════
-        Mevcut state + handlers AYNEN korundu. Visual:
-          - Koyu hero görseli üzerinde yüzen glass panel
-          - Turuncu/mavi çok-katmanlı glow shadow stack
-          - Daha geniş radius (28px)
-          - İnce top highlight (white inner ring)
-          - Turuncu→mavi gradient CTA + breathing glow
-          - Hafif, tek seferlik entrance animasyonu (local <style>,
-            globals.css'e dokunulmadı, reduced-motion'da kapanır)
+        Mevcut state + handlers + URL/param mantığı AYNEN korundu.
+        Visual:
+          - Beyaz zemin, ince stone border, rounded-[24px], hafif gölge
+          - Alan sırası (CSS `order`): Bölge · Villa türü · Tarih · Kişi
+          - Alanlar arası ince dikey ayırıcı (mobilde yatay)
+          - Gri ikon + küçük uppercase başlık + büyük değer
+          - Kare filtre butonu (Gelişmiş arama aç/kapa) + koyu "Villa bul"
+          - Gradient YOK; hover'da #1B4EF5 düşük opaklık
+          - Tek seferlik entrance animasyonu (reduced-motion'da kapanır)
         ═══════════════════════════════════════════════════════ */
     <div className="relative mt-12 md:mt-16 hero-panel-in">
       <style>{`
@@ -259,39 +259,29 @@ export default function HeroSearchPanel({
       <div
         className="
           relative isolate z-30
-          bg-white/20 backdrop-blur-xl
-          border border-white/30
-          rounded-[16px]
-          shadow-[0_20px_50px_-24px_color-mix(in_srgb,var(--color-brand)_35%,transparent),0_14px_38px_-26px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]
-          px-2 md:px-2.5 pb-2 md:pb-2.5 pt-2 md:pt-2.5
-          gap-1.5 md:gap-2
-          flex flex-col md:flex-row items-stretch
+          bg-white
+          border border-[var(--color-stone-200)]
+          rounded-[24px]
+          shadow-[0_18px_44px_-28px_rgba(0,0,0,0.22)]
+          p-2 md:p-2.5
+          flex flex-col md:flex-row items-stretch md:items-center
           text-left
         "
       >
-      {/* Inner highlight — premium top edge */}
-      <div
-        aria-hidden="true"
-        className="
-          pointer-events-none absolute inset-0 rounded-[16px]
-          ring-1 ring-inset ring-white/50
-        "
-      />
       {/* DATE */}
-      <div className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/75 hover:border-accent/35 transition flex items-center gap-3">
+      <div className="order-3 flex-1 min-w-0 px-4 md:px-5 py-3 md:py-2.5 rounded-2xl hover:bg-brand/[0.04] transition-colors flex items-center gap-3 border-t md:border-t-0 md:border-l border-[var(--color-stone-200)] md:rounded-none">
         <span
           className="
-            w-9 h-9 rounded-xl shrink-0
-            bg-accent/12
+            w-5 h-5 shrink-0
             flex items-center justify-center
-            text-brand
+            text-[var(--color-stone-400)]
           "
           aria-hidden
         >
-          <Calendar size={16} />
+          <Calendar size={18} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-500)]">
+          <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
             {dict.dateLabel}
           </div>
           <DatePicker
@@ -309,7 +299,7 @@ export default function HeroSearchPanel({
             dateFormat="dd.MM.yyyy"
             minDate={new Date()}
             placeholderText={dict.datePlaceholder}
-            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[14px] font-medium !text-[var(--color-stone-900)] placeholder-[var(--color-stone-400)] cursor-pointer"
+            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[18px] md:text-[19px] font-semibold !text-[var(--color-stone-900)] placeholder-[var(--color-stone-400)] cursor-pointer"
             /* 🛡️ PHASE 11 — sentinel string karşılaştırması yerine
                DOĞRUDAN state kontrolü: `buildHeroDateLabel` sentinel'i
                TAM OLARAK `!startDate` iken döndürür → davranış birebir
@@ -330,26 +320,25 @@ export default function HeroSearchPanel({
 
 
       {/* GUESTS */}
-      <div className="px-4 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/75 hover:border-accent/35 transition flex items-center gap-3">
+      <div className="order-4 min-w-0 px-4 md:px-5 py-3 md:py-2.5 rounded-2xl hover:bg-brand/[0.04] transition-colors flex items-center gap-3 border-t md:border-t-0 md:border-l border-[var(--color-stone-200)] md:rounded-none">
         <span
           className="
-            w-9 h-9 rounded-xl shrink-0
-            bg-accent/12
+            w-5 h-5 shrink-0
             flex items-center justify-center
-            text-brand
+            text-[var(--color-stone-400)]
           "
           aria-hidden
         >
-          <Users size={16} />
+          <Users size={18} />
         </span>
         <div className="min-w-0">
-          <div className="text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-500)]">
+          <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
             {dict.guestsLabel}
           </div>
           <select
             value={guests}
             onChange={(e) => setGuests(Number(e.target.value))}
-            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none text-[14px] font-medium !text-[var(--color-stone-900)] cursor-pointer"
+            className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none text-[18px] md:text-[19px] font-semibold !text-[var(--color-stone-900)] cursor-pointer"
             style={{ backgroundImage: "none", paddingRight: 0 }}
           >
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((g) => (
@@ -364,7 +353,7 @@ export default function HeroSearchPanel({
 
 
       {/* CATEGORY */}
-      <div ref={catRef} className="relative flex-1 min-w-0">
+      <div ref={catRef} className="order-2 relative flex-1 min-w-0 border-t md:border-t-0 md:border-l border-[var(--color-stone-200)]">
         <button
           type="button"
           onClick={() => {
@@ -372,30 +361,28 @@ export default function HeroSearchPanel({
             setOpenRegion(false);
           }}
           className="
-            w-full px-4 py-3 rounded-xl
-            bg-white/40 border border-white/50
-            hover:bg-white/75 hover:border-brand/35
-            transition flex items-center gap-3 text-left
+            w-full px-4 md:px-5 py-3 md:py-2.5 rounded-2xl
+            hover:bg-brand/[0.04]
+            transition-colors flex items-center gap-3 text-left
             focus:outline-none focus-visible:ring-2
             focus-visible:ring-brand/30
           "
         >
           <span
             className="
-              w-9 h-9 rounded-xl shrink-0
-              bg-brand/10
+              w-5 h-5 shrink-0
               flex items-center justify-center
-              text-brand
+              text-[var(--color-stone-400)]
             "
             aria-hidden
           >
-            <Tag size={16} />
+            <Tag size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-500)]">
+            <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
               {dict.typeLabel}
             </div>
-            <div className="text-[14px] font-medium text-[var(--color-stone-900)] truncate">
+            <div className="text-[18px] md:text-[19px] font-semibold text-[var(--color-stone-900)] truncate">
               {categories.length
                 ? formatDictionaryString(dict.typesSelected, {
                     n: categories.length,
@@ -448,7 +435,7 @@ export default function HeroSearchPanel({
 
 
       {/* REGION */}
-      <div ref={regRef} className="relative flex-1 min-w-0">
+      <div ref={regRef} className="order-1 relative flex-1 min-w-0">
         <button
           type="button"
           onClick={() => {
@@ -456,30 +443,28 @@ export default function HeroSearchPanel({
             setOpenCat(false);
           }}
           className="
-            w-full px-4 py-3 rounded-xl
-            bg-white/40 border border-white/50
-            hover:bg-white/75 hover:border-brand/35
-            transition flex items-center gap-3 text-left
+            w-full px-4 md:px-5 py-3 md:py-2.5 rounded-2xl
+            hover:bg-brand/[0.04]
+            transition-colors flex items-center gap-3 text-left
             focus:outline-none focus-visible:ring-2
             focus-visible:ring-brand/30
           "
         >
           <span
             className="
-              w-9 h-9 rounded-xl shrink-0
-              bg-brand/10
+              w-5 h-5 shrink-0
               flex items-center justify-center
-              text-brand
+              text-[var(--color-stone-400)]
             "
             aria-hidden
           >
-            <MapPin size={16} />
+            <MapPin size={18} />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-500)]">
+            <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
               {dict.regionLabel}
             </div>
-            <div className="text-[14px] font-medium text-[var(--color-stone-900)] truncate">
+            <div className="text-[18px] md:text-[19px] font-semibold text-[var(--color-stone-900)] truncate">
               {regions.length
                 ? formatDictionaryString(dict.regionsSelected, {
                     n: regions.length,
@@ -496,7 +481,7 @@ export default function HeroSearchPanel({
         </button>
 
         {openRegion && (
-          <div className="absolute top-full mt-2 left-0 md:left-auto md:right-0 w-full md:w-72 min-w-[16rem] max-w-[calc(100vw-2.5rem)] bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_24px_48px_-16px_rgb(27_26_23/0.18)] p-2 z-[60] max-h-72 overflow-auto">
+          <div className="absolute top-full mt-2 left-0 w-full md:w-72 min-w-[16rem] max-w-[calc(100vw-2.5rem)] bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_24px_48px_-16px_rgb(27_26_23/0.18)] p-2 z-[60] max-h-72 overflow-auto">
             {regionOptions.length === 0 && (
               <div className="text-sm text-[var(--color-stone-400)] p-3">
                 {dict.optionsLoading}
@@ -530,51 +515,44 @@ export default function HeroSearchPanel({
         )}
       </div>
 
-      {/* SEARCH CTA — filtre submit (handleSearch → /arama). Turuncu→mavi
-         gradient + hafif breathing glow → premium concierge button.
-         Floating villa-adı input'tan BAĞIMSIZ; filtre akışını tetikler. */}
-      <button
-        onClick={handleSearch}
-        className="
-          group relative inline-flex items-center justify-center gap-2
-          !rounded-xl !px-7 md:!px-8 !py-4
-          mt-1.5 md:mt-0 md:ml-1.5
-          text-white font-medium text-[14px] tracking-[0.02em]
-          bg-brand
-          shadow-[0_20px_44px_-12px_color-mix(in_srgb,var(--color-accent)_50%,transparent),0_10px_26px_-8px_color-mix(in_srgb,var(--color-brand)_45%,transparent),inset_0_1px_0_rgba(255,255,255,0.28)]
-          hover:shadow-[0_26px_54px_-12px_color-mix(in_srgb,var(--color-accent)_60%,transparent),0_12px_30px_-8px_color-mix(in_srgb,var(--color-brand)_55%,transparent),inset_0_1px_0_rgba(255,255,255,0.34)]
-          hover:-translate-y-[1px]
-          transition-[transform,box-shadow] duration-300
-          motion-reduce:transition-none motion-reduce:hover:translate-y-0
-          focus:outline-none focus-visible:ring-2
-          focus-visible:ring-brand/50
-          focus-visible:ring-offset-2 focus-visible:ring-offset-white
-        "
-      >
-        <span
-          aria-hidden
+      {/* AKSİYONLAR — filtre (Gelişmiş arama aç/kapa) + Villa bul.
+         Handler'lar AYNEN: setAdvOpen / handleSearch. */}
+      <div className="order-5 flex items-stretch gap-2 mt-2 md:mt-0 md:ml-2 shrink-0">
+        <button
+          type="button"
+          onClick={() => setAdvOpen((o) => !o)}
+          aria-expanded={advOpen}
+          title={dict.advanced}
+          className={
+            "shrink-0 w-14 h-14 inline-flex items-center justify-center rounded-2xl border bg-white text-[var(--color-stone-700)] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 " +
+            (advOpen
+              ? "border-brand/30 bg-brand/[0.06]"
+              : "border-[var(--color-stone-200)] hover:bg-brand/[0.06] hover:border-brand/30")
+          }
+        >
+          <SlidersHorizontal size={18} aria-hidden />
+          <span className="sr-only">{dict.advanced}</span>
+        </button>
+
+        {/* SEARCH CTA — filtre submit (handleSearch → /arama). */}
+        <button
+          onClick={handleSearch}
           className="
-            pointer-events-none absolute -inset-1 !rounded-xl
-            bg-brand
-            opacity-30 blur-md
-            animate-pulse [animation-duration:2.8s]
-            group-hover:opacity-55
-            transition-opacity duration-300
-            motion-reduce:animate-none
+            flex-1 md:flex-none md:min-w-[168px]
+            inline-flex items-center justify-center gap-2
+            h-14 px-7 rounded-2xl
+            text-white font-semibold text-[15px] tracking-[0.01em]
+            bg-[var(--color-stone-900)] hover:bg-[var(--color-stone-700)]
+            transition-colors duration-200 motion-reduce:transition-none
+            focus:outline-none focus-visible:ring-2
+            focus-visible:ring-brand/50
+            focus-visible:ring-offset-2 focus-visible:ring-offset-white
           "
-        />
-        <Search
-          size={16}
-          className="
-            relative z-10
-            transition-transform duration-300
-            motion-reduce:transition-none
-            group-hover:scale-110
-          "
-          aria-hidden
-        />
-        <span className="relative z-10">{dict.submit}</span>
-      </button>
+        >
+          <Search size={18} aria-hidden />
+          <span>{dict.submit}</span>
+        </button>
+      </div>
 
       </div>
 
@@ -585,25 +563,8 @@ export default function HeroSearchPanel({
           Checkbox yalnız `flexible` state'ini set eder; Villa Bul'a
           basınca `flexible=3` param'ı eklenir (ana tarih değişmez).
           ═══════════════════════════════════════════════════════ */}
+      {advOpen && (
       <div className="mt-3 flex flex-col items-center">
-        <button
-          type="button"
-          onClick={() => setAdvOpen((o) => !o)}
-          aria-expanded={advOpen}
-          className="inline-flex items-center gap-1.5 rounded-full bg-white/75 backdrop-blur-md px-4 py-2 text-[12.5px] font-medium text-[var(--color-stone-700)] border border-white/60 shadow-sm hover:bg-white transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-        >
-          <ChevronDown
-            size={15}
-            className={
-              "transition-transform duration-200 motion-reduce:transition-none " +
-              (advOpen ? "rotate-180" : "")
-            }
-            aria-hidden
-          />
-          {dict.advanced}
-        </button>
-
-        {advOpen && (
           <div className="mt-2 w-[min(92vw,420px)] rounded-2xl bg-white/95 backdrop-blur-md border border-[var(--color-stone-100)] shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)] px-4 py-3.5">
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <input
@@ -629,7 +590,7 @@ export default function HeroSearchPanel({
             ═══════════════════════════════════════════════════════ */}
             <div className="mt-3.5 border-t border-[var(--color-stone-100)] pt-3">
               <div className="flex items-baseline justify-between gap-2">
-                <div className="text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-500)]">
+                <div className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-500)]">
                   {dict.featuresLabel}
                 </div>
                 {features.length > 0 && (
@@ -675,8 +636,8 @@ export default function HeroSearchPanel({
               )}
             </div>
           </div>
-        )}
       </div>
+      )}
     </div>
   );
 }
