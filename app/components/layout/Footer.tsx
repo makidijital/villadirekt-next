@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Phone, Mail, MapPin } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
@@ -140,16 +140,15 @@ function SocialLink({
       aria-label={label}
       className="
         group inline-flex items-center justify-center
-        w-10 h-10 rounded-full
-        border border-[var(--color-stone-200)] bg-white
-        text-[var(--color-stone-500)]
-        hover:border-accent/45 hover:bg-brand/10
-        hover:text-brand
-        transition-[color,background-color,border-color,transform]
+        w-8 h-8 rounded-full
+        border border-white/15 bg-white/[0.04]
+        text-white/70
+        hover:border-brand hover:bg-brand
+        hover:text-white
+        transition-[color,background-color,border-color]
         duration-300 motion-reduce:transition-none
-        hover:scale-[1.05]
         focus:outline-none focus-visible:ring-2
-        focus-visible:ring-brand/40
+        focus-visible:ring-white/40
       "
     >
       {children}
@@ -169,11 +168,11 @@ function FooterLink({
       href={href}
       className="
         inline-flex items-center
-        text-[14px] text-[var(--color-stone-500)]
-        hover:text-brand
-        hover:translate-x-[2px]
-        transition-[color,transform] duration-300
-        motion-reduce:transition-none motion-reduce:hover:translate-x-0
+        text-[12.5px] leading-[1.45] text-white/60
+        hover:text-[#8FAEFF]
+        transition-colors duration-200
+        motion-reduce:transition-none
+        focus:outline-none focus-visible:text-white focus-visible:underline
       "
     >
       {children}
@@ -242,49 +241,27 @@ export default function Footer({
     "footer_copyright"
   );
 
+  const headingClass =
+    "font-display text-[12px] font-semibold uppercase tracking-[0.12em] text-white mb-3";
+
   return (
     <footer
       aria-label={dictionary.footer.ariaLabel}
-      className="relative mt-20 md:mt-28 overflow-hidden px-5 md:px-10 lg:px-16 text-[var(--color-stone-700)]"
-      /* ☀️ Soft, ferah zemin — koyu lacivert kaldırıldı. Sıcak kırık beyaz
-         yüzey; turuncu/mavi yalnızca çok hafif, ayrı glow katmanlarında
-         atmosferik bir iz olarak kullanılıyor (ağır gradient yok). */
-      style={{
-        background:
-          "var(--color-stone-50)",
-      }}
+      /* 🔄 KOMPAKT KOYU FOOTER — lacivert düz zemin (gradient/glow YOK),
+         üstte ince marka-mavisi çizgi, küçük tipografi. İçerik/href/i18n
+         BİREBİR aynı; yalnız yerleşim + spacing + renkler değişti. */
+      className="relative mt-12 md:mt-16 bg-[#0A1633] text-white/70 px-5 md:px-10 lg:px-16"
     >
-      {/* Turuncu ambient iz — sağ üst, çok hafif. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-40 right-[-140px] w-[620px] h-[420px] blur-3xl opacity-[0.10]"
-        style={{
-          background:
-            "transparent",
-        }}
-      />
-      {/* Mavi ambient iz — sol alt, çok hafif. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-28 left-[-120px] w-[520px] h-[360px] blur-3xl opacity-[0.09]"
-        style={{
-          background:
-            "transparent",
-        }}
-      />
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] bg-brand" />
 
-      <div className="relative site-container pb-10">
-        {/* ═════════════ SECTION 2 — MARKA + KEŞFET (asimetrik, kolon-kartı yok) ═════════════
-            LEFT (dominant): logo + marka açıklaması + sosyal — mantık AYNEN.
-            RIGHT: tek "Keşfet" başlığı altında iki minimal alt-grup (Villalar,
-            Bölgeler); veri/link kaynakları BİREBİR aynı, yalnızca renk/zemin
-            açık temaya göre revize edildi. */}
-        <div className="pt-14 md:pt-20 grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16">
-          {/* LEFT — dominant brand block */}
-          <div className="lg:col-span-5 space-y-7">
+      <div className="site-container">
+        {/* ═════════ ÜST — marka | keşfet linkleri | iletişim ═════════ */}
+        <div className="pt-10 md:pt-12 pb-8 md:pb-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+          {/* MARKA — logo + kısa açıklama + sosyal */}
+          <div className="lg:col-span-4">
             <Link
               href={homeHref}
-              className="font-display text-[24px] tracking-tight inline-flex items-center text-[var(--color-stone-900)]"
+              className="font-display text-[22px] tracking-tight inline-flex items-center text-white"
             >
               {settings?.footer_logo || settings?.site_logo ? (
                 /* 🛡️ mig 048 — footer_logo varsa onu, yoksa site_logo'ya
@@ -303,7 +280,7 @@ export default function Footer({
                     ""
                   }
                   alt={`${siteName} logosu`}
-                  className="h-10 w-auto object-contain"
+                  className="h-9 w-auto object-contain"
                 />
               ) : (
                 <>
@@ -312,30 +289,30 @@ export default function Footer({
                 </>
               )}
             </Link>
-            <p className="text-[14.5px] text-[var(--color-stone-500)] leading-relaxed max-w-sm">
+            <p className="mt-3 text-[12.5px] leading-[1.6] text-white/55 max-w-[300px]">
               {dictionary.footer.tagline}
             </p>
 
             {/* Sosyal — settings'ten dinamik (mevcut API aynen) */}
-            <div className="flex items-center gap-2.5">
+            <div className="mt-4 flex items-center gap-2">
               {settings?.instagram && (
                 <SocialLink href={settings.instagram} label="Instagram">
-                  <InstagramIcon width={15} height={15} aria-hidden />
+                  <InstagramIcon width={14} height={14} aria-hidden />
                 </SocialLink>
               )}
               {settings?.facebook && (
                 <SocialLink href={settings.facebook} label="Facebook">
-                  <FacebookIcon width={15} height={15} aria-hidden />
+                  <FacebookIcon width={14} height={14} aria-hidden />
                 </SocialLink>
               )}
               {settings?.youtube && (
                 <SocialLink href={settings.youtube} label="YouTube">
-                  <YoutubeIcon width={15} height={15} aria-hidden />
+                  <YoutubeIcon width={14} height={14} aria-hidden />
                 </SocialLink>
               )}
               {settings?.tiktok && (
                 <SocialLink href={settings.tiktok} label="TikTok">
-                  <TiktokIcon width={15} height={15} aria-hidden />
+                  <TiktokIcon width={14} height={14} aria-hidden />
                 </SocialLink>
               )}
               {phoneDigits && (
@@ -343,30 +320,25 @@ export default function Footer({
                   href={`https://wa.me/${phoneDigits}`}
                   label="WhatsApp"
                 >
-                  <WhatsappIcon width={15} height={15} aria-hidden />
+                  <WhatsappIcon width={14} height={14} aria-hidden />
                 </SocialLink>
               )}
             </div>
           </div>
 
-          {/* RIGHT — "Keşfet" minimal link kümesi (villa_types + villa_locations) */}
-          <div className="lg:col-span-7 lg:pl-6">
-            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
-              <span
-                aria-hidden="true"
-                className="inline-block w-4 h-px bg-brand "
-              />
+          {/* KEŞFET — villa tipleri + bölgeler (veri/link AYNEN) */}
+          <div className="lg:col-span-5">
+            <span className="inline-flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-white/40">
+              <span aria-hidden="true" className="inline-block w-3 h-px bg-brand" />
               {dictionary.footer.explore}
             </span>
 
-            <div className="mt-6 grid grid-cols-2 gap-x-10 gap-y-8">
+            <div className="mt-3 grid grid-cols-2 gap-x-6 md:gap-x-8 gap-y-6">
               {/* VİLLA KATEGORİLERİ (dynamic villa_types) */}
               <nav aria-label={dictionary.footer.villaCategoriesAriaLabel}>
-                <p className="text-[13px] font-medium text-[var(--color-stone-800)] mb-4">
-                  {dictionary.footer.villas}
-                </p>
+                <p className={headingClass}>{dictionary.footer.villas}</p>
                 {villaTypes.length > 0 ? (
-                  <ul className="space-y-3">
+                  <ul className="space-y-1.5">
                     {villaTypes.map((t) => (
                       <li key={t.id}>
                         <FooterLink href={localeHref(taxonomyHref("villa-turleri", t), locale)}>
@@ -376,7 +348,7 @@ export default function Footer({
                     ))}
                   </ul>
                 ) : (
-                  <ul className="space-y-3">
+                  <ul className="space-y-1.5">
                     <li>
                       <FooterLink href={localeHref("/arama", locale)}>{dictionary.footer.allCategories}</FooterLink>
                     </li>
@@ -386,11 +358,9 @@ export default function Footer({
 
               {/* POPÜLER BÖLGELER (dynamic villa_locations) */}
               <nav aria-label={dictionary.footer.popularRegionsAriaLabel}>
-                <p className="text-[13px] font-medium text-[var(--color-stone-800)] mb-4">
-                  {dictionary.footer.regions}
-                </p>
+                <p className={headingClass}>{dictionary.footer.regions}</p>
                 {locations.length > 0 ? (
-                  <ul className="space-y-3">
+                  <ul className="space-y-1.5">
                     {locations.map((loc) => (
                       <li key={loc.id}>
                         <FooterLink href={localeHref(taxonomyHref("bolgeler", loc), locale)}>
@@ -398,17 +368,17 @@ export default function Footer({
                         </FooterLink>
                       </li>
                     ))}
-                    <li className="pt-1">
+                    <li className="pt-0.5">
                       <FooterLink href={localeHref("/arama", locale)}>
-                        <span className="text-[13px] text-brand inline-flex items-center gap-1">
+                        <span className="text-[12px] font-medium text-[#8FAEFF] inline-flex items-center gap-1">
                           {dictionary.footer.allRegions}
-                          <ArrowRight size={12} strokeWidth={1.75} aria-hidden />
+                          <ArrowRight size={11} strokeWidth={1.75} aria-hidden />
                         </span>
                       </FooterLink>
                     </li>
                   </ul>
                 ) : (
-                  <ul className="space-y-3">
+                  <ul className="space-y-1.5">
                     <li>
                       <FooterLink href={localeHref("/arama", locale)}>{dictionary.footer.exploreAllRegions}</FooterLink>
                     </li>
@@ -417,75 +387,80 @@ export default function Footer({
               </nav>
             </div>
           </div>
-        </div>
 
-        {/* ═════════════ SECTION 3 — CONTACT STRIP ═════════════
-            Telefon/e-posta/adres artık ikon+liste değil, büyük tipografili
-            bir "iletişim şeridi"; telefon en belirgin (birincil hover
-            #ED7926), e-posta ikincil hover #0973BA. Rezervasyon Sorgula
-            linki (mevcut href) burada, destek eylemine en yakın yerde. */}
-        <div className="mt-16 md:mt-20 pt-10 md:pt-12 border-t border-[var(--color-stone-200)]">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
-            <div className="flex flex-wrap items-baseline gap-x-10 gap-y-5">
+          {/* İLETİŞİM — telefon / e-posta / adres + rezervasyon sorgula + güven rozetleri */}
+          <div className="lg:col-span-3 lg:pt-[42px]">
+            {/* Başlıksız (ayrı "İletişim" başlığı kurumsal "İletişim"
+                sayfa linkiyle çakışmasın); lg'de link listeleriyle aynı
+                hizadan başlar. */}
+            <ul className="space-y-2 text-[12.5px]">
               {settings?.phone && (
-                <a href={`tel:${settings.phone}`} className="group">
-                  <span className="block text-[11px] uppercase tracking-[0.18em] text-[var(--color-stone-400)] mb-1.5">
-                    {dictionary.footer.phone}
-                  </span>
-                  <span className="font-display text-[26px] md:text-[32px] tracking-[-0.01em] text-[var(--color-stone-900)] group-hover:text-brand transition-colors duration-300 motion-reduce:transition-none">
-                    {settings.phone}
-                  </span>
-                </a>
+                <li>
+                  <a
+                    href={`tel:${settings.phone}`}
+                    className="group inline-flex items-center gap-2 text-white/80 hover:text-[#8FAEFF] transition-colors duration-200 motion-reduce:transition-none"
+                  >
+                    <Phone size={13} strokeWidth={1.8} className="shrink-0 text-white/40 group-hover:text-[#8FAEFF]" aria-hidden />
+                    <span className="sr-only">{dictionary.footer.phone}: </span>
+                    <span className="font-semibold tabular-nums">{settings.phone}</span>
+                  </a>
+                </li>
               )}
               {settings?.email && (
-                <a href={`mailto:${settings.email}`} className="group">
-                  <span className="block text-[11px] uppercase tracking-[0.18em] text-[var(--color-stone-400)] mb-1.5">
-                    {dictionary.footer.email}
-                  </span>
-                  <span className="text-[16px] md:text-[18px] text-[var(--color-stone-700)] group-hover:text-brand transition-colors duration-300 motion-reduce:transition-none break-all">
-                    {settings.email}
-                  </span>
-                </a>
+                <li>
+                  <a
+                    href={`mailto:${settings.email}`}
+                    className="group inline-flex items-center gap-2 text-white/70 hover:text-[#8FAEFF] transition-colors duration-200 motion-reduce:transition-none break-all"
+                  >
+                    <Mail size={13} strokeWidth={1.8} className="shrink-0 text-white/40 group-hover:text-[#8FAEFF]" aria-hidden />
+                    <span className="sr-only">{dictionary.footer.email}: </span>
+                    <span>{settings.email}</span>
+                  </a>
+                </li>
               )}
               {settings?.address && (
-                <div className="max-w-xs">
-                  <span className="block text-[11px] uppercase tracking-[0.18em] text-[var(--color-stone-400)] mb-1.5">
-                    {dictionary.footer.address}
-                  </span>
-                  <span className="text-[13.5px] text-[var(--color-stone-500)] leading-relaxed">
-                    {settings.address}
-                  </span>
-                </div>
+                <li className="flex items-start gap-2 text-white/55 leading-[1.5]">
+                  <MapPin size={13} strokeWidth={1.8} className="shrink-0 mt-[2px] text-white/40" aria-hidden />
+                  <span className="sr-only">{dictionary.footer.address}: </span>
+                  <span>{settings.address}</span>
+                </li>
               )}
-            </div>
+              <li className="pt-1">
+                {/* MÜŞTERİ İŞLEMLERİ — rezervasyon durum sorgulama (mevcut href AYNEN) */}
+                <FooterLink href={localeHref("/rezervasyon-kontrol", locale)}>
+                  <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#8FAEFF]">
+                    {dictionary.footer.checkReservation}
+                    <ArrowRight size={11} strokeWidth={1.75} aria-hidden />
+                  </span>
+                </FooterLink>
+              </li>
+            </ul>
 
-            {/* MÜŞTERİ İŞLEMLERİ — rezervasyon durum sorgulama (mevcut href AYNEN) */}
-            <FooterLink href={localeHref("/rezervasyon-kontrol", locale)}>
-              <span className="inline-flex items-center gap-1.5 text-[13.5px]">
-                {dictionary.footer.checkReservation}
-                <ArrowRight size={12} strokeWidth={1.75} aria-hidden />
-              </span>
-            </FooterLink>
+            {/* Güven / ödeme rozetleri — koyu zeminde okunsun diye küçük beyaz çip */}
+            <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-lg bg-white px-2.5 py-1.5">
+              <Image
+                src="/brand/trust/tursab.png"
+                alt={dictionary.footer.tursabAlt}
+                width={290}
+                height={132}
+                className="h-6 w-auto object-contain"
+              />
+              <Image
+                src="/brand/trust/payment-methods.png"
+                alt={dictionary.footer.paymentMethodsAlt}
+                width={1400}
+                height={400}
+                className="h-6 w-auto object-contain"
+              />
+            </div>
           </div>
         </div>
 
-        {/* ═════════════ SECTION 4 — MİNİMAL ALT BAR ═════════════
-            Sıra: copyright + kurumsal linkler → trust/ödeme rozetleri →
-            (ince separator) → Maki Dijital, ayrı ve tam ortalanmış, en son
-            satır. `corporatePages` veri kaynağı BİREBİR aynı, yalnızca
-            konum/sıra ve renkler değişti. */}
-        <div className="mt-14 md:mt-16 pt-8 border-t border-[var(--color-stone-200)]">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 text-[12px] text-[var(--color-stone-500)]">
-            {/* 🛡️ PHASE 10L §7 — locale-aware telif metni.
-                TR: `resolveSettingsText` canonical değeri AYNEN
-                (trim'siz, aynı referansla) döndürür → aşağıdaki
-                truthy kontrolü + iki `.replace()` + Türkçe fallback
-                BİREBİR eskisi gibi çalışır (bit-bire aynı çıktı).
-                EN/DE: çeviri varsa o, yoksa yine TR canonical.
-                ⚠️ `{year}` / `{site_name}` yer tutucu ikamesi ÇEVİRİ
-                metninde de AYNEN uygulanır — bu yüzden `.replace()`
-                zinciri resolver'ın SONUCUNA uygulanıyor. */}
-            <p>
+        {/* ═════════ ALT BAR — copyright | kurumsal linkler | ajans imzası ═════════ */}
+        <div className="border-t border-white/10 py-3 md:min-h-[48px] flex flex-col md:flex-row md:items-center md:justify-between gap-x-6 gap-y-2 text-[11.5px] text-white/50">
+          {/* 🛡️ PHASE 10L §7 — locale-aware telif metni; `{year}` /
+              `{site_name}` ikamesi resolver SONUCUNA uygulanır (AYNEN). */}
+          <p>
               {copyrightTemplate
                 ? copyrightTemplate
                     .replace(/\{year\}/g, String(year))
@@ -494,73 +469,48 @@ export default function Footer({
                     dictionary.footer.copyrightFallback,
                     { year, site_name: siteName }
                   )}
-            </p>
+          </p>
 
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             {corporatePages.length > 0 && (
               <nav
                 aria-label={dictionary.footer.corporateAriaLabel}
-                className="flex flex-wrap items-center gap-x-5 gap-y-2"
+                className="flex flex-wrap items-center gap-x-4 gap-y-1"
               >
                 {corporatePages.map((p) => (
                   <Link
                     key={p.id}
                     href={localeHref(`/p/${p.slug}`, locale)}
-                    className="hover:text-brand transition-colors duration-300 motion-reduce:transition-none"
+                    className="hover:text-[#8FAEFF] transition-colors duration-200 motion-reduce:transition-none"
                   >
-                    {/* 🛡️ EN/DE `page_translations.title`; yoksa/boşsa
-                        canonical TR `p.title` (villa tipi satırıyla AYNI
-                        çözücü). `href` ve tasarım DEĞİŞMEDİ. */}
                     {resolveTaxonomyName(p.title, p.nameByLocale, locale)}
                   </Link>
                 ))}
               </nav>
             )}
-          </div>
 
-          <div className="mt-6 pt-6 border-t border-[var(--color-stone-200)] flex flex-wrap items-center gap-6">
-            <Image
-              src="/brand/trust/tursab.png"
-              alt={dictionary.footer.tursabAlt}
-              width={290}
-              height={132}
-              className="h-8 w-auto object-contain opacity-80"
-            />
-            <Image
-              src="/brand/trust/payment-methods.png"
-              alt={dictionary.footer.paymentMethodsAlt}
-              width={1400}
-              height={400}
-              className="h-8 w-auto object-contain opacity-90"
-            />
-          </div>
-
-          {/* 🛡️ Maki Dijital — ajans imzası (logo asset, href AYNEN).
-              Ayrı ve tam ortalanmış, footer'ın SON içeriği. */}
-          <div className="mt-8 pt-6 border-t border-[var(--color-stone-200)] text-center">
+            {/* 🛡️ Maki Dijital — ajans imzası (logo asset, href AYNEN). */}
             <a
               href="https://makidijital.com"
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${dictionary.footer.webDevelopment}: Maki Dijital`}
               className="
-                group inline-flex items-center justify-center gap-2
-                text-[11.5px] tracking-[0.04em]
-                text-[var(--color-stone-500)] hover:text-brand
-                transition-colors duration-300 motion-reduce:transition-none
+                group inline-flex items-center gap-1.5
+                text-white/45 hover:text-white
+                transition-colors duration-200 motion-reduce:transition-none
                 focus:outline-none focus-visible:ring-2
-                focus-visible:ring-brand/40 rounded-full px-1
+                focus-visible:ring-white/40 rounded-full px-1
               "
             >
               <span>{dictionary.footer.webDevelopment}</span>
-              <span aria-hidden="true" className="text-[var(--color-stone-300)]">
-                :
-              </span>
+              <span aria-hidden="true" className="text-white/25">:</span>
               <Image
                 src="/brand/logos/Developer-Credit.png"
                 alt="Maki Dijital"
                 width={1254}
                 height={1254}
-                className="h-9 md:h-10 w-auto object-contain opacity-75 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none"
+                className="h-6 w-auto object-contain brightness-0 invert opacity-60 group-hover:opacity-100 transition-opacity duration-200 motion-reduce:transition-none"
               />
             </a>
           </div>
