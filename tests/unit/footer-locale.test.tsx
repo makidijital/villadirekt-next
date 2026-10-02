@@ -50,36 +50,36 @@ describe("Footer — Phase 9B locale dictionary (props ile doğrudan render)", (
   it("1) TR path ('/') → TR footer dictionary metinleri (ÖNCEKİ sabit metinler, DEĞİŞMEDİ)", () => {
     usePathnameMock.mockReturnValue("/");
     render(<Footer {...BASE_PROPS} />);
-    expect(screen.getByText("Keşfet")).toBeInTheDocument();
+    expect(screen.getByText("Villalar")).toBeInTheDocument();
     expect(screen.getByText("Rezervasyon Sorgula")).toBeInTheDocument();
   });
 
   it("1b) TR path ('/kiralik-villalar') → yine TR footer dictionary metinleri", () => {
     usePathnameMock.mockReturnValue("/kiralik-villalar");
     render(<Footer {...BASE_PROPS} />);
-    expect(screen.getByText("Keşfet")).toBeInTheDocument();
+    expect(screen.getByText("Villalar")).toBeInTheDocument();
   });
 
   it("2) '/en/kiralik-villalar' → EN footer dictionary metinleri (lib/i18n/dictionaries/en.ts değerleri)", () => {
     usePathnameMock.mockReturnValue("/en/kiralik-villalar");
     render(<Footer {...BASE_PROPS} />);
-    expect(screen.queryByText("Keşfet")).not.toBeInTheDocument();
-    expect(screen.getByText("Explore")).toBeInTheDocument();
+    expect(screen.queryByText("Villalar")).not.toBeInTheDocument();
+    expect(screen.getByText("Villas")).toBeInTheDocument();
     expect(screen.getByText("Check Reservation")).toBeInTheDocument();
   });
 
   it("3) '/de/kiralik-villalar' → DE footer dictionary metinleri (lib/i18n/dictionaries/de.ts değerleri)", () => {
     usePathnameMock.mockReturnValue("/de/kiralik-villalar");
     render(<Footer {...BASE_PROPS} />);
-    expect(screen.queryByText("Keşfet")).not.toBeInTheDocument();
-    expect(screen.getByText("Entdecken")).toBeInTheDocument();
+    expect(screen.queryByText("Villalar")).not.toBeInTheDocument();
+    expect(screen.getByText("Villen")).toBeInTheDocument();
     expect(screen.getByText("Reservierung prüfen")).toBeInTheDocument();
   });
 
   it("4) segment sınırı — '/energy-something' YANLIŞLIKLA 'en' ile eşleşmez, TR'ye düşer", () => {
     usePathnameMock.mockReturnValue("/energy-something");
     render(<Footer {...BASE_PROPS} />);
-    expect(screen.getByText("Keşfet")).toBeInTheDocument();
+    expect(screen.getByText("Villalar")).toBeInTheDocument();
   });
 
   it("5) villaTypes/locations boşsa fallback dictionary metinleri (allCategories/exploreAllRegions) görünür", () => {

@@ -289,10 +289,6 @@ export default function Footer({
                 </>
               )}
             </Link>
-            <p className="mt-3 text-[12.5px] leading-[1.6] text-white/55 max-w-[300px]">
-              {dictionary.footer.tagline}
-            </p>
-
             {/* Sosyal — settings'ten dinamik (mevcut API aynen) */}
             <div className="mt-4 flex items-center gap-2">
               {settings?.instagram && (
@@ -328,12 +324,7 @@ export default function Footer({
 
           {/* KEŞFET — villa tipleri + bölgeler (veri/link AYNEN) */}
           <div className="lg:col-span-5">
-            <span className="inline-flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-white/40">
-              <span aria-hidden="true" className="inline-block w-3 h-px bg-brand" />
-              {dictionary.footer.explore}
-            </span>
-
-            <div className="mt-3 grid grid-cols-2 gap-x-6 md:gap-x-8 gap-y-6">
+            <div className="grid grid-cols-2 gap-x-6 md:gap-x-8 gap-y-6">
               {/* VİLLA KATEGORİLERİ (dynamic villa_types) */}
               <nav aria-label={dictionary.footer.villaCategoriesAriaLabel}>
                 <p className={headingClass}>{dictionary.footer.villas}</p>
@@ -389,7 +380,7 @@ export default function Footer({
           </div>
 
           {/* İLETİŞİM — telefon / e-posta / adres + rezervasyon sorgula + güven rozetleri */}
-          <div className="lg:col-span-3 lg:pt-[42px]">
+          <div className="lg:col-span-3 lg:pt-7">
             {/* Başlıksız (ayrı "İletişim" başlığı kurumsal "İletişim"
                 sayfa linkiyle çakışmasın); lg'de link listeleriyle aynı
                 hizadan başlar. */}
@@ -435,24 +426,6 @@ export default function Footer({
                 </FooterLink>
               </li>
             </ul>
-
-            {/* Güven / ödeme rozetleri — koyu zeminde okunsun diye küçük beyaz çip */}
-            <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-lg bg-white px-2.5 py-1.5">
-              <Image
-                src="/brand/trust/tursab.png"
-                alt={dictionary.footer.tursabAlt}
-                width={290}
-                height={132}
-                className="h-6 w-auto object-contain"
-              />
-              <Image
-                src="/brand/trust/payment-methods.png"
-                alt={dictionary.footer.paymentMethodsAlt}
-                width={1400}
-                height={400}
-                className="h-6 w-auto object-contain"
-              />
-            </div>
           </div>
         </div>
 
@@ -510,7 +483,7 @@ export default function Footer({
                 alt="Maki Dijital"
                 width={1254}
                 height={1254}
-                className="h-6 w-auto object-contain brightness-0 invert opacity-60 group-hover:opacity-100 transition-opacity duration-200 motion-reduce:transition-none"
+                className="h-7 w-7 rounded-md object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-200 motion-reduce:transition-none"
               />
             </a>
           </div>
