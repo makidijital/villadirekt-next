@@ -315,22 +315,19 @@ export default function BookingSidebar({
         aria-hidden="true"
         className="pointer-events-none absolute left-6 right-6 top-0 h-[3px] rounded-b-full bg-brand"
       />
-      {/* ═══ EDİTORYAL GİRİŞ — "Booking Desk" başlığı (yeni, kısa/genel
-          UI metni; gerçek işlev/metinlere dokunulmadı). ═══ */}
-      <div>
-        <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-stone-400)]">
+      {/* ═══ BAŞLIK — küçük "Rezervasyon" label + "Hızlı Rezervasyon",
+          çok açık marka-mavisi düz yüzey (gradient YOK). ═══ */}
+      <div className="rounded-xl bg-brand/[0.06] px-3.5 py-2.5">
+        <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand/70">
           <span
             aria-hidden="true"
             className="inline-block w-3.5 h-px bg-brand "
           />
           {dict.booking.sidebarEyebrow}
         </span>
-        <h2 className="mt-1.5 font-display font-bold text-[20px] leading-tight tracking-[-0.02em] text-[#0A1633]">
-          {dict.booking.sidebarTitle}
+        <h2 className="mt-1 font-display font-bold text-[20px] leading-tight tracking-[-0.02em] text-[#0A1633]">
+          {dict.booking.sidebarQuickTitle}
         </h2>
-        <p className="mt-1 text-[12.5px] text-[var(--color-stone-500)] leading-snug">
-          {dict.booking.sidebarSubtitle}
-        </p>
       </div>
 
       {/* DATE — mevcut tarih seçim state/behavior/handler AYNEN; yalnız
@@ -595,55 +592,6 @@ export default function BookingSidebar({
           {dict.booking.feeAutoCalculated}
         </p>
       </div>
-
-      {/* ═══════════════════════════════════════════════════════
-          🛡️ ÖDEME FIRSATI — "Öne Çıkan" alanının YERİNE geldi.
-          ═══════════════════════════════════════════════════════
-          Oran ARTIK DİNAMİK: mevcut `prepaymentRate` (useBookingEngine'den,
-          BookingSummary'nin de kullandığı AYNI değer — villa override →
-          global settings → engine'in kendi fallback'i; kanonik hesap
-          BookingSidebar/engine içinde zaten var, burada YENİDEN
-          hesaplanmadı/fetch edilmedi). Görünürlük guard'ı PrepaymentBadge
-          ile AYNI kural: yalnız 0 < oran < 100 iken gösterilir (aksi halde
-          "%0" / "%100 şimdi..." gibi anlamsız metin render edilmez).
-          Bu, galerinin sol-üstündeki eski PrepaymentBadge overlay'inin
-          YERİNE geçen TEK gösterim — aynı kampanya artık iki yerde
-          render edilmiyor. Hesaplama/API/DB çağrısı hâlâ YOK; yalnız
-          UI text/data-binding düzeltmesi. Konum: rezervasyon formunun
-          EN ALTI (değişmedi). */}
-      {prepaymentRate > 0 && prepaymentRate < 100 && (
-        <div>
-          {/* Kompakt ödeme fırsatı satırı — içerik/oran AYNEN, büyük blok yerine. */}
-          <div className="rounded-2xl border border-[var(--color-stone-100)] bg-accent/[0.06] px-4 py-3">
-            <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-[var(--color-stone-400)]">
-              {dict.booking.installmentEyebrow}
-            </span>
-
-            <div className="mt-1.5 flex items-center gap-3">
-              <span
-                className="
-                  shrink-0 font-display font-bold text-[28px]
-                  leading-none tracking-[-0.02em] text-brand
-                "
-              >
-                %{prepaymentRate}
-              </span>
-              <span
-                aria-hidden="true"
-                className="h-8 w-px shrink-0 bg-[var(--color-stone-200)]"
-              />
-              <div className="min-w-0">
-                <p className="text-[12.5px] font-semibold text-[var(--color-stone-900)] leading-snug">
-                  {dict.booking.payNowPerk}
-                </p>
-                <p className="mt-0.5 text-[12.5px] text-[var(--color-stone-500)] leading-snug">
-                  {dict.booking.payAtCheckinPerk}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

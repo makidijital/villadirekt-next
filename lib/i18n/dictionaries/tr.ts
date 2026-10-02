@@ -98,6 +98,7 @@ export const tr: Dictionary = {
        AYNI (byte-identical TR default davranışı için). */
     sidebarEyebrow: "Rezervasyon",
     sidebarTitle: "Konaklamanızı planlayın",
+    sidebarQuickTitle: "Hızlı Rezervasyon",
     sidebarSubtitle: "Uygun tarihleri seçin, konaklama detaylarını hemen görüntüleyin.",
     checkInPillLabel: "Check-in",
     checkOutPillLabel: "Check-out",

@@ -156,6 +156,8 @@ export type Dictionary = {
        Yukarıdaki 13 anahtar (Phase 2) DEĞİŞMEDİ — bunlar EKLEME. */
     sidebarEyebrow: string;
     sidebarTitle: string;
+    /** Villa detay booking paneli ana başlığı ("Hızlı Rezervasyon"). */
+    sidebarQuickTitle: string;
     sidebarSubtitle: string;
     checkInPillLabel: string;
     checkOutPillLabel: string;

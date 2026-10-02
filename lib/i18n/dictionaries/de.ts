@@ -91,6 +91,7 @@ export const de: Dictionary = {
     nights: "Nächte",
     sidebarEyebrow: "Reservierung",
     sidebarTitle: "Planen Sie Ihren Aufenthalt",
+    sidebarQuickTitle: "Schnellbuchung",
     sidebarSubtitle: "Wählen Sie Ihre Daten und sehen Sie sofort die Details zur Unterkunft.",
     checkInPillLabel: "Check-in",
     checkOutPillLabel: "Check-out",
