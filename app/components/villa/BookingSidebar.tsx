@@ -36,7 +36,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CalendarDays, Users } from "lucide-react";
 
 import { type VillaPriceEmbed } from "@/lib/villa-row.types";
 import type { DiscountRange } from "@/lib/price.engine";
@@ -303,32 +303,35 @@ export default function BookingSidebar({
   return (
     <div
       className="
-        relative rounded-[28px]
-        bg-white border border-[var(--color-stone-100)]
-        shadow-[0_1px_2px_rgba(0,0,0,0.05)]
-        px-6 py-7 md:px-7 md:py-8
-        space-y-6
+        relative rounded-[22px]
+        bg-white border border-[var(--color-stone-200)]/70
+        shadow-[0_18px_44px_-30px_rgba(10,22,51,0.38)]
+        px-5 py-5 md:px-6 md:py-6
+        space-y-4
       "
     >
+      {/* İnce marka accent'i — kartın üst kenarında (gradient/glow YOK). */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-6 right-6 top-0 h-[3px] rounded-b-full bg-brand"
+      />
       {/* ═══ EDİTORYAL GİRİŞ — "Booking Desk" başlığı (yeni, kısa/genel
           UI metni; gerçek işlev/metinlere dokunulmadı). ═══ */}
       <div>
-        <span className="inline-flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
+        <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-stone-400)]">
           <span
             aria-hidden="true"
             className="inline-block w-3.5 h-px bg-brand "
           />
           {dict.booking.sidebarEyebrow}
         </span>
-        <h2 className="mt-2 font-display text-[21px] md:text-[23px] leading-tight tracking-[-0.02em] text-[var(--color-stone-900)]">
+        <h2 className="mt-1.5 font-display font-bold text-[20px] leading-tight tracking-[-0.02em] text-[#0A1633]">
           {dict.booking.sidebarTitle}
         </h2>
-        <p className="mt-1.5 text-[13px] text-[var(--color-stone-500)] leading-relaxed">
+        <p className="mt-1 text-[12.5px] text-[var(--color-stone-500)] leading-snug">
           {dict.booking.sidebarSubtitle}
         </p>
       </div>
-
-      <div aria-hidden="true" className="h-px bg-[var(--color-stone-100)]" />
 
       {/* DATE — mevcut tarih seçim state/behavior/handler AYNEN; yalnız
          CHECK-IN / CHECK-OUT kompozisyonuna çevrildi. */}
@@ -355,13 +358,25 @@ export default function BookingSidebar({
             setOpenCalendar(true);
             ensureBookingCalendar();
           }}
-          className="group flex items-center gap-4 cursor-pointer"
+          className={
+            "group relative flex flex-col cursor-pointer rounded-2xl border px-4 py-3 pr-10 " +
+            "transition-colors duration-200 motion-reduce:transition-none " +
+            (openCalendar
+              ? "border-brand bg-brand/[0.04]"
+              : "border-[var(--color-stone-200)] hover:border-brand/40")
+          }
         >
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
+          <CalendarDays
+            size={15}
+            strokeWidth={1.8}
+            aria-hidden
+            className="absolute right-4 bottom-3.5 text-brand/70"
+          />
+          <div className="min-w-0">
+            <div className="text-[10px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
               {dict.booking.checkInPillLabel}
             </div>
-            <div className="mt-1 text-[15px] font-medium text-[var(--color-stone-900)] truncate">
+            <div className="mt-0.5 text-[16px] font-semibold text-[var(--color-stone-900)] truncate">
               {startDate
                 ? formatDatePillLabel(startDate, bcp47)
                 : dict.booking.selectDatePlaceholder}
@@ -370,14 +385,14 @@ export default function BookingSidebar({
 
           <span
             aria-hidden="true"
-            className="w-px h-9 bg-[var(--color-stone-100)] shrink-0"
+            className="my-2.5 h-px w-full bg-[var(--color-stone-100)]"
           />
 
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
+          <div className="min-w-0">
+            <div className="text-[10px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
               {dict.booking.checkOutPillLabel}
             </div>
-            <div className="mt-1 text-[15px] font-medium text-[var(--color-stone-900)] truncate">
+            <div className="mt-0.5 text-[16px] font-semibold text-[var(--color-stone-900)] truncate">
               {endDate
                 ? formatDatePillLabel(endDate, bcp47)
                 : dict.booking.selectDatePlaceholder}
@@ -386,7 +401,7 @@ export default function BookingSidebar({
 
           <ChevronDown
             size={15}
-            className={`shrink-0 text-[var(--color-stone-400)] transition-transform duration-200 motion-reduce:transition-none ${
+            className={`absolute right-4 top-3.5 text-[var(--color-stone-400)] transition-transform duration-200 motion-reduce:transition-none ${
               openCalendar ? "rotate-180" : ""
             }`}
           />
@@ -395,7 +410,7 @@ export default function BookingSidebar({
         {openCalendar && BookingCalendar && (
           <div
             className="
-              absolute right-0 z-[999] mt-4 bg-white border border-[var(--color-stone-100)]
+              absolute right-0 z-[999] mt-3 bg-white border border-[var(--color-stone-100)]
               rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.16)]
               p-4 md:p-5
               w-[min(22rem,calc(100vw-2.5rem))]
@@ -412,19 +427,29 @@ export default function BookingSidebar({
         )}
       </div>
 
-      <div aria-hidden="true" className="h-px bg-[var(--color-stone-100)]" />
-
       {/* GUESTS — mevcut guest selector state/behavior/handler AYNEN. */}
       <div ref={guestsRef} className="relative">
         <div
           onClick={() => setOpenGuests(!openGuests)}
-          className="group flex items-center gap-4 cursor-pointer"
+          className={
+            "group flex items-center gap-3 cursor-pointer rounded-2xl border px-4 py-3 " +
+            "transition-colors duration-200 motion-reduce:transition-none " +
+            (openGuests
+              ? "border-brand bg-brand/[0.04]"
+              : "border-[var(--color-stone-200)] hover:border-brand/40")
+          }
         >
+          <span
+            aria-hidden="true"
+            className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand/[0.08] text-brand"
+          >
+            <Users size={15} strokeWidth={1.8} />
+          </span>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
+            <div className="text-[10px] tracking-[0.16em] uppercase font-semibold text-[var(--color-stone-400)] group-hover:text-brand transition-colors duration-200 motion-reduce:transition-none">
               {dict.booking.guestsLabel}
             </div>
-            <div className="mt-1 text-[15px] font-medium text-[var(--color-stone-900)]">
+            <div className="mt-0.5 text-[14.5px] font-semibold text-[var(--color-stone-900)]">
               {formatDictionaryString(dict.booking.guestsSummary, {
                 adults,
                 children,
@@ -440,7 +465,7 @@ export default function BookingSidebar({
         </div>
 
         {openGuests && (
-          <div className="absolute z-50 mt-3 w-full bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.16)] p-5 space-y-4">
+          <div className="absolute z-50 mt-2 w-full bg-white border border-[var(--color-stone-100)] rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.16)] p-5 space-y-4">
             <Counter
               label={dict.booking.adultsLabel}
               value={adults}
@@ -505,8 +530,7 @@ export default function BookingSidebar({
          İnce üst-ayraç ile akışa entegre; BookingSummary'nin kendi
          içeriğine/hesabına dokunulmadı. */}
       {startDate && endDate && result && (
-        <div>
-          <div aria-hidden="true" className="h-px bg-[var(--color-stone-100)] mb-6" />
+        <div className="rounded-2xl bg-[var(--color-stone-50)] px-4 py-4">
           <BookingSummary
             result={result}
             activeStayDiscount={activeStayDiscount}
@@ -545,23 +569,21 @@ export default function BookingSidebar({
         </div>
       )}
 
-      <div aria-hidden="true" className="h-px bg-[var(--color-stone-100)]" />
-
       {/* CTA — FAZ 26B: minimum stay invalid → disabled (koşul AYNEN).
           onClick/disabled/handler DEĞİŞMEDİ; yalnız görünüm yenilendi. */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {!hideReservationCta && (
           <button
             onClick={handleReservation}
             disabled={!minimumStayValid || priceUnavailable || availabilityPending || initialRangeConflict}
             className={`
-              w-full rounded-full py-4
-              text-[14px] font-semibold tracking-[0.01em] text-white
+              w-full h-[50px] rounded-[15px]
+              text-[13.5px] font-bold tracking-[0.02em] text-white
               transition-all duration-200 motion-reduce:transition-none
               ${
                 !minimumStayValid || priceUnavailable || availabilityPending || initialRangeConflict
                   ? "bg-[var(--color-stone-300)] cursor-not-allowed"
-                  : "bg-brand shadow-[0_16px_32px_-12px_color-mix(in_srgb,var(--color-brand)_45%,transparent)] hover:shadow-[0_20px_40px_-12px_color-mix(in_srgb,var(--color-brand)_55%,transparent)] hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
+                  : "bg-brand hover:bg-brand-strong shadow-[0_10px_22px_-12px_color-mix(in_srgb,var(--color-brand)_55%,transparent)] hover:shadow-[0_14px_28px_-12px_color-mix(in_srgb,var(--color-brand)_60%,transparent)] hover:-translate-y-0.5 motion-reduce:hover:translate-y-0"
               }
             `}
           >
@@ -590,60 +612,31 @@ export default function BookingSidebar({
           UI text/data-binding düzeltmesi. Konum: rezervasyon formunun
           EN ALTI (değişmedi). */}
       {prepaymentRate > 0 && prepaymentRate < 100 && (
-        <div className="pt-5 border-t border-[var(--color-stone-100)]">
-          <style>{`
-            @media (prefers-reduced-motion: no-preference) {
-              .pp-perk-shimmer { animation: pp-perk-sweep 7s ease-in-out infinite; }
-            }
-            @keyframes pp-perk-sweep {
-              0% { background-position: 160% 0; }
-              100% { background-position: -60% 0; }
-            }
-          `}</style>
-          <div
-            className="
-              group relative overflow-hidden rounded-[22px]
-              border border-[var(--color-stone-100)]
-              bg-accent/[0.05]
-              px-5 py-5 md:px-6 md:py-5
-              transition-transform duration-300 motion-reduce:transition-none
-              hover:-translate-y-1 motion-reduce:hover:translate-y-0
-            "
-          >
-            {/* İnce üst accent çizgisi — turuncu → mavi, çok yavaş shimmer */}
-            <span
-              aria-hidden="true"
-              className="pp-perk-shimmer absolute inset-x-5 top-0 h-[2px] rounded-full opacity-60"
-              style={{
-                background:
-                  "var(--color-brand)",
-                backgroundSize: "220% 100%",
-              }}
-            />
-
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
+        <div>
+          {/* Kompakt ödeme fırsatı satırı — içerik/oran AYNEN, büyük blok yerine. */}
+          <div className="rounded-2xl border border-[var(--color-stone-100)] bg-accent/[0.06] px-4 py-3">
+            <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-[var(--color-stone-400)]">
               {dict.booking.installmentEyebrow}
             </span>
 
-            <div className="mt-2.5 flex items-center gap-4">
+            <div className="mt-1.5 flex items-center gap-3">
               <span
                 className="
-                  shrink-0 font-display text-[42px] md:text-[46px]
+                  shrink-0 font-display font-bold text-[28px]
                   leading-none tracking-[-0.02em] text-brand
-                  animate-pulse [animation-duration:5s] motion-reduce:animate-none
                 "
               >
                 %{prepaymentRate}
               </span>
               <span
                 aria-hidden="true"
-                className="h-10 w-px shrink-0 bg-[var(--color-stone-100)]"
+                className="h-8 w-px shrink-0 bg-[var(--color-stone-200)]"
               />
               <div className="min-w-0">
-                <p className="text-[13.5px] font-semibold text-[var(--color-stone-900)] leading-snug">
+                <p className="text-[12.5px] font-semibold text-[var(--color-stone-900)] leading-snug">
                   {dict.booking.payNowPerk}
                 </p>
-                <p className="mt-0.5 text-[13.5px] text-[var(--color-stone-500)] leading-snug">
+                <p className="mt-0.5 text-[12.5px] text-[var(--color-stone-500)] leading-snug">
                   {dict.booking.payAtCheckinPerk}
                 </p>
               </div>
