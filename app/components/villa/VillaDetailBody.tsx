@@ -171,20 +171,6 @@ export default function VillaDetailBody({
           <JsonLd data={vacationRentalLd} />
           <JsonLd data={breadcrumbLd} />
 
-          {/* ═══ VILLA INFO HEADER — full-width, Gallery + Booking
-              grid'inin ÜSTÜNDE. */}
-          <div className="mb-10 md:mb-14">
-            <VillaInfoBar
-              villaTitle={villaTitle}
-              location={displayLocation}
-              guests={villa.guests}
-              bedrooms={villa.bedrooms}
-              bathrooms={villa.bathrooms}
-              tourismDocumentNumber={villa.tourism_document_number}
-              locale={locale}
-            />
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-10">
             {/* LEFT — ~70%: galeri + villa bilgi + içerik gövdesi */}
             <div className="lg:col-span-7 space-y-10 md:space-y-12">
@@ -205,11 +191,25 @@ export default function VillaDetailBody({
                 />
               </div>
 
-              {/* DESCRIPTION */}
+              {/* 🔄 VİLLA HAKKINDA — galerinin hemen altında: başlık →
+                  kompakt villa bilgi kartı (ad/konum/kişi/yatak/banyo,
+                  veriler AYNEN) → açıklama. Kart artık sol içerik
+                  kolonunun genişliğinde. */}
               <section>
-                <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em]">
+                <h2 className="font-display font-bold text-[24px] md:text-[28px] leading-tight text-[var(--color-stone-900)] tracking-[-0.02em]">
                   {dict.villa.aboutTitle}
                 </h2>
+                <div className="mt-4 md:mt-5">
+                  <VillaInfoBar
+                    villaTitle={villaTitle}
+                    location={displayLocation}
+                    guests={villa.guests}
+                    bedrooms={villa.bedrooms}
+                    bathrooms={villa.bathrooms}
+                    tourismDocumentNumber={villa.tourism_document_number}
+                    locale={locale}
+                  />
+                </div>
                 {displayDescription && displayDescription.trim() ? (
                   <CollapsibleDescription
                     html={sanitizeHtml(displayDescription)}

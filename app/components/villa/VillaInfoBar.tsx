@@ -1,60 +1,13 @@
 "use client";
 
 /* ===============================================================
-   🛡️ VillaInfoBar — full-width premium villa DETAIL CARD
+   🛡️ VillaInfoBar — kompakt villa bilgi kartı
    ===============================================================
-   AMAÇ:
-     Villa detay sayfasının EN ÜSTÜNDE (Gallery + Booking grid'inin
-     ÜSTÜNDE, sayfanın tüm content genişliğini kullanan) tek büyük
-     premium CARD. Villa adı + lokasyon (SOL kompakt kart, ~%28
-     genişlik) ve kişi/yatak/banyo/turizm belgesi (4 ikonlu
-     info-item) aynı yatay satırda gösterilir.
-
-   LAYOUT:
-     ┌───────────────────────────────────────────────────────────┐
-     │ ┌──────────┐ ┌────────┐ ┌──────────────┐ ┌────────┐ ┌──────┐│
-     │ │ Villa Adı│ │ 👥 8   │ │ 🛏 4         │ │ 🛁 3   │ │ BELGE││
-     │ │ 📍 Konum │ │ Kişi   │ │ Yatak Odası  │ │ Banyo  │ │ XXXXX││
-     │ └──────────┘ └────────┘ └──────────────┘ └────────┘ └──────┘│
-     └───────────────────────────────────────────────────────────┘
-
-   - Villa adı + lokasyon card'ın ana görsel odağı (soldaki kart)
-   - Info item'lar: mobilde 2x2 grid, desktop'ta tek satır (4 kolon)
-   - Belge item'ı diğerlerinden hafif farklı (gradient accent) — "premium"
-
-   Konum: parent (`page.tsx`) tarafından Gallery/Booking grid'inin
-   ÜSTÜNE, full-width olarak yerleştiriliyor.
-
-   FOTOĞRAFIN ÜZERİNE ASLA binmez (gallery'den tamamen ayrı, üstte block).
-   Gallery DOM/click/lightbox davranışı SIFIR etkilenir.
-
-   🛡️ VİDEO CTA + FAVORİ BUTONU ARTIK BURADA DEĞİL:
-     Bu iki aksiyon bu component'ten kaldırıldı; Gallery'nin hero
-     görselinin SOL ÜST köşesine overlay olarak taşındı (bkz.
-     `app/components/villa/Gallery.tsx`). Video modal + favori buton
-     logic'i AYNEN korunuyor, yalnız DOM konumu değişti — bu
-     dosyanın artık ilgili prop'ları YOK.
-
-   VERİ KONTRATI (DEĞİŞMEDİ):
-     - Props: villaTitle, location, guests, bedrooms, bathrooms,
-       tourismDocumentNumber.
-     - Conditional'lar AYNEN: guests>0 / bedrooms>0 / bathrooms>0 /
-       certificateNo boş değilse. Yeni API/DB sorgusu YOK, fake veri YOK.
-
-   ANİMASYON (yalnız bu component içinde scoped, <style> ile; globals.css
-   DEĞİŞMEDİ, yeni dependency YOK):
-     - Card mount'ta çok hafif fade+translate (tek seferlik, ~500ms).
-     - Üst accent çizgisinde çok yavaş (9s) shimmer sweep.
-     - Info item hover'da hafif lift + ikon scale (Tailwind transition).
-     - Tümü `@media (prefers-reduced-motion: no-preference)` guard'lı —
-       reduced-motion tercihinde hiçbir animasyon çalışmaz.
-
-   ASLA dokunulmadı:
-     - Gallery component'in görsel/lightbox/swipe/sayaç davranışı —
-       yalnız hero'nun sol üstüne video/favori overlay'i eklendi.
-     - Booking sidebar / pricing / availability / reservation flow
-     - YouTube helper
-     - FavoriteButton / useFavorites logic (yalnız DOM konumu Gallery'ye taşındı)
+   Villa detayında galerinin altında, "Villa hakkında" başlığının
+   hemen altında (bkz. VillaDetailBody). Üstte villa adı (h1) + konum
+   (+ varsa turizm belgesi çipi), ince divider, altta eşit genişlikte
+   kişi / yatak odası / banyo. Veri kontratı ve koşullar AYNEN:
+   guests>0 / bedrooms>0 / bathrooms>0 / belge no boş değilse.
    =============================================================== */
 
 import { MapPin, Users, BedDouble, Bath } from "lucide-react";
@@ -93,200 +46,90 @@ export default function VillaInfoBar({
   const hasAnyInfoItem =
     guests > 0 || bedrooms > 0 || bathrooms > 0 || hasCertificate;
 
+  const stats = [
+    guests > 0 && { key: "guests", icon: <Users size={17} strokeWidth={1.8} />, value: guests, label: dict.card.person },
+    bedrooms > 0 && { key: "bedrooms", icon: <BedDouble size={17} strokeWidth={1.8} />, value: bedrooms, label: dict.card.bedroom },
+    bathrooms > 0 && { key: "bathrooms", icon: <Bath size={17} strokeWidth={1.8} />, value: bathrooms, label: dict.card.bathroom },
+  ].filter(Boolean) as Array<{ key: string; icon: React.ReactNode; value: number; label: string }>;
+
+  if (!villaTitle && !location && !hasAnyInfoItem) return null;
+
+  /* 🔄 KOMPAKT KART — üstte ad + konum (+ varsa turizm belgesi çipi),
+     ince divider, altta EŞİT genişlikte kişi/yatak/banyo. Veri/koşullar
+     AYNEN (guests/bedrooms/bathrooms > 0, belge boş değilse). */
   return (
-      <div
-        className="
-          villa-info-card-in
-          relative overflow-hidden
-          rounded-[28px] md:rounded-[32px]
-          border border-[var(--color-stone-100)]
-          bg-white
-          shadow-[0_24px_60px_-36px_rgba(0,0,0,0.22)]
-          px-6 py-6 md:px-9 md:py-8
-        "
-      >
-        <style>{`
-          @media (prefers-reduced-motion: no-preference) {
-            .villa-info-card-in {
-              animation: villa-info-card-in-kf 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
-            }
-            .villa-info-shimmer {
-              animation: villa-info-shimmer-kf 9s ease-in-out infinite;
-            }
-          }
-          @keyframes villa-info-card-in-kf {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          @keyframes villa-info-shimmer-kf {
-            0% { background-position: 160% 0; }
-            100% { background-position: -60% 0; }
-          }
-        `}</style>
-
-        {/* İnce üst accent çizgisi — turuncu → mavi, çok yavaş shimmer */}
-        <span
-          aria-hidden="true"
-          className="villa-info-shimmer absolute inset-x-0 top-0 h-[3px]"
-          style={{
-            background:
-              "var(--color-brand)",
-            backgroundSize: "220% 100%",
-          }}
-        />
-
-        {/* SOL: VİLLA ADI + BÖLGE/KONUM KARTI ── SAĞ: KİŞİ/YATAK ODASI/
-            BANYO/BELGE — hepsi AYNI yatay satırda, aynı görsel ritimde.
-            Eski büyük h1 kaldırıldı; villaTitle artık bu kompakt, diğer
-            4 kart ile aynı border/radius/bg/hover diline sahip SOL
-            kartın İÇİNDE (üstte başlık, altında lokasyon, ikisi de
-            ortalanmış) render ediliyor — h1 etiketi SEO/a11y için
-            korundu, yalnız boyutu/konumu değişti. Masaüstünde SOL kart
-            shrink-0, 4'lü grid flex-1 ile kalan alanı dolduruyor;
-            mobilde satır flex-col'a döner (kart üstte, tam genişlik;
-            bilgi kutuları altında). 4 kutunun kendi tasarımı
-            (InfoItem/CertificateItem, grid-cols, koşullar) DEĞİŞMEDİ —
-            yalnızca villa adının yeri/boyutu ve lokasyon kartı değişti. */}
-        {(villaTitle || location || hasAnyInfoItem) && (
-          <div className="mt-5 md:mt-6 flex flex-col md:flex-row md:items-stretch gap-4 md:gap-6">
+    <div className="rounded-[20px] border border-[var(--color-stone-100)] bg-white shadow-[0_12px_32px_-24px_rgba(0,0,0,0.22)] px-4 py-4 md:px-6 md:py-5">
+      {(villaTitle || location || hasCertificate) && (
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="min-w-0">
             {villaTitle && (
-              <div
-                className="
-                  group/title relative
-                  flex flex-col items-center justify-center text-center gap-1
-                  w-full md:w-[28%] md:shrink-0
-                  rounded-2xl
-                  bg-[var(--color-stone-50)]
-                  border border-transparent
-                  hover:bg-white hover:border-[var(--color-stone-100)]
-                  hover:shadow-[0_12px_28px_-18px_rgba(0,0,0,0.22)]
-                  hover:-translate-y-0.5
-                  transition-all duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0
-                  px-4 py-3.5 md:py-4
-                "
-              >
-                <h1 className="w-full font-display font-bold text-[18px] md:text-[20px] leading-tight tracking-[-0.01em] text-[var(--color-stone-900)] truncate">
-                  {villaTitle}
-                </h1>
-                {location && (
-                  <p className="w-full inline-flex items-center justify-center gap-1.5 text-[12px] md:text-[12.5px] text-[var(--color-stone-500)] truncate">
-                    <MapPin
-                      size={13}
-                      strokeWidth={1.8}
-                      className="text-brand shrink-0"
-                      aria-hidden
-                    />
-                    <span className="truncate">{location}</span>
-                  </p>
-                )}
-              </div>
+              <h1 className="font-display font-bold text-[20px] md:text-[22px] leading-tight tracking-[-0.015em] text-[var(--color-stone-900)] truncate">
+                {villaTitle}
+              </h1>
             )}
-
-            {hasAnyInfoItem && (
-              <div className="flex-1 min-w-0 grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
-                {guests > 0 && (
-                  <InfoItem
-                    icon={<Users size={15} strokeWidth={1.8} />}
-                    accentColor="var(--color-brand)"
-                    value={guests}
-                    label={dict.card.person}
-                  />
-                )}
-                {bedrooms > 0 && (
-                  <InfoItem
-                    icon={<BedDouble size={15} strokeWidth={1.8} />}
-                    accentColor="var(--color-brand)"
-                    value={bedrooms}
-                    label={dict.card.bedroom}
-                  />
-                )}
-                {bathrooms > 0 && (
-                  <InfoItem
-                    icon={<Bath size={15} strokeWidth={1.8} />}
-                    accentColor="var(--color-brand)"
-                    value={bathrooms}
-                    label={dict.card.bathroom}
-                  />
-                )}
-                {hasCertificate && (
-                  <CertificateItem
-                    label={dict.villa.tourismCertificate}
-                    documentNumberLabel={formatDictionaryString(
-                      dict.villa.documentNumber,
-                      { n: certificateNo }
-                    )}
-                  />
-                )}
-              </div>
+            {location && (
+              <p className="mt-1 flex items-center gap-1.5 text-[13px] text-[var(--color-stone-500)] min-w-0">
+                <MapPin size={14} strokeWidth={1.8} className="text-brand shrink-0" aria-hidden />
+                <span className="truncate">{location}</span>
+              </p>
             )}
           </div>
-        )}
-      </div>
+          {hasCertificate && (
+            <CertificateItem
+              label={dict.villa.tourismCertificate}
+              documentNumberLabel={formatDictionaryString(dict.villa.documentNumber, {
+                n: certificateNo,
+              })}
+            />
+          )}
+        </div>
+      )}
+
+      {stats.length > 0 && (
+        <div
+          className={
+            "grid grid-cols-3 divide-x divide-[var(--color-stone-100)] " +
+            (villaTitle || location || hasCertificate
+              ? "mt-4 pt-4 border-t border-[var(--color-stone-100)]"
+              : "")
+          }
+        >
+          {stats.map((st) => (
+            <InfoItem key={st.key} icon={st.icon} value={st.value} label={st.label} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-/* ───────────────────────────────────────────────────────────────
-   InfoItem — Kişi / Yatak Odası / Banyo için modern, ikonlu mini
-   card. Eski StatCard'ın YERİNE geldi: soft background (kutu/border
-   ağır değil), ikon için küçük beyaz rozet + brand accent renk,
-   büyük sayı + küçük label, hover'da hafif lift + ikon scale.
-─────────────────────────────────────────────────────────────── */
+/* InfoItem — kompakt istatistik: ikon (marka mavisi) + değer + etiket. */
 function InfoItem({
   icon,
-  accentColor,
   value,
   label,
 }: {
   icon: React.ReactNode;
-  accentColor: string;
   value: number;
   label: string;
 }) {
   return (
-    <div
-      className="
-        group/item relative
-        flex flex-col items-center justify-center text-center
-        rounded-2xl
-        bg-[var(--color-stone-50)]
-        border border-transparent
-        hover:bg-white hover:border-[var(--color-stone-100)]
-        hover:shadow-[0_12px_28px_-18px_rgba(0,0,0,0.22)]
-        hover:-translate-y-0.5
-        transition-all duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0
-        px-3.5 py-3.5 md:py-4
-      "
-    >
-      <span
-        aria-hidden="true"
-        className="
-          inline-flex items-center justify-center w-8 h-8 rounded-xl
-          bg-white shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]
-          transition-transform duration-300 motion-reduce:transition-none
-          group-hover/item:scale-110
-        "
-        style={{ color: accentColor }}
-      >
+    <div className="flex flex-col items-center justify-center text-center px-1.5 min-w-0">
+      <span aria-hidden="true" className="text-brand">
         {icon}
       </span>
-      <p className="mt-2.5 font-display text-[26px] md:text-[28px] font-bold text-[var(--color-stone-900)] tracking-[-0.01em] tabular-nums leading-none">
+      <p className="mt-1.5 font-display text-[20px] md:text-[22px] font-bold text-[var(--color-stone-900)] tabular-nums leading-none">
         {value}
       </p>
-      <p className="mt-1 text-[11px] md:text-[11.5px] font-medium text-[var(--color-stone-500)] leading-snug">
+      <p className="mt-1 text-[11.5px] md:text-[12px] font-medium text-[var(--color-stone-500)] leading-snug truncate max-w-full">
         {label}
       </p>
     </div>
   );
 }
 
-/* ───────────────────────────────────────────────────────────────
-   CertificateItem — T.C. Kültür ve Turizm Bakanlığı belge item'ı.
-   Diğer InfoItem'lardan biraz daha premium: turuncu→mavi çok hafif
-   gradient zemin + ince brand-renkli border. Mevcut bakanlık SVG
-   ikonu (daha önce CertificateCard'da kullanılan gerçek asset) geri
-   getirildi — yeni ikon paketi/dependency YOK. Belge no gerçek
-   veriden (tourismDocumentNumber) gelir; koşul AYNEN (boş değilse).
-─────────────────────────────────────────────────────────────── */
+/* CertificateItem — T.C. Kültür ve Turizm Bakanlığı belge çipi (kompakt).
+   Mevcut bakanlık SVG asset'i; belge no gerçek veriden. */
 function CertificateItem({
   label,
   documentNumberLabel,
@@ -295,44 +138,22 @@ function CertificateItem({
   documentNumberLabel: string;
 }) {
   return (
-    <div
-      className="
-        group/cert relative overflow-hidden
-        flex flex-col items-center justify-center text-center
-        rounded-2xl
-        border border-brand/15
-        bg-brand/[0.07]
-        hover:shadow-[0_12px_28px_-18px_color-mix(in_srgb,var(--color-brand)_28%,transparent)]
-        hover:-translate-y-0.5
-        transition-all duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0
-        px-3.5 py-3.5 md:py-4
-        min-w-0
-      "
-    >
-      <span
-        aria-hidden="true"
-        className="
-          inline-flex items-center justify-center w-8 h-8 rounded-xl
-          bg-white shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]
-          overflow-hidden
-          transition-transform duration-300 motion-reduce:transition-none
-          group-hover/cert:scale-110
-        "
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/trust/turizm-bakanligi.svg"
-          alt=""
-          aria-hidden
-          className="w-4 h-4 object-contain"
-        />
+    <div className="inline-flex items-center gap-2 self-start shrink-0 max-w-full rounded-xl border border-brand/15 bg-brand/[0.06] px-2.5 py-1.5 min-w-0">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/trust/turizm-bakanligi.svg"
+        alt=""
+        aria-hidden
+        className="w-4 h-4 object-contain shrink-0"
+      />
+      <span className="min-w-0 leading-tight">
+        <span className="block text-[9.5px] font-semibold uppercase tracking-[0.08em] text-brand">
+          {label}
+        </span>
+        <span className="block text-[11px] font-medium text-[var(--color-stone-700)] truncate">
+          {documentNumberLabel}
+        </span>
       </span>
-      <p className="mt-2.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-brand leading-snug">
-        {label}
-      </p>
-      <p className="mt-0.5 w-full text-[10.5px] md:text-[11px] font-medium text-[var(--color-stone-700)] leading-snug truncate">
-        {documentNumberLabel}
-      </p>
     </div>
   );
 }
