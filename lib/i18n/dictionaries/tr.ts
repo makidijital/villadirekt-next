@@ -59,6 +59,14 @@ export const tr: Dictionary = {
     email: "E-posta",
     address: "Adres",
     checkReservation: "Rezervasyon Sorgula",
+    /** Alt bar yasal/kurumsal linkleri (sabit sıra). */
+    legalLinks: {
+      about: "Hakkımızda",
+      privacy: "KVKK ve Gizlilik Politikası",
+      cancellation: "İptal Koşulları",
+      cookies: "Çerez Politikası",
+      distanceSales: "Mesafeli Satış Sözleşmesi",
+    },
     webDevelopment: "Web Geliştirme",
     tagline:
       "Akdeniz'in seçkin villalarını premium bir deneyimle keşfedin. Özel havuz, deniz manzarası ve butik konfor — tek bir platformda.",

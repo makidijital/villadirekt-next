@@ -437,53 +437,46 @@ describe("FooterWrapper + Footer — Kurumsal CMS sayfaları", () => {
     findActivePagesMock.mockResolvedValue({ data: CORP_PAGES });
   });
 
-  it("26) TR → canonical başlıklar", async () => {
+  /* 🔄 Footer alt barı artık SABİT 5 yasal linki dictionary'den
+     (`footer.legalLinks`) gösterir; CMS sayfa başlıkları/çevirileri
+     footer'da kullanılmıyor. Testler bu yeni sözleşmeyi kilitler. */
+  it("26) TR → dictionary etiketleri (Hakkımızda), CMS 'İletişim' footer'da YOK", async () => {
     usePathnameMock.mockReturnValue("/");
     mockTranslations({ page: { "page-1": { en: "About Us" } } });
     render(await FooterWrapper());
-    expect(screen.getByText("Hakkımızda")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Hakkımızda" })).toHaveAttribute("href", "/p/hakkimizda");
     expect(screen.queryByText("About Us")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "İletişim" })).not.toBeInTheDocument();
   });
 
   it("27) multilingual KAPALI → çeviri sorgusu HİÇ atılmaz", async () => {
+    usePathnameMock.mockReturnValue("/");
     getPublicSettingsMock.mockResolvedValue({ multilingual_enabled: false });
     render(await FooterWrapper());
     expect(findManyForLocaleMock).not.toHaveBeenCalled();
-    expect(screen.getByText("Hakkımızda")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Hakkımızda" })).toBeInTheDocument();
   });
 
-  it("28) EN → çevrilmiş başlıklar", async () => {
-    mockTranslations({
-      page: {
-        "page-1": { en: "About Us", de: "Über uns" },
-        "page-2": { en: "Contact", de: "Kontakt" },
-      },
-    });
+  it("28) EN → dictionary EN etiketleri", async () => {
+    usePathnameMock.mockReturnValue("/en");
     render(await FooterWrapper());
-    expect(screen.getByText("About Us")).toBeInTheDocument();
-    expect(screen.getByText("Contact")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "About Us" })).toHaveAttribute("href", "/en/p/hakkimizda");
+    expect(screen.getByRole("link", { name: "Privacy Policy" })).toBeInTheDocument();
   });
 
-  it("29) DE → çevrilmiş başlıklar", async () => {
+  it("29) DE → dictionary DE etiketleri", async () => {
     usePathnameMock.mockReturnValue("/de");
-    mockTranslations({
-      page: {
-        "page-1": { en: "About Us", de: "Über uns" },
-        "page-2": { en: "Contact", de: "Kontakt" },
-      },
-    });
     render(await FooterWrapper());
-    expect(screen.getByText("Über uns")).toBeInTheDocument();
-    expect(screen.getByText("Kontakt")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Über uns" })).toHaveAttribute("href", "/de/p/hakkimizda");
+    expect(screen.getByRole("link", { name: "Datenschutzerklärung" })).toBeInTheDocument();
   });
 
-  it("30) çeviri yok / boş / whitespace → TR fallback", async () => {
-    mockTranslations({
-      page: { "page-1": { en: "  " } /* page-2: hiç çeviri yok */ },
-    });
+  it("30) TR → 5 yasal link eksiksiz", async () => {
+    usePathnameMock.mockReturnValue("/");
     render(await FooterWrapper());
-    expect(screen.getByText("Hakkımızda")).toBeInTheDocument();
-    expect(screen.getByText("İletişim")).toBeInTheDocument();
+    for (const name of ["Hakkımızda", "KVKK ve Gizlilik Politikası", "İptal Koşulları", "Çerez Politikası", "Mesafeli Satış Sözleşmesi"]) {
+      expect(screen.getByRole("link", { name })).toBeInTheDocument();
+    }
   });
 
   it("31) TEK batch sorgu — sayfa başına sorgu YOK (N+1 YOK)", async () => {
@@ -504,13 +497,13 @@ describe("FooterWrapper + Footer — Kurumsal CMS sayfaları", () => {
     );
   });
 
-  it("33) çeviri okuması patlarsa footer ÇÖKMEZ → TR başlık", async () => {
+  it("33) çeviri okuması patlarsa footer ÇÖKMEZ → yasal linkler yine görünür", async () => {
     findManyForLocaleMock.mockRejectedValue(new Error("db down"));
     render(await FooterWrapper());
-    expect(screen.getByText("Hakkımızda")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "About Us" })).toBeInTheDocument();
   });
 
-  it("34) SIRALAMA değişmez (menu_order ASC)", async () => {
+  it("34) alt bar yasal link SIRASI sabit (dictionary)", async () => {
     mockTranslations({
       page: { "page-1": { en: "About Us" }, "page-2": { en: "Contact" } },
     });
@@ -525,7 +518,13 @@ describe("FooterWrapper + Footer — Kurumsal CMS sayfaları", () => {
     const texts = Array.from(nav.querySelectorAll("a")).map(
       (a) => a.textContent
     );
-    expect(texts).toEqual(["About Us", "Contact"]);
+    expect(texts).toEqual([
+      "About Us",
+      "Privacy Policy",
+      "Cancellation Policy",
+      "Cookie Policy",
+      "Distance Sales Agreement",
+    ]);
   });
 
   it("35) villa tipi çevirisi ETKİLENMEDİ (Phase 10H regresyon)", async () => {

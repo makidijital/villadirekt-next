@@ -172,7 +172,8 @@ describe("FooterWrapper — Phase 9B prop-passing (DB/service mock'lanır, gerç
     const element = await FooterWrapper();
     render(element);
 
-    expect(screen.getByText("Kalkan")).toBeInTheDocument();
+    /* "Kalkan" hem bölge linki hem iletişim adresi → link rolüyle sorgula. */
+    expect(screen.getByRole("link", { name: "Kalkan" })).toBeInTheDocument();
     expect(screen.getByText("Havuzlu Villa")).toBeInTheDocument();
     expect(screen.getByText("Hakkımızda")).toBeInTheDocument();
     /* settings mock'unda site_logo/footer_logo YOK → wordmark fallback
@@ -266,7 +267,8 @@ describe("Footer — href locale kilidi (iç linkler aktif locale'i taşır)", (
       "href",
       "/en/arama?bolgeler=kalkan"
     );
-    expect(screen.getByRole("link", { name: "Hakkımızda" })).toHaveAttribute(
+    /* Alt bar yasal linkleri dictionary'den (footer.legalLinks). */
+    expect(screen.getByRole("link", { name: "About Us" })).toHaveAttribute(
       "href",
       "/en/p/hakkimizda"
     );
@@ -288,7 +290,7 @@ describe("Footer — href locale kilidi (iç linkler aktif locale'i taşır)", (
       "href",
       "/de/arama?bolgeler=kalkan"
     );
-    expect(screen.getByRole("link", { name: "Hakkımızda" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Über uns" })).toHaveAttribute(
       "href",
       "/de/p/hakkimizda"
     );
@@ -315,5 +317,47 @@ describe("Footer — href locale kilidi (iç linkler aktif locale'i taşır)", (
     render(<Footer {...BASE_PROPS} />);
     const link = screen.getByRole("link", { name: /Rezervasyon Sorgula/i });
     expect(link).toHaveAttribute("href", "/rezervasyon-kontrol");
+  });
+});
+
+describe("Footer — sabit iletişim + alt bar yasal linkleri", () => {
+  it("15) iletişim settings'ten: tel/mailto + adres; 'Rezervasyon Sorgula' korunur", () => {
+    usePathnameMock.mockReturnValue("/");
+    render(
+      <Footer
+        {...BASE_PROPS}
+        settings={{
+          phone: "+49 177 333 0071",
+          email: "info@villadirekt.com",
+          address: "Kalkan",
+        } as unknown as React.ComponentProps<typeof Footer>["settings"]}
+      />
+    );
+    expect(screen.getByRole("link", { name: /\+49 177 333 0071/ })).toHaveAttribute("href", "tel:+49 177 333 0071");
+    expect(screen.getByRole("link", { name: /info@villadirekt\.com/ })).toHaveAttribute("href", "mailto:info@villadirekt.com");
+    expect(screen.getByText("Kalkan")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Rezervasyon Sorgula/ })).toHaveAttribute("href", "/rezervasyon-kontrol");
+  });
+
+  it("15b) settings boşsa telefon/e-posta/adres satırları render edilmez", () => {
+    usePathnameMock.mockReturnValue("/");
+    const { container } = render(<Footer {...BASE_PROPS} />);
+    expect(container.querySelector('a[href^="tel:"]')).toBeNull();
+    expect(container.querySelector('a[href^="mailto:"]')).toBeNull();
+  });
+
+  it("16) 5 yasal link doğru sırada ve slug'larla (TR)", () => {
+    usePathnameMock.mockReturnValue("/");
+    render(<Footer {...BASE_PROPS} />);
+    const expected: Array<[string, string]> = [
+      ["Hakkımızda", "/p/hakkimizda"],
+      ["KVKK ve Gizlilik Politikası", "/p/kvkk-ve-gizlilik-politikasi"],
+      ["İptal Koşulları", "/p/rezervasyon-ve-iptal-kosullari"],
+      ["Çerez Politikası", "/p/cerez-politikasi"],
+      ["Mesafeli Satış Sözleşmesi", "/p/mesafeli-satis-sozlesmesi"],
+    ];
+    for (const [name, href] of expected) {
+      expect(screen.getByRole("link", { name })).toHaveAttribute("href", href);
+    }
   });
 });

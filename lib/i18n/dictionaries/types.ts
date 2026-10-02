@@ -117,6 +117,13 @@ export type Dictionary = {
     email: string;
     address: string;
     checkReservation: string;
+    legalLinks: {
+      about: string;
+      privacy: string;
+      cancellation: string;
+      cookies: string;
+      distanceSales: string;
+    };
     webDevelopment: string;
     /** 🛡️ Marka tanıtım paragrafı. */
     tagline: string;

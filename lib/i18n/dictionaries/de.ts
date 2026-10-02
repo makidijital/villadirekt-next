@@ -56,6 +56,14 @@ export const de: Dictionary = {
     email: "E-Mail",
     address: "Adresse",
     checkReservation: "Reservierung prüfen",
+    /** Alt bar yasal/kurumsal linkleri (sabit sıra). */
+    legalLinks: {
+      about: "Über uns",
+      privacy: "Datenschutzerklärung",
+      cancellation: "Stornobedingungen",
+      cookies: "Cookie-Richtlinie",
+      distanceSales: "Fernabsatzvertrag",
+    },
     webDevelopment: "Webentwicklung",
     tagline:
       "Entdecken Sie die schönsten Villen des Mittelmeers mit einem Premium-Erlebnis. Privatpool, Meerblick und Boutique-Komfort — alles auf einer Plattform.",

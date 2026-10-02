@@ -56,6 +56,14 @@ export const en: Dictionary = {
     email: "Email",
     address: "Address",
     checkReservation: "Check Reservation",
+    /** Alt bar yasal/kurumsal linkleri (sabit sıra). */
+    legalLinks: {
+      about: "About Us",
+      privacy: "Privacy Policy",
+      cancellation: "Cancellation Policy",
+      cookies: "Cookie Policy",
+      distanceSales: "Distance Sales Agreement",
+    },
     webDevelopment: "Web Development",
     tagline:
       "Discover the Mediterranean's finest villas with a premium experience. Private pool, sea view and boutique comfort — all on one platform.",

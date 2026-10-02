@@ -187,6 +187,16 @@ function taxonomyHref(prefix: string, item: TaxonomyItem): string {
   return prefix === "bolgeler" ? regionLinkHref(item) : categoryLinkHref(item);
 }
 
+/* 🔄 Alt bar yasal/kurumsal linkleri — sabit sıra; etiketler dictionary'den
+   (`footer.legalLinks`), href'ler aktif locale'i taşır (localeHref). */
+const LEGAL_LINKS = [
+  { key: "about", slug: "hakkimizda" },
+  { key: "privacy", slug: "kvkk-ve-gizlilik-politikasi" },
+  { key: "cancellation", slug: "rezervasyon-ve-iptal-kosullari" },
+  { key: "cookies", slug: "cerez-politikasi" },
+  { key: "distanceSales", slug: "mesafeli-satis-sozlesmesi" },
+] as const;
+
 /* =================================================================
    ROOT COMPONENT — client
    🛡️ PHASE 9B: DB erişimi YOK — tüm veri FooterWrapper'dan props
@@ -207,7 +217,6 @@ export default function Footer({
   settings,
   locations,
   villaTypes,
-  corporatePages,
   year,
   siteName,
   phoneDigits,
@@ -320,6 +329,16 @@ export default function Footer({
                 </SocialLink>
               )}
             </div>
+
+            {/* MÜŞTERİ İŞLEMLERİ — rezervasyon durum sorgulama (mevcut href/stil AYNEN) */}
+            <div className="mt-4">
+              <FooterLink href={localeHref("/rezervasyon-kontrol", locale)}>
+                <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#8FAEFF]">
+                  {dictionary.footer.checkReservation}
+                  <ArrowRight size={11} strokeWidth={1.75} aria-hidden />
+                </span>
+              </FooterLink>
+            </div>
           </div>
 
           {/* KEŞFET — villa tipleri + bölgeler (veri/link AYNEN) */}
@@ -379,11 +398,11 @@ export default function Footer({
             </div>
           </div>
 
-          {/* İLETİŞİM — telefon / e-posta / adres + rezervasyon sorgula + güven rozetleri */}
+          {/* İLETİŞİM — telefon / e-posta / adres (kompakt, ikonlu) */}
           <div className="lg:col-span-3 lg:pt-7">
-            {/* Başlıksız (ayrı "İletişim" başlığı kurumsal "İletişim"
-                sayfa linkiyle çakışmasın); lg'de link listeleriyle aynı
-                hizadan başlar. */}
+            {/* Başlıksız; lg'de link listeleriyle aynı hizadan başlar. */}
+            {/* Telefon / e-posta / adres — admin site ayarlarından (settings,
+                FooterWrapper → getPublicSettings); boş alan render edilmez. */}
             <ul className="space-y-2 text-[12.5px]">
               {settings?.phone && (
                 <li>
@@ -416,15 +435,6 @@ export default function Footer({
                   <span>{settings.address}</span>
                 </li>
               )}
-              <li className="pt-1">
-                {/* MÜŞTERİ İŞLEMLERİ — rezervasyon durum sorgulama (mevcut href AYNEN) */}
-                <FooterLink href={localeHref("/rezervasyon-kontrol", locale)}>
-                  <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#8FAEFF]">
-                    {dictionary.footer.checkReservation}
-                    <ArrowRight size={11} strokeWidth={1.75} aria-hidden />
-                  </span>
-                </FooterLink>
-              </li>
             </ul>
           </div>
         </div>
@@ -445,22 +455,24 @@ export default function Footer({
           </p>
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            {corporatePages.length > 0 && (
-              <nav
-                aria-label={dictionary.footer.corporateAriaLabel}
-                className="flex flex-wrap items-center gap-x-4 gap-y-1"
-              >
-                {corporatePages.map((p) => (
+            <nav
+              aria-label={dictionary.footer.corporateAriaLabel}
+              className="flex flex-wrap items-center gap-y-1"
+            >
+              {LEGAL_LINKS.map((l, i) => (
+                <span key={l.slug} className="inline-flex items-center">
+                  {i > 0 && (
+                    <span aria-hidden="true" className="mx-2 text-white/20">|</span>
+                  )}
                   <Link
-                    key={p.id}
-                    href={localeHref(`/p/${p.slug}`, locale)}
+                    href={localeHref(`/p/${l.slug}`, locale)}
                     className="hover:text-[#8FAEFF] transition-colors duration-200 motion-reduce:transition-none"
                   >
-                    {resolveTaxonomyName(p.title, p.nameByLocale, locale)}
+                    {dictionary.footer.legalLinks[l.key]}
                   </Link>
-                ))}
-              </nav>
-            )}
+                </span>
+              ))}
+            </nav>
 
             {/* 🛡️ Maki Dijital — ajans imzası (logo asset, href AYNEN). */}
             <a
