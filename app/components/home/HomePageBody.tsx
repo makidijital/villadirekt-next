@@ -145,11 +145,18 @@ export default async function HomePageBody({
       {/* 🛡️ "Bölgeler" — VillaList altı, Footer üstü. Bölge ADLARI her
          dilde CANONICAL kalır (Phase 10I kararı). */}
       <LocationCollection locale={locale} />
-      {/* 🛡️ "Kısa Süreli Tarihler" — takvimdeki dolu-boş-dolu iç boşluklar.
-         Veri yoksa component null döner; layout etkilenmez. */}
-      <ShortGapsSection locale={locale} />
-      {/* 🛡️ FAZ 25 — Global SSS section (testimonials ÜSTÜNE taşındı). */}
-      <FaqSection faqs={faqs} locale={locale} />
+      {/* 🛡️ "Kısa Süreli Fırsatlar" (sol) + "Sıkça Sorulan Sorular" (sağ) —
+         TEK section, iki kolon (lg+); mobilde üst üste (önce fırsatlar).
+         Her iki component de `embedded` modda kendi section/padding'ini
+         basmaz. Biri boşsa (null) diğeri tek başına kalır; ikisi de boşsa
+         `has-[>div:empty]:hidden` ile section hiç görünmez. Veri, linkler,
+         carousel ve accordion mantığı AYNEN. */}
+      <section className="px-5 md:px-10 lg:px-16 py-14 md:py-20 bg-[var(--color-stone-50)] has-[>div:empty]:hidden">
+        <div className="site-container flex flex-col lg:flex-row gap-12 lg:gap-14">
+          <ShortGapsSection locale={locale} embedded />
+          <FaqSection faqs={faqs} locale={locale} embedded />
+        </div>
+      </section>
       {/* 🛡️ FAZ 34 — "Misafir Yorumları" testimonial section. */}
       <HomepageReviewsSection locale={locale} />
     </>

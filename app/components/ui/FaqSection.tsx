@@ -45,44 +45,22 @@ type FaqItem = {
 export default function FaqSection({
   faqs,
   locale = DEFAULT_LOCALE,
+  embedded = false,
 }: {
   faqs: FaqItem[];
   locale?: Locale;
+  /** 🛡️ Ana sayfada Kısa Süreli Fırsatlar ile aynı section'da SAĞ KOLON:
+   *  kendi section/padding'i YOK, kompakt başlık + kompakt accordion.
+   *  Accordion state/aria/grid-rows mantığı AYNEN. */
+  embedded?: boolean;
 }) {
   const dict = getDictionary(locale).home.faq;
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   if (!faqs || faqs.length === 0) return null;
 
-  return (
-    <section
-      id="sss"
-      aria-labelledby="faq-heading"
-      className="scroll-mt-24 md:scroll-mt-28 px-5 md:px-10 lg:px-16 py-16 md:py-24 border-t border-[var(--color-stone-100)]"
-    >
-      <div className="max-w-[760px] mx-auto">
-        {/* ── HEADER — mikro-label + sade başlık + kısa alt metin.
-               Eski "koyu lacivert sol panel" tamamen kaldırıldı; bölüm
-               artık tek, bütünsel editorial bir kompozisyon. ── */}
-        <div className="mb-10 md:mb-14">
-          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
-            <span
-              aria-hidden="true"
-              className="inline-block w-4 h-px bg-brand "
-            />
-            {dict.eyebrow}
-          </span>
-          <h2
-            id="faq-heading"
-            className="mt-4 font-display font-medium text-[28px] md:text-[36px] text-[var(--color-stone-900)] leading-[1.08] tracking-[-0.02em]"
-          >
-            {dict.title}
-          </h2>
-          <p className="mt-3 text-[14.5px] md:text-[15px] text-[var(--color-stone-500)] max-w-md">
-            {dict.subtitle}
-          </p>
-        </div>
-
+  const list = (
+      <>
         {/* ── EDITORIAL LİSTE — logic (openIndex, aria, grid-rows collapse)
                BİREBİR aynı; sunum tek bir numaralı satır listesi. Kart/box/
                ağır shadow YOK — sadece ince üst/alt/ara divider. ── */}
@@ -93,7 +71,12 @@ export default function FaqSection({
             return (
               <article
                 key={faq.id}
-                className="border-b border-[var(--color-stone-100)] first:border-t"
+                className={
+                  "border-b first:border-t " +
+                  (embedded
+                    ? "border-[var(--color-stone-200)]/70"
+                    : "border-[var(--color-stone-100)]")
+                }
               >
                 <button
                   type="button"
@@ -101,16 +84,17 @@ export default function FaqSection({
                   aria-expanded={isOpen}
                   aria-controls={`faq-panel-${idx}`}
                   id={`faq-button-${idx}`}
-                  className="
-                    group w-full flex items-center gap-4 md:gap-6
-                    py-5 md:py-6 text-left
-                    focus:outline-none focus-visible:ring-2
-                    focus-visible:ring-brand/30 focus-visible:ring-inset
-                  "
+                  className={
+                    "group w-full flex items-center text-left " +
+                    (embedded ? "gap-3 md:gap-4 py-4 " : "gap-4 md:gap-6 py-5 md:py-6 ") +
+                    "focus:outline-none focus-visible:ring-2 " +
+                    "focus-visible:ring-brand/30 focus-visible:ring-inset"
+                  }
                 >
                   <span
                     className={
-                      "shrink-0 font-display text-[13px] md:text-[14px] tabular-nums tracking-[0.02em] " +
+                      "shrink-0 font-display tabular-nums tracking-[0.02em] " +
+                      (embedded ? "text-[12px] md:text-[12.5px] " : "text-[13px] md:text-[14px] ") +
                       "transition-colors duration-200 motion-reduce:transition-none " +
                       (isOpen ? "text-brand" : "text-[var(--color-stone-300)]")
                     }
@@ -119,7 +103,8 @@ export default function FaqSection({
                   </span>
                   <span
                     className={
-                      "flex-1 min-w-0 font-display text-[16px] md:text-[19px] leading-snug tracking-[-0.01em] " +
+                      "flex-1 min-w-0 font-display leading-snug tracking-[-0.01em] " +
+                      (embedded ? "text-[15px] md:text-[16px] font-medium " : "text-[16px] md:text-[19px] ") +
                       "transition-colors duration-200 motion-reduce:transition-none " +
                       (isOpen
                         ? "text-[var(--color-stone-900)]"
@@ -130,7 +115,15 @@ export default function FaqSection({
                   </span>
                   <span
                     aria-hidden="true"
-                    className="shrink-0 inline-flex items-center justify-center w-5 h-5"
+                    className={
+                      "shrink-0 inline-flex items-center justify-center " +
+                      (embedded
+                        ? "w-7 h-7 rounded-full ring-1 transition-colors duration-200 motion-reduce:transition-none " +
+                          (isOpen
+                            ? "bg-brand/10 ring-brand/25"
+                            : "bg-white ring-[var(--color-stone-200)] group-hover:ring-brand/30")
+                        : "w-5 h-5")
+                    }
                   >
                     {isOpen ? (
                       <Minus
@@ -161,12 +154,26 @@ export default function FaqSection({
                   }
                 >
                   <div className="overflow-hidden">
-                    <div className="flex gap-3 md:gap-4 pb-6 md:pb-7 pl-9 md:pl-14 pr-2 md:pr-8">
+                    <div
+                      className={
+                        "flex gap-3 md:gap-4 " +
+                        (embedded
+                          ? "pb-5 pl-7 md:pl-8 pr-10"
+                          : "pb-6 md:pb-7 pl-9 md:pl-14 pr-2 md:pr-8")
+                      }
+                    >
                       <span
                         aria-hidden="true"
                         className="shrink-0 w-[3px] rounded-full bg-brand "
                       />
-                      <p className="flex-1 min-w-0 text-[14.5px] md:text-[15.5px] text-[var(--color-stone-600)] leading-[1.75] whitespace-pre-line">
+                      <p
+                        className={
+                          "flex-1 min-w-0 text-[var(--color-stone-600)] whitespace-pre-line " +
+                          (embedded
+                            ? "text-[14px] leading-[1.7]"
+                            : "text-[14.5px] md:text-[15.5px] leading-[1.75]")
+                        }
+                      >
                         {faq.answer}
                       </p>
                     </div>
@@ -176,6 +183,63 @@ export default function FaqSection({
             );
           })}
         </div>
+      </>
+  );
+
+  if (embedded) {
+    return (
+      <div
+        id="sss"
+        aria-labelledby="faq-heading"
+        role="region"
+        className="scroll-mt-24 md:scroll-mt-28 min-w-0 lg:flex-1 only:w-full only:max-w-[760px] only:mx-auto"
+      >
+        <div className="mb-6 md:mb-8">
+          <h2
+            id="faq-heading"
+            className="font-display font-medium text-[22px] md:text-[26px] text-[var(--color-stone-900)] leading-tight tracking-[-0.02em]"
+          >
+            {dict.title}
+          </h2>
+          <p className="mt-2 text-[14px] leading-relaxed text-[var(--color-stone-500)] max-w-md">
+            {dict.subtitle}
+          </p>
+        </div>
+        {list}
+      </div>
+    );
+  }
+
+  return (
+    <section
+      id="sss"
+      aria-labelledby="faq-heading"
+      className="scroll-mt-24 md:scroll-mt-28 px-5 md:px-10 lg:px-16 py-16 md:py-24 border-t border-[var(--color-stone-100)]"
+    >
+      <div className="max-w-[760px] mx-auto">
+        {/* ── HEADER — mikro-label + sade başlık + kısa alt metin.
+               Eski "koyu lacivert sol panel" tamamen kaldırıldı; bölüm
+               artık tek, bütünsel editorial bir kompozisyon. ── */}
+        <div className="mb-10 md:mb-14">
+          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
+            <span
+              aria-hidden="true"
+              className="inline-block w-4 h-px bg-brand "
+            />
+            {dict.eyebrow}
+          </span>
+          <h2
+            id="faq-heading"
+            className="mt-4 font-display font-medium text-[28px] md:text-[36px] text-[var(--color-stone-900)] leading-[1.08] tracking-[-0.02em]"
+          >
+            {dict.title}
+          </h2>
+          <p className="mt-3 text-[14.5px] md:text-[15px] text-[var(--color-stone-500)] max-w-md">
+            {dict.subtitle}
+          </p>
+        </div>
+
+        {list}
       </div>
     </section>
   );
