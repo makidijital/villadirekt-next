@@ -78,14 +78,21 @@ export default function ReviewsCarousel({
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: canNavigate,
     align: "start",
-    slidesToScroll: 1,
+    /* "auto" → görünen kart sayısı kadar sayfa sayfa kayar (lg 3, md 2,
+       mobil 1). Böylece lg'de her sayfanın ORTA kartı hep 3n+2. sırada
+       kalır → hafif staggered offset tutarlı. */
+    slidesToScroll: "auto",
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  /* slidesToScroll "auto" → snap (sayfa) sayısı breakpoint'e göre değişir;
+     progress bunu baz alır (reInit'te güncellenir). */
+  const [snapCount, setSnapCount] = useState(reviews.length);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
+    setSnapCount(emblaApi.scrollSnapList().length || 1);
   }, [emblaApi]);
 
   useEffect(() => {
@@ -99,31 +106,37 @@ export default function ReviewsCarousel({
     };
   }, [emblaApi, onSelect]);
 
-  const total = reviews.length;
+  const total = Math.max(1, snapCount);
 
   return (
     <div>
       {/* VIEWPORT — tek aktif yorum, tam genişlik editorial kompozisyon */}
-      <div className="overflow-hidden" ref={emblaRef}>
-        {/* Desktop (lg+) 2 yorum yan yana: slide basis 1/2 + Embla'nın
-            önerdiği gutter deseni (container negatif margin + slide
-            padding) — ilk kartın sol hizası değişmez. Mobil/tablet
-            tek yorum (basis-full) AYNEN. */}
-        <div className="flex lg:-ml-10">
-          {reviews.map((r) => (
-            <div key={r.id} className="shrink-0 grow-0 basis-full lg:basis-1/2 lg:pl-10">
-              <ActiveTestimonial review={r} locale={locale} />
+      {/* VIEWPORT — pt/pb: hover lift + orta kart offset'i + gölge
+          kırpılmasın. Mobil 1 / tablet 2 / desktop 3 kart; Embla gutter
+          deseni (negatif margin + slide padding). */}
+      <div className="overflow-hidden -mx-2 px-2 pt-2 pb-6" ref={emblaRef}>
+        <div className="flex -ml-5 md:-ml-6 lg:-ml-7">
+          {reviews.map((r, i) => (
+            <div
+              key={r.id}
+              className={
+                "shrink-0 grow-0 basis-full md:basis-1/2 lg:basis-1/3 pl-5 md:pl-6 lg:pl-7 " +
+                /* Desktop'ta orta kart 10px aşağıda; mobil/tablet hizalı. */
+                (i % 3 === 1 ? "lg:translate-y-[10px]" : "")
+              }
+            >
+              <ActiveTestimonial review={r} locale={locale} variant={i % 3} />
             </div>
           ))}
         </div>
       </div>
 
-      {canNavigate && (
+      {canNavigate && total > 1 && (
         <>
           {/* PROGRESS — ince turuncu→mavi çizgi; aktif konumu gösterir */}
           <div
             aria-hidden="true"
-            className="mt-9 md:mt-11 h-[2px] w-full max-w-[240px] bg-[var(--color-stone-100)] rounded-full overflow-hidden"
+            className="mt-6 md:mt-8 mx-auto h-[2px] w-full max-w-[240px] bg-[#EADFCC] rounded-full overflow-hidden"
           >
             <div
               className="h-full bg-brand transition-[width] duration-500 ease-out motion-reduce:transition-none"
@@ -137,126 +150,143 @@ export default function ReviewsCarousel({
 }
 
 /* ===============================================================
-   ActiveTestimonial — büyük editorial yorum: dekoratif tırnak +
-   büyük tipografi + minimal isim/tarih/puan/villa meta satırı.
+   ActiveTestimonial — sıcak krem testimonial kartı:
+   üstte yıldızlar + büyük dekoratif tırnak, ortada yorum (ana içerik),
+   altta avatar + isim (+ tarih) + varsa villa. Veri/expanded mantığı
+   AYNEN; `variant` yalnız küçük görsel farklılık (yüzey/tırnak tonu).
    =============================================================== */
+const CARD_VARIANTS = [
+  { surface: "bg-[#FFFDF8]", quote: "text-brand/20" },
+  { surface: "bg-white", quote: "text-brand/35" },
+  { surface: "bg-[#FFFAF1]", quote: "text-brand/25" },
+] as const;
+
 function ActiveTestimonial({
   review,
   locale = DEFAULT_LOCALE,
+  variant = 0,
 }: {
   review: CarouselReview;
   locale?: Locale;
+  variant?: number;
 }) {
   const dict = getDictionary(locale).home.reviews;
   const [expanded, setExpanded] = useState(false);
   const rating = Math.max(0, Math.min(5, Math.round(review.rating)));
   const comment = (review.comment || "").trim();
   const isLong = comment.length > 320;
+  const v = CARD_VARIANTS[variant % CARD_VARIANTS.length];
 
   return (
-    <div className="px-1">
-      <div className="grid grid-cols-[auto_1fr] gap-3 md:gap-5">
+    <article
+      className={
+        "group relative h-full flex flex-col rounded-[26px] border border-[#EEE3D1] p-6 md:p-7 " +
+        v.surface +
+        " shadow-[0_14px_34px_-26px_rgba(80,55,20,0.35)] " +
+        "hover:-translate-y-1 hover:shadow-[0_22px_44px_-26px_rgba(80,55,20,0.45)] " +
+        "transition-[transform,box-shadow] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      }
+    >
+      {/* ÜST — yıldızlar (puan AYNEN) + dekoratif büyük tırnak */}
+      <div className="flex items-start justify-between gap-3">
+        <span
+          className="inline-flex items-center gap-0.5 pt-1"
+          aria-label={`${rating} / 5 puan`}
+        >
+          {Array.from({ length: 5 }, (_, i) => (
+            <Star
+              key={i}
+              size={15}
+              strokeWidth={1.5}
+              aria-hidden
+              className={i < rating ? "text-accent" : "text-[#E6DCCB]"}
+              fill="currentColor"
+            />
+          ))}
+        </span>
         <span
           aria-hidden="true"
-          className="font-display text-[56px] md:text-[84px] leading-[0.8] text-brand select-none"
+          className={"font-display text-[72px] leading-[0.7] -mt-1 select-none " + v.quote}
         >
           &ldquo;
         </span>
+      </div>
 
-        <div className="min-w-0 pt-2 md:pt-4">
-          <blockquote
-            className="font-display !font-light text-[18px] md:text-[24px] lg:text-[21px] leading-[1.5] tracking-[-0.01em] text-[var(--color-stone-900)]"
-            style={
-              expanded
-                ? undefined
-                : {
-                    display: "-webkit-box",
-                    WebkitLineClamp: 6,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }
-            }
-          >
-            {comment}
-          </blockquote>
+      {/* ORTA — yorum metni (kartın ana içeriği) */}
+      <blockquote
+        className="mt-3 text-[15px] leading-[1.75] text-[var(--color-stone-700)]"
+        style={
+          expanded
+            ? undefined
+            : {
+                display: "-webkit-box",
+                WebkitLineClamp: 6,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }
+        }
+      >
+        {comment}
+      </blockquote>
 
-          {isLong && (
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              className="
-                mt-3 text-[12.5px] font-medium
-                text-brand hover:text-brand
-                transition-colors motion-reduce:transition-none
-                focus:outline-none focus-visible:underline
-              "
-              aria-expanded={expanded}
-            >
-              {expanded ? dict.readLess : dict.readMore}
-            </button>
-          )}
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded((x) => !x)}
+          className="
+            mt-2 self-start text-[12.5px] font-medium
+            text-brand hover:text-brand
+            transition-colors motion-reduce:transition-none
+            focus:outline-none focus-visible:underline
+          "
+          aria-expanded={expanded}
+        >
+          {expanded ? dict.readLess : dict.readMore}
+        </button>
+      )}
 
-          {/* META — isim + tarih + puan + villa, minimal tek satır */}
-          <div className="mt-7 md:mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <div className="flex items-center gap-3">
-              <Avatar name={review.guest_name} />
-              <div className="min-w-0">
-                <p className="font-display text-[15px] text-[var(--color-stone-900)] tracking-[-0.01em] truncate">
-                  {review.guest_name}
-                </p>
-                {review.created_at && (
-                  <p className="text-[11.5px] text-[var(--color-stone-400)] tabular-nums mt-0.5">
-                    {formatDateForLocale(review.created_at, locale)}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <span
-              aria-hidden="true"
-              className="hidden sm:block w-px h-9 bg-[var(--color-stone-100)]"
-            />
-
-            <span
-              className="inline-flex items-center gap-1.5 text-[13px]"
-              aria-label={`${rating} / 5 puan`}
-            >
-              <Star
-                size={13}
-                className="text-accent"
-                fill="currentColor"
-                strokeWidth={1.5}
-                aria-hidden
-              />
-              <span className="font-medium text-[var(--color-stone-700)] tabular-nums">
-                {rating}
-              </span>
-            </span>
-
-            {review.villaTitle && (
-              <span className="inline-flex items-center gap-2 text-[13px] text-[var(--color-stone-500)] min-w-0">
-                <span className="relative shrink-0 w-7 h-7 overflow-hidden rounded-full bg-[var(--color-sand-100)] ">
-                  {review.villaCover ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={review.villaCover}
-                      alt={review.villaTitle}
-                      loading="lazy"
-                      className="w-full h-full object-cover object-center"
-                    />
-                  ) : (
-                    <span className="absolute inset-0 flex items-center justify-center select-none font-display text-[11px] text-[var(--color-stone-300)]">
-                      {(review.villaTitle?.[0] || "·").toUpperCase()}
-                    </span>
-                  )}
+      {/* ALT — avatar + isim (+ tarih), varsa villa bilgisi */}
+      <div className="mt-auto pt-6">
+        <div className="pt-5 border-t border-[#EEE3D1] flex items-center gap-3 min-w-0">
+          <Avatar name={review.guest_name} />
+          <div className="min-w-0">
+            <p className="font-display font-semibold text-[15px] text-[var(--color-stone-900)] tracking-[-0.01em] truncate">
+              {review.guest_name}
+            </p>
+            <div className="mt-0.5 flex items-center gap-2 min-w-0 text-[12px] text-[var(--color-stone-500)]">
+              {review.created_at && (
+                <span className="tabular-nums shrink-0">
+                  {formatDateForLocale(review.created_at, locale)}
                 </span>
-                <span className="truncate max-w-[160px]">{review.villaTitle}</span>
-              </span>
-            )}
+              )}
+              {review.created_at && review.villaTitle && (
+                <span aria-hidden="true" className="text-[#D9CCB6]">·</span>
+              )}
+              {review.villaTitle && (
+                <span className="inline-flex items-center gap-1.5 min-w-0">
+                  <span className="relative shrink-0 w-5 h-5 overflow-hidden rounded-full bg-[var(--color-sand-100)]">
+                    {review.villaCover ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={review.villaCover}
+                        alt={review.villaTitle}
+                        loading="lazy"
+                        className="w-full h-full object-cover object-center"
+                      />
+                    ) : (
+                      <span className="absolute inset-0 flex items-center justify-center select-none font-display text-[9px] text-[var(--color-stone-300)]">
+                        {(review.villaTitle?.[0] || "·").toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                  <span className="truncate">{review.villaTitle}</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -275,10 +305,10 @@ function Avatar({ name }: { name: string }) {
     <span
       className="
         w-10 h-10 rounded-full shrink-0
-        bg-[var(--color-sand-100)]
-        border border-[var(--color-stone-100)]
+        bg-[#F3EADB]
+        border border-[#EADFCC]
         flex items-center justify-center
-        font-display text-[14px] text-[var(--color-champagne-700)]
+        font-display font-semibold text-[14px] text-brand
         tracking-[-0.01em]
       "
       aria-hidden

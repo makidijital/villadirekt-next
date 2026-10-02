@@ -342,9 +342,10 @@ describe("8) UI koruması", () => {
   it("8d) responsive sınıflar korundu (mobil/tablet/desktop)", () => {
     expect(SECTION_SRC).toContain("px-5 md:px-10 lg:px-16");
     expect(CAROUSEL_SRC).toContain("basis-full");
-    // Alt isim rail'i (overflow-x-auto) bilinçli olarak kaldırıldı;
-    // desktop 2'li gösterim sınıfı kilitlenir.
-    expect(CAROUSEL_SRC).toContain("lg:basis-1/2");
+    // Alt isim rail'i (overflow-x-auto) bilinçli olarak kaldırıldı.
+    // Yeni testimonial düzeni: tablet 2, desktop 3 kart.
+    expect(CAROUSEL_SRC).toContain("md:basis-1/2");
+    expect(CAROUSEL_SRC).toContain("lg:basis-1/3");
   });
 
   it("8e) 🔒 kart tasarımı anahtarları duruyor (tırnak + avatar + yıldız + villa)", () => {
