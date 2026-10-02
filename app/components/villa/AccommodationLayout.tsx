@@ -57,7 +57,7 @@ export default function AccommodationLayout({
 
   return (
     <section>
-      <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
+      <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
         {dict.accommodation.sectionTitle}
       </h2>
 

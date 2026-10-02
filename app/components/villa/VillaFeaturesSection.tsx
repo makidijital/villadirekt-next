@@ -36,7 +36,7 @@ export default function VillaFeaturesSection({
   const dict = getDictionary(locale);
   return (
     <section>
-      <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em]">
+      <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
         {dict.villa.featuresTitle}
       </h2>
 

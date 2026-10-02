@@ -92,7 +92,7 @@ export default function VillaDistancesSection({
             {dict.villa.distancesEyebrow}
           </span>
         </div>
-        <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em]">
+        <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
           {dict.villa.distancesTitle}
         </h2>
         <p className="mt-2.5 text-[14px] md:text-[14.5px] text-[var(--color-stone-500)] leading-relaxed">

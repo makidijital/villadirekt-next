@@ -48,7 +48,7 @@ export default function VillaPoolSection({ villa, locale }: Props) {
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
           <Waves size={16} strokeWidth={1.8} />
         </span>
-        <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em]">
+        <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
           {dict.pool.sectionTitle}
         </h2>
       </div>

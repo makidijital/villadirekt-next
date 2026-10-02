@@ -61,7 +61,7 @@ export default function VillaPriceIncludesAndRulesSection({
             p-6 md:p-7
           "
         >
-          <h2 className="font-display text-2xl md:text-3xl text-emerald-900 tracking-[-0.015em]">
+          <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-emerald-900 tracking-[-0.015em]">
             {dict.villa.priceIncludesTitle}
           </h2>
 
@@ -96,7 +96,7 @@ export default function VillaPriceIncludesAndRulesSection({
             p-6 md:p-7
           "
         >
-          <h2 className="font-display text-2xl md:text-3xl text-rose-900 tracking-[-0.015em]">
+          <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-rose-900 tracking-[-0.015em]">
             {dict.villa.rulesTitle}
           </h2>
 

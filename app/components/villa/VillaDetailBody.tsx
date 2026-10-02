@@ -191,15 +191,11 @@ export default function VillaDetailBody({
                 />
               </div>
 
-              {/* 🔄 VİLLA HAKKINDA — galerinin hemen altında: başlık →
-                  kompakt villa bilgi kartı (ad/konum/kişi/yatak/banyo,
-                  veriler AYNEN) → açıklama. Kart artık sol içerik
-                  kolonunun genişliğinde. */}
+              {/* 🔄 Galerinin hemen altında: kompakt villa bilgi kartı
+                  (ad/konum/kişi/yatak/banyo, veriler AYNEN) → açıklama.
+                  Ayrı "Villa hakkında" başlığı kaldırıldı (i18n key duruyor). */}
               <section>
-                <h2 className="font-display font-bold text-[24px] md:text-[28px] leading-tight text-[var(--color-stone-900)] tracking-[-0.02em]">
-                  {dict.villa.aboutTitle}
-                </h2>
-                <div className="mt-4 md:mt-5">
+                <div>
                   <VillaInfoBar
                     villaTitle={villaTitle}
                     location={displayLocation}
@@ -232,7 +228,7 @@ export default function VillaDetailBody({
                 locale={locale}
                 fiyatlar={
                   <section>
-                    <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
+                    <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
                       {dict.villa.seasonPricesTitle}
                     </h2>
                     {prices.length === 0 ? (
@@ -259,7 +255,7 @@ export default function VillaDetailBody({
                 }
                 musaitlik={
                   <section>
-                    <h2 className="font-display text-2xl md:text-3xl text-[var(--color-stone-900)] tracking-[-0.015em]">
+                    <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
                       {dict.villa.calendarTitle}
                     </h2>
                     <div className="mt-5 overflow-x-auto">
