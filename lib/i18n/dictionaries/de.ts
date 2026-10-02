@@ -95,8 +95,6 @@ export const de: Dictionary = {
     sidebarSubtitle: "Wählen Sie Ihre Daten und sehen Sie sofort die Details zur Unterkunft.",
     checkInPillLabel: "Anreise",
     checkOutPillLabel: "Abreise",
-    summaryChargesLabel: "Kosten",
-    summaryPaymentPlanLabel: "Zahlungsplan",
     selectDatePlaceholder: "Datum wählen",
     guestsLabel: "Gäste",
     guestsSummary: "{adults} Erwachsene · {children} Kinder",

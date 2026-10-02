@@ -130,147 +130,207 @@ export default function BookingSummary({
   );
 
   /* 🔄 GÖRSEL HİYERARŞİ (yalnız JSX/className — değerler/koşullar AYNEN):
-     Ücretler → TOPLAM (açık marka-mavisi yüzey) → Ödeme planı (ön ödeme /
-     girişte ödenecek) → Hasar depozitosu (krem bilgi kutusu). */
+     ücret satırları → TOPLAM (açık marka-mavisi yüzey) → ön ödeme /
+     girişte ödenecek → hasar depozitosu (krem bilgi kutusu). Bölüm
+     başlıkları YOK. Primitive'ler aşağıda export edilir ve public
+     rezervasyon formu (ReservationForm) da AYNI primitive'leri kullanır →
+     fiyat özeti public tarafta tek tasarım. */
   return (
-    <div className="space-y-3.5 text-[12.5px]">
-      {/* ÜCRETLER */}
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-stone-400)]">
-          {dict.booking.summaryChargesLabel}
-        </p>
-        <div className="mt-2 space-y-2">
-          {activeStayDiscount ? (
-            <div className="flex items-start justify-between gap-3">
-              <span className="text-[var(--color-stone-600)] min-w-0">
-                {accommodationLabel}
+    <div className={SUMMARY_ROOT_CLASS}>
+      <div className={SUMMARY_CHARGES_CLASS}>
+        {activeStayDiscount ? (
+          <SummaryDiscountedStayRow
+            label={accommodationLabel}
+            original={formatCurrency(activeStayDiscount.originalStay, currency, locale ?? "tr")}
+            discounted={formatCurrency(activeStayDiscount.discountedStay, currency, locale ?? "tr")}
+            badge={dict.booking.discountedTotal}
+          />
+        ) : (
+          <SummaryRow
+            label={accommodationLabel}
+            value={formatCurrency(result.stay, currency, locale ?? "tr")}
+          />
+        )}
+        {result.cleaning > 0 && (
+          <SummaryRow
+            label={dict.booking.shortStayFeeLabel}
+            value={formatCurrency(result.cleaning, currency, locale ?? "tr")}
+          />
+        )}
+
+        {/* HAVUZ ISITMA — koşul/handler/değer AYNEN */}
+        {typeof poolHeatingFee === "number" &&
+          poolHeatingFee > 0 &&
+          poolHeatingActiveForRange && (
+          <div>
+            <label className="flex items-center justify-between gap-3 cursor-pointer group">
+              <span className="flex items-center gap-2 min-w-0">
+                <input
+                  type="checkbox"
+                  checked={poolHeatingSelected}
+                  onChange={(e) => onPoolHeatingChange?.(e.target.checked)}
+                  className="!w-4 !h-4 shrink-0 accent-[var(--color-champagne-500)] !rounded"
+                />
+                <span className="text-[var(--color-stone-600)] group-hover:text-[var(--color-stone-900)] transition-colors">
+                  {dict.booking.poolHeatingFeeLabel}
+                </span>
               </span>
-              <div className="text-right shrink-0">
-                <span className="block text-[11px] text-[var(--color-stone-400)] line-through tabular-nums">
-                  {formatCurrency(activeStayDiscount.originalStay, currency, locale ?? "tr")}
+              {poolHeatingSelected && (
+                <span className="text-[var(--color-stone-900)] font-semibold tabular-nums shrink-0">
+                  {formatCurrency(poolHeatingTotal, currency, locale ?? "tr")}
                 </span>
-                <span className="block text-[var(--color-stone-900)] font-semibold tabular-nums">
-                  {formatCurrency(activeStayDiscount.discountedStay, currency, locale ?? "tr")}
-                </span>
-                <span className="mt-1 inline-block rounded-full bg-brand px-2 py-0.5 text-[9.5px] font-semibold text-white text-center whitespace-nowrap">
-                  {dict.booking.discountedTotal}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <Row
-              label={accommodationLabel}
-              value={formatCurrency(result.stay, currency, locale ?? "tr")}
-            />
-          )}
-          {result.cleaning > 0 && (
-            <Row
-              label={dict.booking.shortStayFeeLabel}
-              value={formatCurrency(result.cleaning, currency, locale ?? "tr")}
-            />
-          )}
-
-          {/* HAVUZ ISITMA — koşul/handler/değer AYNEN */}
-          {typeof poolHeatingFee === "number" &&
-            poolHeatingFee > 0 &&
-            poolHeatingActiveForRange && (
-            <div>
-              <label className="flex items-center justify-between gap-3 cursor-pointer group">
-                <span className="flex items-center gap-2 min-w-0">
-                  <input
-                    type="checkbox"
-                    checked={poolHeatingSelected}
-                    onChange={(e) => onPoolHeatingChange?.(e.target.checked)}
-                    className="!w-4 !h-4 shrink-0 accent-[var(--color-champagne-500)] !rounded"
-                  />
-                  <span className="text-[var(--color-stone-600)] group-hover:text-[var(--color-stone-900)] transition-colors">
-                    {dict.booking.poolHeatingFeeLabel}
-                  </span>
-                </span>
-                {poolHeatingSelected && (
-                  <span className="text-[var(--color-stone-900)] font-semibold tabular-nums shrink-0">
-                    {formatCurrency(poolHeatingTotal, currency, locale ?? "tr")}
-                  </span>
-                )}
-              </label>
-              <p className="pl-6 mt-0.5 text-[11px] text-[var(--color-stone-400)]">
-                {formatCurrency(poolHeatingFee, poolHeatingCurrency || "TRY", locale ?? "tr")}{" "}
-                {dict.booking.poolHeatingPerNightSuffix}
-                {poolHeatingSelected &&
-                  ` ${formatDictionaryString(dict.booking.poolHeatingNightsMultiplier, {
-                    n: result.nights,
-                  })}`}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* TOPLAM — ana fiyat */}
-      <div className="flex items-center justify-between gap-3 rounded-[14px] bg-brand/[0.07] px-3.5 py-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
-          {dict.booking.total}
-        </span>
-        <span className="font-display text-[19px] font-bold leading-none text-[#0A1633] tabular-nums">
-          {formatCurrency(result.total, currency, locale ?? "tr")}
-        </span>
-      </div>
-
-      {/* ÖDEME PLANI — ön ödeme (küçük) / girişte ödenecek (güçlü) */}
-      <div className="rounded-[14px] border border-[var(--color-stone-100)] bg-white px-3.5 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-stone-400)]">
-          {dict.booking.summaryPaymentPlanLabel}
-        </p>
-        <div className="mt-2 flex items-center justify-between gap-3 text-[12px] text-[var(--color-stone-500)]">
-          <span className="min-w-0">
-            {formatDictionaryString(dict.booking.prepaymentAmountLabel, {
-              rate: prepaymentRate,
-            })}
-          </span>
-          <span className="font-semibold text-[var(--color-stone-700)] tabular-nums shrink-0">
-            {formatCurrency(prepayment, currency, locale ?? "tr")}
-          </span>
-        </div>
-        <div aria-hidden="true" className="my-2 h-px bg-[var(--color-stone-100)]" />
-        <div className="flex items-center justify-between gap-3">
-          <span className="font-semibold text-[var(--color-stone-800)] min-w-0">
-            {dict.booking.dueAtCheckinLabel}
-          </span>
-          <span className="font-display text-[15px] font-bold text-[#0A1633] tabular-nums shrink-0">
-            {formatCurrency(result.total - prepayment, currency, locale ?? "tr")}
-          </span>
-        </div>
-      </div>
-
-      {/* HASAR DEPOZİTOSU — ayrı krem bilgi kutusu (toplama dahil değil).
-          Açıklama metni BİREBİR AYNI. */}
-      {deposit > 0 && (
-        <div className="rounded-[14px] border border-[#F2E2A6] bg-[#FFFBEB] px-3.5 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--color-stone-900)] min-w-0">
-              <Info size={14} strokeWidth={2} className="shrink-0 text-[#B08A00]" aria-hidden />
-              {dict.booking.depositLabel}
-            </span>
-            <span className="font-semibold text-[var(--color-stone-900)] tabular-nums shrink-0">
-              {formatCurrency(convertedDeposit, currency, locale ?? "tr")}
-            </span>
+              )}
+            </label>
+            <p className={"pl-6 " + SUMMARY_SUBNOTE_CLASS}>
+              {formatCurrency(poolHeatingFee, poolHeatingCurrency || "TRY", locale ?? "tr")}{" "}
+              {dict.booking.poolHeatingPerNightSuffix}
+              {poolHeatingSelected &&
+                ` ${formatDictionaryString(dict.booking.poolHeatingNightsMultiplier, {
+                  n: result.nights,
+                })}`}
+            </p>
           </div>
-          <p className="mt-1.5 text-[12px] text-[var(--color-stone-600)] leading-[1.6]">
-            {dict.booking.depositNote}
-          </p>
-        </div>
+        )}
+      </div>
+
+      <SummaryTotal
+        label={dict.booking.total}
+        value={formatCurrency(result.total, currency, locale ?? "tr")}
+      />
+
+      <SummaryPaymentPlan
+        prepayLabel={formatDictionaryString(dict.booking.prepaymentAmountLabel, {
+          rate: prepaymentRate,
+        })}
+        prepayValue={formatCurrency(prepayment, currency, locale ?? "tr")}
+        dueLabel={dict.booking.dueAtCheckinLabel}
+        dueValue={formatCurrency(result.total - prepayment, currency, locale ?? "tr")}
+      />
+
+      {deposit > 0 && (
+        <SummaryDeposit
+          label={dict.booking.depositLabel}
+          value={formatCurrency(convertedDeposit, currency, locale ?? "tr")}
+          note={dict.booking.depositNote}
+        />
       )}
     </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+/* ===============================================================
+   🔄 ORTAK FİYAT ÖZETİ PRIMITIVE'LERİ — public tarafta TEK tasarım
+   (BookingSidebar + VillaCardBookingModal → BookingSummary;
+   rezervasyon sayfası → ReservationForm). Saf sunum; hesap YOK.
+   =============================================================== */
+export const SUMMARY_ROOT_CLASS = "space-y-3.5 text-[12.5px]";
+export const SUMMARY_CHARGES_CLASS = "space-y-2";
+export const SUMMARY_SUBNOTE_CLASS = "mt-0.5 text-[11px] text-[var(--color-stone-400)]";
+
+export function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 text-[var(--color-stone-600)]">
       <span className="min-w-0">{label}</span>
       <span className="text-[var(--color-stone-900)] font-semibold tabular-nums shrink-0">
         {value}
       </span>
+    </div>
+  );
+}
+
+export function SummaryDiscountedStayRow({
+  label,
+  original,
+  discounted,
+  badge,
+}: {
+  label: string;
+  original: string;
+  discounted: string;
+  badge: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <span className="text-[var(--color-stone-600)] min-w-0">{label}</span>
+      <div className="text-right shrink-0">
+        <span className="block text-[11px] text-[var(--color-stone-400)] line-through tabular-nums">
+          {original}
+        </span>
+        <span className="block text-[var(--color-stone-900)] font-semibold tabular-nums">
+          {discounted}
+        </span>
+        <span className="mt-1 inline-block rounded-full bg-brand px-2 py-0.5 text-[9.5px] font-semibold text-white text-center whitespace-nowrap">
+          {badge}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function SummaryTotal({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-[14px] bg-brand/[0.07] px-3.5 py-3">
+      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
+        {label}
+      </span>
+      <span className="font-display text-[19px] font-bold leading-none text-[#0A1633] tabular-nums">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+export function SummaryPaymentPlan({
+  prepayLabel,
+  prepayValue,
+  dueLabel,
+  dueValue,
+}: {
+  prepayLabel: string;
+  prepayValue: string;
+  dueLabel: string;
+  dueValue: string;
+}) {
+  return (
+    <div className="rounded-[14px] border border-[var(--color-stone-100)] bg-white px-3.5 py-3">
+      <div className="flex items-center justify-between gap-3 text-[12px] text-[var(--color-stone-500)]">
+        <span className="min-w-0">{prepayLabel}</span>
+        <span className="font-semibold text-[var(--color-stone-700)] tabular-nums shrink-0">
+          {prepayValue}
+        </span>
+      </div>
+      <div aria-hidden="true" className="my-2 h-px bg-[var(--color-stone-100)]" />
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-semibold text-[var(--color-stone-800)] min-w-0">{dueLabel}</span>
+        <span className="font-display text-[15px] font-bold text-[#0A1633] tabular-nums shrink-0">
+          {dueValue}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function SummaryDeposit({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <div className="rounded-[14px] border border-[#F2E2A6] bg-[#FFFBEB] px-3.5 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--color-stone-900)] min-w-0">
+          <Info size={14} strokeWidth={2} className="shrink-0 text-[#B08A00]" aria-hidden />
+          {label}
+        </span>
+        <span className="font-semibold text-[var(--color-stone-900)] tabular-nums shrink-0">
+          {value}
+        </span>
+      </div>
+      <p className="mt-1.5 text-[12px] text-[var(--color-stone-600)] leading-[1.6]">{note}</p>
     </div>
   );
 }

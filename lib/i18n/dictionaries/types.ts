@@ -161,9 +161,6 @@ export type Dictionary = {
     sidebarSubtitle: string;
     checkInPillLabel: string;
     checkOutPillLabel: string;
-    /** Fiyat özeti bölüm etiketleri. */
-    summaryChargesLabel: string;
-    summaryPaymentPlanLabel: string;
     selectDatePlaceholder: string;
     guestsLabel: string;
     /** template: {adults}, {children} */

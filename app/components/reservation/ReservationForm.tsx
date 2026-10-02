@@ -68,6 +68,16 @@ import { resolveTaxonomyName } from "@/lib/i18n/taxonomy-name.helper";
    Yeni i18n/routing mantığı YOK. */
 import Link from "next/link";
 import { localeHref } from "@/lib/i18n/locale-href";
+/* 🔄 Fiyat özeti — public tarafta TEK tasarım (BookingSummary primitive'leri). */
+import {
+  SUMMARY_ROOT_CLASS,
+  SUMMARY_CHARGES_CLASS,
+  SUMMARY_SUBNOTE_CLASS,
+  SummaryRow,
+  SummaryDiscountedStayRow,
+  SummaryTotal,
+  SummaryPaymentPlan,
+} from "@/app/components/villa/booking/BookingSummary";
 /* 🛡️ Uluslararası telefon — mevcut helper; yeni kütüphane YOK. */
 import { DIAL_CODES, joinPhone } from "@/lib/phone.helper";
 
@@ -732,18 +742,8 @@ export default function ReservationForm({
                 prepayment/prepaymentRate/getNights()/villa.pool_heating_fee
                 değerleri ve form.payment_preference dalı BİREBİR AYNI; YENİ
                 hesaplama YAZILMADI — yalnız JSX/className değişti. */}
-            <div className="relative bg-[var(--color-sand-50)] border border-[var(--color-sand-100)] rounded-2xl p-4 space-y-2.5 text-sm">
-              {/* İnce üst accent çizgisi — BookingSummary.tsx ile AYNI marka
-                  imzası (turuncu → mavi). Salt dekoratif. */}
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-4 top-0 h-[2.5px] rounded-full bg-brand "
-              />
-
-              {/* 🛡️ EKSİK SEZON FİYATI — yanlış/düşük tutar göstermek
-                  yerine durumu açıkça bildir. Yalnız fiyatı tanımlı
-                  olmayan gece varken render edilir; diğer TÜM
-                  durumlarda hiçbir şey değişmez (additive blok). */}
+            <div className={SUMMARY_ROOT_CLASS}>
+              {/* 🛡️ EKSİK SEZON FİYATI — koşul/metin AYNEN. */}
               {priceUnavailable && (
                 <p
                   role="status"
@@ -753,152 +753,84 @@ export default function ReservationForm({
                 </p>
               )}
 
-              {/* Konaklama Tutarı — gece sayısı dinamik (mevcut result.stay).
-                  🛡️ İndirim karşılaştırması (bu tur) — hasActiveStayDiscount
-                  true ise üstü çizili "indirim öncesi" tutar + mavi
-                  "İndirimli Toplam Tutar" etiketi (BookingSummary.tsx ile
-                  AYNI tasarım). result.stay (indirimli DEĞER) DEĞİŞMEDİ;
-                  indirim yoksa görünüm BİREBİR ESKİSİ gibi. */}
-              {hasActiveStayDiscount ? (
-                <div className="flex items-start justify-between gap-3 text-[var(--color-stone-600)]">
-                  <span>
-                    {formatDictionaryString(
-                      bookingDict.accommodationAmountLabel,
-                      { n: getNights() }
-                    )}
-                  </span>
-                  <div className="text-right">
-                    <span className="block text-[11px] text-[var(--color-stone-400)] line-through tabular-nums">
-                      {formatCurrency(resultWithoutDiscount?.stay || 0, currency, activeLocale)}
-                    </span>
-                    <span className="block text-[var(--color-stone-900)] font-medium tabular-nums">
-                      {formatCurrency(result?.stay || 0, currency, activeLocale)}
-                    </span>
-                    <span className="mt-1 inline-block rounded-full bg-brand px-2.5 py-0.5 text-[10px] font-semibold text-white text-center whitespace-nowrap">
-                      {bookingDict.discountedTotal}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-between text-[var(--color-stone-600)]">
-                  <span>
-                    {formatDictionaryString(
-                      bookingDict.accommodationAmountLabel,
-                      { n: getNights() }
-                    )}
-                  </span>
-                  <span className="text-[var(--color-stone-900)] font-medium tabular-nums">
-                    {formatCurrency(result?.stay || 0, currency, activeLocale)}
-                  </span>
-                </div>
-              )}
-
-              {/* 🛡️ Metin standardizasyonu: "Temizlik Ücreti" → "Kısa Süreli
-                  Konaklama Ücreti" — villa detayındaki BookingSummary.tsx ile
-                  AYNI terminoloji (aynı bilgi, farklı isimle gösterilmesin).
-                  result.cleaning değeri DEĞİŞMEDİ. */}
-              {(result?.cleaning || 0) > 0 && (
-                <div className="flex justify-between text-[var(--color-stone-600)]">
-                  <span>{bookingDict.shortStayFeeLabel}</span>
-                  <span className="text-[var(--color-stone-900)] font-medium tabular-nums">
-                    {formatCurrency((result as any).cleaning || 0, currency, activeLocale)}
-                  </span>
-                </div>
-              )}
-
-              {/* HAVUZ ISITMA — BookingSummary.tsx'teki normal fiyat satırı
-                  deseniyle AYNI (yalnız burada checkbox yok, salt bilgi
-                  satırı — seçim villa detay/kart aşamasında zaten yapıldı).
-                  result.poolHeating / villa.pool_heating_fee/currency /
-                  getNights() DEĞİŞMEDİ, YENİ hesaplama YAPILMAZ. */}
-              {(result?.poolHeating || 0) > 0 && (
-                <div>
-                  <div className="flex justify-between text-[var(--color-stone-600)]">
-                    <span>{bookingDict.poolHeatingFeeLabel}</span>
-                    <span className="text-[var(--color-stone-900)] font-medium tabular-nums">
-                      {formatCurrency((result as any).poolHeating || 0, currency, activeLocale)}
-                    </span>
-                  </div>
-                  {typeof villa.pool_heating_fee === "number" &&
-                    villa.pool_heating_fee > 0 && (
-                      <p className="mt-0.5 text-[11px] text-[var(--color-stone-400)]">
-                        {formatCurrency(
-                          villa.pool_heating_fee,
-                          villa.pool_heating_currency || "TRY",
-                          activeLocale
-                        )}{" "}
-                        {bookingDict.poolHeatingPerNightSuffix}{" "}
-                        {formatDictionaryString(
-                          bookingDict.poolHeatingNightsMultiplier,
-                          { n: getNights() }
-                        )}
-                      </p>
-                    )}
-                </div>
-              )}
-
-              {/* TOPLAM TUTAR — BookingSummary.tsx ile AYNI: yeşil, yumuşak
-                  zeminli, vurgulu satır. totalPrice DEĞİŞMEDİ. */}
-              <div className="border-t border-[var(--color-sand-100)] pt-3">
-                <div className="flex items-center justify-between rounded-xl bg-green-50/70 px-3 py-2.5">
-                  <span className="font-semibold text-green-800">
-                    {bookingDict.total}
-                  </span>
-                  <span className="font-display text-lg font-bold text-green-700 tabular-nums">
-                    {formatCurrency(totalPrice, currency, activeLocale)}
-                  </span>
-                </div>
-              </div>
-
-              {/* ÖN ÖDEME/ŞİMDİ ÖDENECEK (mor) + GİRİŞTE ÖDENECEK (turuncu) —
-                  BookingSummary.tsx ile AYNI iki ayrı vurgu kutusu, yan yana.
-                  🔥 payment_preference dalı (form.payment_preference ===
-                  "full_payment") BİREBİR AYNI (dal DEĞİŞMEZ) — yalnız
-                  görsel olarak BookingSummary'nin kutu tasarımına uyarlandı. */}
-              <div className="grid grid-cols-2 gap-2">
-                {form.payment_preference === "full_payment" ? (
-                  <>
-                    <div className="rounded-xl border border-purple-100 bg-purple-50/60 px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-purple-500">
-                        {dict.summary.payNowAll}
-                      </p>
-                      <p className="mt-0.5 font-display text-base font-bold text-purple-700 tabular-nums">
-                        {formatCurrency(totalPrice, currency, activeLocale)}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-orange-500">
-                        {bookingDict.dueAtCheckinLabel}
-                      </p>
-                      <p className="mt-0.5 font-display text-base font-bold text-orange-600 tabular-nums">
-                        {formatCurrency(0, currency, activeLocale)}
-                      </p>
-                    </div>
-                  </>
+              <div className={SUMMARY_CHARGES_CLASS}>
+                {/* Konaklama tutarı — indirim varsa üstü çizili + etiket
+                    (değerler AYNEN: resultWithoutDiscount.stay / result.stay). */}
+                {hasActiveStayDiscount ? (
+                  <SummaryDiscountedStayRow
+                    label={formatDictionaryString(bookingDict.accommodationAmountLabel, {
+                      n: getNights(),
+                    })}
+                    original={formatCurrency(resultWithoutDiscount?.stay || 0, currency, activeLocale)}
+                    discounted={formatCurrency(result?.stay || 0, currency, activeLocale)}
+                    badge={bookingDict.discountedTotal}
+                  />
                 ) : (
-                  <>
-                    <div className="rounded-xl border border-purple-100 bg-purple-50/60 px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-purple-500">
-                        {formatDictionaryString(
-                          bookingDict.prepaymentAmountLabel,
-                          { rate: prepaymentRate }
-                        )}
-                      </p>
-                      <p className="mt-0.5 font-display text-base font-bold text-purple-700 tabular-nums">
-                        {formatCurrency(prepayment, currency, activeLocale)}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-orange-100 bg-orange-50/60 px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-orange-500">
-                        {bookingDict.dueAtCheckinLabel}
-                      </p>
-                      <p className="mt-0.5 font-display text-base font-bold text-orange-600 tabular-nums">
-                        {formatCurrency(totalPrice - prepayment, currency, activeLocale)}
-                      </p>
-                    </div>
-                  </>
+                  <SummaryRow
+                    label={formatDictionaryString(bookingDict.accommodationAmountLabel, {
+                      n: getNights(),
+                    })}
+                    value={formatCurrency(result?.stay || 0, currency, activeLocale)}
+                  />
+                )}
+
+                {(result?.cleaning || 0) > 0 && (
+                  <SummaryRow
+                    label={bookingDict.shortStayFeeLabel}
+                    value={formatCurrency((result as any).cleaning || 0, currency, activeLocale)}
+                  />
+                )}
+
+                {/* HAVUZ ISITMA — salt bilgi satırı (seçim önceki adımda). */}
+                {(result?.poolHeating || 0) > 0 && (
+                  <div>
+                    <SummaryRow
+                      label={bookingDict.poolHeatingFeeLabel}
+                      value={formatCurrency((result as any).poolHeating || 0, currency, activeLocale)}
+                    />
+                    {typeof villa.pool_heating_fee === "number" &&
+                      villa.pool_heating_fee > 0 && (
+                        <p className={SUMMARY_SUBNOTE_CLASS}>
+                          {formatCurrency(
+                            villa.pool_heating_fee,
+                            villa.pool_heating_currency || "TRY",
+                            activeLocale
+                          )}{" "}
+                          {bookingDict.poolHeatingPerNightSuffix}{" "}
+                          {formatDictionaryString(
+                            bookingDict.poolHeatingNightsMultiplier,
+                            { n: getNights() }
+                          )}
+                        </p>
+                      )}
+                  </div>
                 )}
               </div>
+
+              <SummaryTotal
+                label={bookingDict.total}
+                value={formatCurrency(totalPrice, currency, activeLocale)}
+              />
+
+              {/* 🔥 payment_preference dalı BİREBİR AYNI; yalnız ortak
+                  BookingSummary primitive'iyle render edilir. */}
+              {form.payment_preference === "full_payment" ? (
+                <SummaryPaymentPlan
+                  prepayLabel={dict.summary.payNowAll}
+                  prepayValue={formatCurrency(totalPrice, currency, activeLocale)}
+                  dueLabel={bookingDict.dueAtCheckinLabel}
+                  dueValue={formatCurrency(0, currency, activeLocale)}
+                />
+              ) : (
+                <SummaryPaymentPlan
+                  prepayLabel={formatDictionaryString(bookingDict.prepaymentAmountLabel, {
+                    rate: prepaymentRate,
+                  })}
+                  prepayValue={formatCurrency(prepayment, currency, activeLocale)}
+                  dueLabel={bookingDict.dueAtCheckinLabel}
+                  dueValue={formatCurrency(totalPrice - prepayment, currency, activeLocale)}
+                />
+              )}
             </div>
 
           </div>

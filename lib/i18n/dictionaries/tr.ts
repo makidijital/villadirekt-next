@@ -102,8 +102,6 @@ export const tr: Dictionary = {
     sidebarSubtitle: "Uygun tarihleri seçin, konaklama detaylarını hemen görüntüleyin.",
     checkInPillLabel: "Giriş",
     checkOutPillLabel: "Çıkış",
-    summaryChargesLabel: "Ücretler",
-    summaryPaymentPlanLabel: "Ödeme Planı",
     selectDatePlaceholder: "Tarih seç",
     guestsLabel: "Misafir",
     guestsSummary: "{adults} yetişkin · {children} çocuk",
