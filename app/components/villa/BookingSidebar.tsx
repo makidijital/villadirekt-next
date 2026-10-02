@@ -342,6 +342,12 @@ export default function BookingSidebar({
           onPointerEnter={ensureBookingCalendar}
           onPointerDown={ensureBookingCalendar}
           onClick={() => {
+            /* 🔄 TOGGLE — takvim açıkken AYNI tarih alanına tekrar
+               tıklanırsa kapanır. Kapalıyken açılış mantığı AYNEN. */
+            if (openCalendar) {
+              setOpenCalendar(false);
+              return;
+            }
             /* 🛡️ Başlangıç aralığı dolu çıkıp seçim temizlendiyse takvim
                yine aranan ayda açılır (bugünün ayına düşmez). Seçim varsa
                veya URL tarihi yoksa davranış AYNEN. */
@@ -527,7 +533,7 @@ export default function BookingSidebar({
          İnce üst-ayraç ile akışa entegre; BookingSummary'nin kendi
          içeriğine/hesabına dokunulmadı. */}
       {startDate && endDate && result && (
-        <div className="rounded-2xl bg-[var(--color-stone-50)] px-4 py-4">
+        <div>
           <BookingSummary
             result={result}
             activeStayDiscount={activeStayDiscount}
