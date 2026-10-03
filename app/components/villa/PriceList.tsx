@@ -399,6 +399,12 @@ export default function PriceList({
             key={seg.key}
             className={
               "pl-row-in group/row relative py-3 " +
+              /* 🔄 İNDİRİMLİ dönem — tüm satır kutusu #008F3B (düz renk,
+                 soft border, gradient/ağır gölge YOK). Normal satırlar
+                 AYNEN beyaz. */
+              (isDiscounted
+                ? "my-1.5 -mx-2 px-3 rounded-[12px] border border-[#007A33] bg-[#008F3B] "
+                : "") +
               /* 🛡️ Açık olan satır (isOpen) her zaman diğer satırların
                  üstünde kalsın diye EXPLICIT z-index — auto DEĞİL, bu
                  yüzden satır kendi stacking context'ini garanti kurar
@@ -408,21 +414,6 @@ export default function PriceList({
             }
             style={{ animationDelay: `${idx * 70}ms` }}
           >
-            {/* 🏷️ İNDİRİMLİ ROZETİ (bu tur) — yalnız isDiscounted segment'te,
-                kartın kendi padding'i içinde ayrı bir satır olarak (absolute/
-                floating DEĞİL) — 2 kolonlu grid'de komşu kartlarla çakışma
-                riski olmadan, mobilde de taşmadan kendi genişliğinde durur. */}
-            {isDiscounted && (
-              <span className="relative mb-1 block text-[12px] font-semibold text-green-700">
-                {discountPercent !== null
-                  ? formatDictionaryString(
-                      dict.price.discountedBadgeWithPercent,
-                      { percent: discountPercent }
-                    )
-                  : dict.price.discountedBadge}
-              </span>
-            )}
-
             <div className="flex items-center justify-between gap-3 md:gap-6">
               {/* LEFT — 🔴 bilgi butonu (varsa) + tarih aralığı. */}
               <div className="min-w-0 flex items-center gap-2.5">
@@ -448,6 +439,7 @@ export default function PriceList({
                     aria-label={dict.price.infoAriaLabel}
                     className={
                       "inline-flex items-center gap-1.5 rounded-full border px-2 py-1.5 text-[12px] font-semibold tracking-wide transition-all duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300 " +
+                      (isDiscounted ? "bg-white " : "") +
                       (isOpen
                         ? "border-red-300 bg-red-50 text-red-600"
                         : "border-red-200 text-red-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600")
@@ -494,39 +486,55 @@ export default function PriceList({
                   )}
                 </div>
               )}
-              <p className="min-w-0 text-[12px] font-semibold text-[var(--color-stone-800)] leading-snug">
-                <span className="tabular-nums">
-                  {formatDateForLocale(seg.start_date, effectiveLocale)}
-                  <span className="mx-1.5 text-[var(--color-stone-300)] font-medium">
-                    —
+              <div
+                className={
+                  "min-w-0 flex flex-col " +
+                  (isDiscounted ? "items-center text-center gap-0.5 text-white" : "")
+                }
+              >
+                {/* 🏷️ İndirim metni — tarihin HEMEN üstünde, sentence case. */}
+                {isDiscounted && (
+                  <span className="block text-[12px] font-semibold leading-snug text-white">
+                    {discountPercent !== null
+                      ? formatDictionaryString(
+                          dict.price.discountedBadgeWithPercent,
+                          { percent: discountPercent }
+                        )
+                      : dict.price.discountedBadge}
                   </span>
-                  {formatDateForLocale(seg.end_date, effectiveLocale)}
-                </span>
-              </p>
+                )}
+                <p className={"min-w-0 text-[12px] font-semibold leading-snug " + (isDiscounted ? "text-white" : "text-[var(--color-stone-800)]")}>
+                  <span className="tabular-nums">
+                    {formatDateForLocale(seg.start_date, effectiveLocale)}
+                    <span className={"mx-1.5 font-medium " + (isDiscounted ? "text-white/60" : "text-[var(--color-stone-300)]")}>
+                      —
+                    </span>
+                    {formatDateForLocale(seg.end_date, effectiveLocale)}
+                  </span>
+                </p>
+              </div>
               </div>
 
               {/* RIGHT — fiyat (indirimliyse yeşil + üstü çizili normal fiyat;
                   değilse mevcut marka turuncusu AYNEN) + kompakt Bilgi toggle. */}
               <div className="flex items-center gap-3 md:gap-4 shrink-0">
                 {isDiscounted ? (
-                  <div className="text-right">
-                    <p className="text-[12px] text-[var(--color-stone-400)] line-through tabular-nums leading-none">
-                      {formatCurrency(convertedPrice, currency, effectiveLocale)}
-                    </p>
-                    {/* 🔄 GECELİK fiyatın SOLUNDA, tek satır */}
-                    <p className="mt-1 flex items-baseline justify-end gap-1.5 leading-none">
-                    <span
-                      className="text-[12px] tracking-[0.06em] uppercase text-[var(--color-stone-400)] font-medium"
+                  <div className="text-right leading-none">
+                    {/* 🔄 GECELİK / eski fiyat (kırmızı, üstü çizili) / yeni fiyat */}
+                    <p
+                      className="text-[12px] tracking-[0.06em] uppercase text-white/85 font-medium"
                       aria-hidden
                     >
                       {dict.price.nightly}
-                    </span>
-                    <span
-                      className="font-display font-bold text-[12px] text-green-600"
+                    </p>
+                    <p className="mt-1 text-[12px] font-semibold text-[#FFB3B3] line-through decoration-[#FFB3B3] tabular-nums">
+                      {formatCurrency(convertedPrice, currency, effectiveLocale)}
+                    </p>
+                    <p
+                      className="mt-1 font-display font-bold text-[12px] text-white"
                       style={{ fontVariantNumeric: "tabular-nums" }}
                     >
                       {formatCurrency(discountedResult!.converted, currency, effectiveLocale)}
-                    </span>
                     </p>
                   </div>
                 ) : (
