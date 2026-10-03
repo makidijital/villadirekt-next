@@ -50,6 +50,10 @@ type Props = {
    *  çağıranlar ETKİLENMEZ, görsel davranış DEĞİŞMEZ. */
   prevLabel?: string;
   nextLabel?: string;
+  /** 🔄 Okları carousel alanının DIŞ kenarına konumla (kart içeriğinin
+   *  üstüne binmesin). OPSİYONEL, default false → diğer çağıranlar
+   *  BİREBİR aynı. Yalnız position/offset değişir; ok tasarımı aynı. */
+  arrowsOutside?: boolean;
 };
 
 export default function HorizontalCarousel({
@@ -60,6 +64,7 @@ export default function HorizontalCarousel({
   scrollStep = 420,
   prevLabel = FALLBACK_CAROUSEL.carouselPrev,
   nextLabel = FALLBACK_CAROUSEL.carouselNext,
+  arrowsOutside = false,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
@@ -152,7 +157,7 @@ export default function HorizontalCarousel({
           type="button"
           onClick={scrollLeft}
           aria-label={prevLabel}
-          className="hidden md:flex absolute left-3 lg:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full items-center justify-center bg-white/90 backdrop-blur-sm border border-[var(--color-stone-200)] shadow-[0_4px_16px_-4px_rgb(27_26_23/0.2)] text-[var(--color-stone-800)] hover:bg-white hover:scale-105 transition motion-reduce:transition-none motion-reduce:hover:scale-100"
+          className={"hidden md:flex absolute " + (arrowsOutside ? "md:-left-[22px] lg:-left-12" : "left-3 lg:left-6") + " top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full items-center justify-center bg-white/90 backdrop-blur-sm border border-[var(--color-stone-200)] shadow-[0_4px_16px_-4px_rgb(27_26_23/0.2)] text-[var(--color-stone-800)] hover:bg-white hover:scale-105 transition motion-reduce:transition-none motion-reduce:hover:scale-100"}
         >
           <ChevronLeft size={18} />
         </button>
@@ -162,7 +167,7 @@ export default function HorizontalCarousel({
           type="button"
           onClick={scrollRight}
           aria-label={nextLabel}
-          className="hidden md:flex absolute right-3 lg:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full items-center justify-center bg-white/90 backdrop-blur-sm border border-[var(--color-stone-200)] shadow-[0_4px_16px_-4px_rgb(27_26_23/0.2)] text-[var(--color-stone-800)] hover:bg-white hover:scale-105 transition motion-reduce:transition-none motion-reduce:hover:scale-100"
+          className={"hidden md:flex absolute " + (arrowsOutside ? "md:-right-[22px] lg:-right-12" : "right-3 lg:right-6") + " top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full items-center justify-center bg-white/90 backdrop-blur-sm border border-[var(--color-stone-200)] shadow-[0_4px_16px_-4px_rgb(27_26_23/0.2)] text-[var(--color-stone-800)] hover:bg-white hover:scale-105 transition motion-reduce:transition-none motion-reduce:hover:scale-100"}
         >
           <ChevronRight size={18} />
         </button>

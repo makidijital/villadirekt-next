@@ -123,6 +123,7 @@ export default async function ShortGapsSection({
         prevLabel={carouselDict.previous}
         nextLabel={carouselDict.next}
         className="pb-1"
+        arrowsOutside
       >
         <ul role="list" className="flex flex-nowrap min-w-max gap-4 md:gap-5 py-2 px-1">
           {months.map((m) => (
