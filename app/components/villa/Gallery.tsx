@@ -245,9 +245,9 @@ export default function Gallery({
            desktop grid DEĞİL, kendine özgü kompozisyon. Tüm tıklamalar
            mevcut lightbox'ı tetikler (setActiveIndex); watermark her
            karede AYNEN. */}
-        <div className="grid md:hidden gap-2.5">
+        <div className="grid md:hidden gap-2">
           <div
-            className="group relative overflow-hidden rounded-[22px] cursor-pointer aspect-[4/3]"
+            className="group relative overflow-hidden rounded-[18px] cursor-pointer aspect-[16/10]"
             onClick={() => setActiveIndex(0)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -260,9 +260,9 @@ export default function Gallery({
           </div>
 
           {images.length >= 2 && (
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <div
-                className="group relative overflow-hidden rounded-[16px] cursor-pointer aspect-[4/3]"
+                className="group relative overflow-hidden rounded-[14px] cursor-pointer aspect-[3/2]"
                 onClick={() => setActiveIndex(1)}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -276,7 +276,7 @@ export default function Gallery({
 
               {images.length >= 3 && (
                 <div
-                  className="group relative overflow-hidden rounded-[16px] cursor-pointer aspect-[4/3]"
+                  className="group relative overflow-hidden rounded-[14px] cursor-pointer aspect-[3/2]"
                   onClick={() => setActiveIndex(2)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -292,64 +292,53 @@ export default function Gallery({
           )}
         </div>
 
-        {/* 🔥 DESKTOP (≥768px) — editorial asimetrik kompozisyon: dominant
-           hero (~2/3 genişlik) + sağda üst/alt iki secondary görsel.
-           Eski 4-kolon masonry KALDIRILDI. Tüm tıklamalar mevcut
-           lightbox'ı tetikler; watermark her karede AYNEN. */}
-        <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-3 h-[440px] lg:h-[500px]">
-          {/* HERO — ana görsel, dominant */}
-          <div
-            className={
-              "group relative overflow-hidden rounded-[28px] cursor-pointer " +
-              (images.length >= 2
-                ? "col-span-2 row-span-2"
-                : "col-span-3 row-span-2")
-            }
-            onClick={() => setActiveIndex(0)}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={images[0]}
-              alt={buildImageAlt(villaTitle, 0, images.length, dict)}
-              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-            />
-            <WatermarkOverlay {...watermark} />
-          </div>
-
-          {/* SECONDARY 1 — sağ üst (veya foto sayısı 2 ise sağ kolonun tamamı) */}
-          {images.length >= 2 && (
-            <div
-              className={
-                "group relative overflow-hidden rounded-2xl cursor-pointer col-start-3 " +
-                (images.length >= 3 ? "row-start-1" : "row-span-2")
-              }
-              onClick={() => setActiveIndex(1)}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={images[1]}
-                alt={buildImageAlt(villaTitle, 1, images.length, dict)}
-                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              />
-              <WatermarkOverlay {...watermark} />
-            </div>
-          )}
-
-          {/* SECONDARY 2 — sağ alt */}
-          {images.length >= 3 && (
-            <div
-              className="group relative overflow-hidden rounded-2xl cursor-pointer col-start-3 row-start-2"
-              onClick={() => setActiveIndex(2)}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={images[2]}
-                alt={buildImageAlt(villaTitle, 2, images.length, dict)}
-                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              />
-              <WatermarkOverlay {...watermark} />
-            </div>
-          )}
+        {/* 🔄 DESKTOP (≥768px) — kompakt mozaik (12 kolon × 2 satır):
+           solda geniş ana görsel (7 kolon), sağda FARKLI boyutlarda en
+           fazla 3 görsel: üstte geniş (5 kolon), altta 3 + 2 kolon.
+           Görseller images[0..3] — mevcut sıra, her slot FARKLI foto.
+           Az fotoğrafta (1/2/3) slotlar boşluğu dolduracak şekilde
+           genişler. Yükseklik ~%23 azaldı (440/500 → 340/385).
+           Tüm tıklamalar mevcut lightbox'ı aynı index ile açar;
+           watermark her karede AYNEN. */}
+        <div className="hidden md:grid grid-cols-12 grid-rows-2 gap-2 h-[340px] lg:h-[385px]">
+          {(() => {
+            const n = Math.min(images.length, 4);
+            const slots: Array<{ idx: number; cls: string }> =
+              n === 1
+                ? [{ idx: 0, cls: "col-span-12 row-span-2 rounded-[20px]" }]
+                : n === 2
+                ? [
+                    { idx: 0, cls: "col-span-7 row-span-2 rounded-[20px]" },
+                    { idx: 1, cls: "col-span-5 row-span-2 rounded-[14px]" },
+                  ]
+                : n === 3
+                ? [
+                    { idx: 0, cls: "col-span-7 row-span-2 rounded-[20px]" },
+                    { idx: 1, cls: "col-span-5 row-start-1 rounded-[14px]" },
+                    { idx: 2, cls: "col-span-5 row-start-2 rounded-[14px]" },
+                  ]
+                : [
+                    { idx: 0, cls: "col-span-7 row-span-2 rounded-[20px]" },
+                    { idx: 1, cls: "col-span-5 row-start-1 rounded-[14px]" },
+                    { idx: 2, cls: "col-span-3 row-start-2 rounded-[14px]" },
+                    { idx: 3, cls: "col-span-2 row-start-2 rounded-[14px]" },
+                  ];
+            return slots.map(({ idx, cls }) => (
+              <div
+                key={idx}
+                className={"group relative overflow-hidden cursor-pointer " + cls}
+                onClick={() => setActiveIndex(idx)}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={images[idx]}
+                  alt={buildImageAlt(villaTitle, idx, images.length, dict)}
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                />
+                <WatermarkOverlay {...watermark} />
+              </div>
+            ));
+          })()}
         </div>
 
         {/* 🛡️ TÜM FOTOĞRAFLAR — floating control, galeri köşesinde modern
