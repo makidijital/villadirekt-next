@@ -449,32 +449,38 @@ export default function PriceList({
                     <p className="text-[12px] text-[var(--color-stone-400)] line-through tabular-nums leading-none">
                       {formatCurrency(convertedPrice, currency, effectiveLocale)}
                     </p>
-                    <p
-                      className="mt-1 font-display font-bold text-[16px] text-green-600 tracking-[-0.02em] leading-none"
-                      style={{ fontVariantNumeric: "tabular-nums" }}
-                    >
-                      {formatCurrency(discountedResult!.converted, currency, effectiveLocale)}
-                    </p>
-                    <p
-                      className="text-[8.5px] tracking-[0.16em] uppercase text-[var(--color-stone-400)] font-medium mt-1"
+                    {/* 🔄 GECELİK fiyatın SOLUNDA, tek satır */}
+                    <p className="mt-1 flex items-baseline justify-end gap-1.5 leading-none">
+                    <span
+                      className="text-[9px] tracking-[0.14em] uppercase text-[var(--color-stone-400)] font-medium"
                       aria-hidden
                     >
                       {dict.price.nightly}
+                    </span>
+                    <span
+                      className="font-display font-bold text-[16px] text-green-600 tracking-[-0.02em]"
+                      style={{ fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {formatCurrency(discountedResult!.converted, currency, effectiveLocale)}
+                    </span>
                     </p>
                   </div>
                 ) : (
                   <div className="text-right">
-                    <p
-                      className="font-display font-bold text-[16px] text-[#0A1633] tracking-[-0.02em] leading-none"
-                      style={{ fontVariantNumeric: "tabular-nums" }}
-                    >
-                      {formatCurrency(convertedPrice, currency, effectiveLocale)}
-                    </p>
-                    <p
-                      className="text-[8.5px] tracking-[0.16em] uppercase text-[var(--color-stone-400)] font-medium mt-1"
+                    {/* 🔄 GECELİK fiyatın SOLUNDA, tek satır */}
+                    <p className="flex items-baseline justify-end gap-1.5 leading-none">
+                    <span
+                      className="text-[9px] tracking-[0.14em] uppercase text-[var(--color-stone-400)] font-medium"
                       aria-hidden
                     >
                       {dict.price.nightly}
+                    </span>
+                    <span
+                      className="font-display font-bold text-[16px] text-[#0A1633] tracking-[-0.02em]"
+                      style={{ fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {formatCurrency(convertedPrice, currency, effectiveLocale)}
+                    </span>
                     </p>
                   </div>
                 )}
