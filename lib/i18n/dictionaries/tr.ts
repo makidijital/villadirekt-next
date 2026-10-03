@@ -509,6 +509,8 @@ export const tr: Dictionary = {
         "Takvimdeki kısa boşluklarda avantajlı kaçamak fırsatlarını keşfedin.",
       carouselAriaLabel: "Kısa süreli fırsatlar",
       nightsLabel: "{n} gecelik villalar",
+      /** template: {count} */
+      villaCount: "{count} villa",
     },
     faq: {
       eyebrow: "Sıkça Sorulan",

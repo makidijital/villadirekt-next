@@ -498,6 +498,8 @@ export const de: Dictionary = {
         "Entdecken Sie günstige Kurztrips in den kleinen Lücken des Kalenders.",
       carouselAriaLabel: "Kurzurlaub-Angebote",
       nightsLabel: "Villen für {n} Nächte",
+      /** template: {count} */
+      villaCount: "{count} Villen",
     },
     faq: {
       eyebrow: "Häufig gefragt",

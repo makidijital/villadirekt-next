@@ -692,6 +692,8 @@ export type Dictionary = {
       carouselAriaLabel: string;
       /** template: {n} */
       nightsLabel: string;
+      /** template: {count} */
+      villaCount: string;
     };
     faq: {
       eyebrow: string;
