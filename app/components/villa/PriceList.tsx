@@ -299,11 +299,11 @@ export default function PriceList({
   return (
     <div
       className="
-        relative mt-5 rounded-[20px]
-        border border-[var(--color-stone-100)]
+        relative mt-4 rounded-[16px]
+        border border-[var(--color-stone-200)]/80
         bg-white
-        shadow-[0_20px_48px_-30px_color-mix(in_srgb,var(--color-accent)_22%,transparent),0_24px_54px_-32px_color-mix(in_srgb,var(--color-brand)_18%,transparent)]
-        p-6 md:p-7
+        shadow-[0_10px_28px_-24px_rgba(10,22,51,0.3)]
+        px-4 md:px-5 py-1
       "
     >
       {/* 🛡️ Scoped animasyon — yalnız bu component. globals.css'e
@@ -327,12 +327,6 @@ export default function PriceList({
         }
       `}</style>
 
-      {/* İnce üst accent çizgisi — turuncu → mavi (marka imzası) */}
-      <span
-        aria-hidden="true"
-        className="absolute inset-x-6 md:inset-x-7 top-0 h-[2.5px] rounded-full bg-brand "
-      />
-
       {/* 🛡️ LAYOUT-ONLY: sezon satırları artık desktop'ta 2 kolonlu grid
           içinde (mobile: 1 kolon). Sıra korunur (1→sol, 2→sağ, 3→sol...)
           — bu salt CSS grid akışı, prices array sırası/verisi/hesabı
@@ -340,7 +334,9 @@ export default function PriceList({
           padding/font/ikon/fiyat/tarih/GECELİK/Bilgi/hover) AYNEN
           korunur; yalnız aralarındaki dikey margin (mt-3 first:mt-0)
           grid `gap` ile değiştirildi (çift boşluk oluşmasın diye). */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-5 gap-y-3">
+      {/* 🔄 LİSTE — her dönem TEK satır, dönemler ALT ALTA (ince
+          ayraçlarla). Sıra/veri/hesap AYNEN; yalnız sunum değişti. */}
+      <div className="divide-y divide-[var(--color-stone-100)]">
         {segments.map((seg, idx) => {
         /* Currency conversion — eski mantık AYNEN (segment artık
            `Price` satırının kendisi ya da onun indirimle bölünmüş bir
@@ -402,10 +398,7 @@ export default function PriceList({
           <div
             key={seg.key}
             className={
-              "pl-row-in group/row relative rounded-2xl border px-4 py-4 md:px-5 md:py-5 transition-[transform,box-shadow,border-color,background-color] duration-300 motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 " +
-              (isDiscounted
-                ? "border-green-200 bg-green-50 hover:border-green-300 hover:shadow-[0_18px_38px_-24px_rgba(22,163,74,0.4),0_16px_34px_-24px_color-mix(in_srgb,var(--color-brand)_18%,transparent)] "
-                : "border-[var(--color-stone-100)] bg-white/60 hover:bg-white hover:border-[var(--color-stone-200)] hover:shadow-[0_18px_38px_-24px_color-mix(in_srgb,var(--color-accent)_40%,transparent),0_16px_34px_-24px_color-mix(in_srgb,var(--color-brand)_32%,transparent)] ") +
+              "pl-row-in group/row relative py-3.5 " +
               /* 🛡️ Açık olan satır (isOpen) her zaman diğer satırların
                  üstünde kalsın diye EXPLICIT z-index — auto DEĞİL, bu
                  yüzden satır kendi stacking context'ini garanti kurar
@@ -415,24 +408,12 @@ export default function PriceList({
             }
             style={{ animationDelay: `${idx * 70}ms` }}
           >
-            {/* Sol accent çubuğu — turuncu → mavi (normal sezon) veya yeşil
-                (indirimli segment), hover'da belirginleşir. */}
-            <span
-              aria-hidden="true"
-              className={
-                "absolute left-1.5 md:left-2 top-3 bottom-3 w-[3px] rounded-full opacity-60 group-hover/row:opacity-100 transition-opacity duration-300 motion-reduce:transition-none " +
-                (isDiscounted
-                  ? "bg-green-500 "
-                  : "bg-brand ")
-              }
-            />
-
             {/* 🏷️ İNDİRİMLİ ROZETİ (bu tur) — yalnız isDiscounted segment'te,
                 kartın kendi padding'i içinde ayrı bir satır olarak (absolute/
                 floating DEĞİL) — 2 kolonlu grid'de komşu kartlarla çakışma
                 riski olmadan, mobilde de taşmadan kendi genişliğinde durur. */}
             {isDiscounted && (
-              <span className="relative mb-2 inline-flex items-center gap-1 rounded-full bg-green-600 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.05em] text-white shadow-[0_4px_10px_-3px_rgba(22,163,74,0.45)]">
+              <span className="relative mb-1.5 inline-flex items-center gap-1 rounded-full bg-green-600 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.05em] text-white">
                 {discountPercent !== null
                   ? formatDictionaryString(
                       dict.price.discountedBadgeWithPercent,
@@ -442,18 +423,18 @@ export default function PriceList({
               </span>
             )}
 
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6 pl-3">
-              {/* LEFT — tarih aralığı, büyük/güçlü, ana bilgi. */}
-              <p className="min-w-0 font-display text-[13px] text-[var(--color-stone-900)] tracking-[-0.01em] leading-snug flex items-center gap-2.5">
+            <div className="flex items-center justify-between gap-3 md:gap-6">
+              {/* LEFT — tarih aralığı. */}
+              <p className="min-w-0 text-[12.5px] md:text-[13px] font-semibold text-[var(--color-stone-800)] leading-snug flex items-center gap-2.5">
                 <span
                   aria-hidden="true"
-                  className="hidden md:inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand/[0.09] text-brand shrink-0"
+                  className="hidden sm:inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand/[0.08] text-brand shrink-0"
                 >
                   <Calendar size={14} strokeWidth={1.9} />
                 </span>
                 <span className="tabular-nums">
                   {formatDateForLocale(seg.start_date, effectiveLocale)}
-                  <span className="mx-2 text-brand/55 font-medium">
+                  <span className="mx-1.5 text-[var(--color-stone-300)] font-medium">
                     —
                   </span>
                   {formatDateForLocale(seg.end_date, effectiveLocale)}
@@ -462,35 +443,35 @@ export default function PriceList({
 
               {/* RIGHT — fiyat (indirimliyse yeşil + üstü çizili normal fiyat;
                   değilse mevcut marka turuncusu AYNEN) + kompakt Bilgi toggle. */}
-              <div className="flex items-center gap-4 md:gap-5 shrink-0">
+              <div className="flex items-center gap-3 md:gap-4 shrink-0">
                 {isDiscounted ? (
-                  <div className="text-left md:text-right">
+                  <div className="text-right">
                     <p className="text-[12px] text-[var(--color-stone-400)] line-through tabular-nums leading-none">
                       {formatCurrency(convertedPrice, currency, effectiveLocale)}
                     </p>
                     <p
-                      className="mt-1 font-display font-bold text-[19px] md:text-[17px] text-green-600 tracking-[-0.02em] leading-none"
+                      className="mt-1 font-display font-bold text-[16px] text-green-600 tracking-[-0.02em] leading-none"
                       style={{ fontVariantNumeric: "tabular-nums" }}
                     >
                       {formatCurrency(discountedResult!.converted, currency, effectiveLocale)}
                     </p>
                     <p
-                      className="text-[8.5px] tracking-[0.18em] uppercase text-[var(--color-stone-400)] font-medium mt-1.5"
+                      className="text-[8.5px] tracking-[0.16em] uppercase text-[var(--color-stone-400)] font-medium mt-1"
                       aria-hidden
                     >
                       {dict.price.nightly}
                     </p>
                   </div>
                 ) : (
-                  <div className="text-left md:text-right">
+                  <div className="text-right">
                     <p
-                      className="font-display font-bold text-[19px] md:text-[17px] text-brand tracking-[-0.02em] leading-none"
+                      className="font-display font-bold text-[16px] text-[#0A1633] tracking-[-0.02em] leading-none"
                       style={{ fontVariantNumeric: "tabular-nums" }}
                     >
                       {formatCurrency(convertedPrice, currency, effectiveLocale)}
                     </p>
                     <p
-                      className="text-[8.5px] tracking-[0.18em] uppercase text-[var(--color-stone-400)] font-medium mt-1.5"
+                      className="text-[8.5px] tracking-[0.16em] uppercase text-[var(--color-stone-400)] font-medium mt-1"
                       aria-hidden
                     >
                       {dict.price.nightly}
