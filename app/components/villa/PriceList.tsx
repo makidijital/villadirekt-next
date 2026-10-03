@@ -398,7 +398,8 @@ export default function PriceList({
           <div
             key={seg.key}
             className={
-              "pl-row-in group/row relative py-3 " +
+              "pl-row-in group/row relative " +
+              (isDiscounted ? "py-3 " : "py-1 ") +
               /* 🔄 İNDİRİMLİ dönem — tüm satır kutusu #008F3B (düz renk,
                  soft border, gradient/ağır gölge YOK). Normal satırlar
                  AYNEN beyaz. */

@@ -27,7 +27,6 @@ import { Clock } from "lucide-react";
    =============================================================== */
 
 import PriceList from "@/app/components/villa/PriceList";
-import ShortStayFeeNotice from "@/app/components/villa/ShortStayFeeNotice";
 import CollapsibleDescription from "@/app/components/villa/CollapsibleDescription";
 import AccommodationLayout from "@/app/components/villa/AccommodationLayout";
 import VillaPoolSection from "@/app/components/villa/VillaPoolSection";
@@ -244,13 +243,6 @@ export default function VillaDetailBody({
                         locale={locale}
                       />
                     )}
-
-                    <ShortStayFeeNotice
-                      cleaningFee={villa.cleaning_fee}
-                      cleaningCurrency={villa.cleaning_currency}
-                      cleaningLimit={villa.cleaning_limit}
-                      locale={locale}
-                    />
                   </section>
                 }
                 musaitlik={
