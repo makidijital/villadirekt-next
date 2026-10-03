@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Moon, ShieldCheck, Info } from "lucide-react";
+import { Moon, ShieldCheck, Info } from "lucide-react";
 
 import { convertPrice, formatCurrency } from "@/lib/currency";
 import { useCurrency } from "@/app/context/CurrencyContext";
@@ -269,7 +269,7 @@ export default function PriceList({
      zaten ternary ile koruyor; bu inner guard backward-compat). */
   if (!prices || prices.length === 0) {
     return (
-      <p className="text-[var(--color-stone-400)] text-sm italic">
+      <p className="text-[var(--color-stone-400)] text-[12px] italic">
         {dict.price.noPriceInfo}
       </p>
     );
@@ -398,7 +398,7 @@ export default function PriceList({
           <div
             key={seg.key}
             className={
-              "pl-row-in group/row relative py-3.5 " +
+              "pl-row-in group/row relative py-3 " +
               /* 🛡️ Açık olan satır (isOpen) her zaman diğer satırların
                  üstünde kalsın diye EXPLICIT z-index — auto DEĞİL, bu
                  yüzden satır kendi stacking context'ini garanti kurar
@@ -413,7 +413,7 @@ export default function PriceList({
                 floating DEĞİL) — 2 kolonlu grid'de komşu kartlarla çakışma
                 riski olmadan, mobilde de taşmadan kendi genişliğinde durur. */}
             {isDiscounted && (
-              <span className="relative mb-1.5 inline-flex items-center gap-1 rounded-full bg-green-600 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.05em] text-white">
+              <span className="relative mb-1 block text-[12px] font-semibold text-green-700">
                 {discountPercent !== null
                   ? formatDictionaryString(
                       dict.price.discountedBadgeWithPercent,
@@ -424,14 +424,77 @@ export default function PriceList({
             )}
 
             <div className="flex items-center justify-between gap-3 md:gap-6">
-              {/* LEFT — tarih aralığı. */}
-              <p className="min-w-0 text-[12.5px] md:text-[13px] font-semibold text-[var(--color-stone-800)] leading-snug flex items-center gap-2.5">
-                <span
-                  aria-hidden="true"
-                  className="hidden sm:inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand/[0.08] text-brand shrink-0"
+              {/* LEFT — 🔴 bilgi butonu (varsa) + tarih aralığı. */}
+              <div className="min-w-0 flex items-center gap-2.5">
+              {/* BILGI — yalnız gösterilecek gerçek veri varsa render
+                  edilir. Desktop: hover ile açılır/kapanır. Mobile
+                  (hover yok): tap ile toggle. Panel absolute
+                  positioned → satır yüksekliği değişmez, layout
+                  zıplamaz. */}
+              {hasInfo && (
+                <div
+                  className="relative shrink-0"
+                  onMouseEnter={() => setOpenId(seg.key)}
+                  onMouseLeave={() =>
+                    setOpenId((cur) => (cur === seg.key ? null : cur))
+                  }
                 >
-                  <Calendar size={14} strokeWidth={1.9} />
-                </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenId((cur) => (cur === seg.key ? null : seg.key))
+                    }
+                    aria-expanded={isOpen}
+                    aria-label={dict.price.infoAriaLabel}
+                    className={
+                      "inline-flex items-center gap-1.5 rounded-full border px-2 py-1.5 text-[12px] font-semibold tracking-wide transition-all duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300 " +
+                      (isOpen
+                        ? "border-red-300 bg-red-50 text-red-600"
+                        : "border-red-200 text-red-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600")
+                    }
+                  >
+                    <Info size={12} strokeWidth={2} aria-hidden />
+                  </button>
+
+                  {isOpen && (
+                    <div
+                      role="note"
+                      className={
+                        "pl-popover-in absolute left-0 z-20 w-60 overflow-hidden rounded-2xl border border-[var(--color-stone-100)] bg-white p-4 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.28)] " +
+                        (isLastRow ? "bottom-full mb-2" : "top-full mt-2")
+                      }
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-0 top-0 h-[2.5px] bg-brand "
+                      />
+                      <ul className="mt-1 space-y-2.5">
+                        {hasMinStay && (
+                          <li className="flex items-center gap-2.5 text-[12px] text-[var(--color-stone-700)]">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-brand shrink-0">
+                              <Moon size={12} strokeWidth={1.9} aria-hidden />
+                            </span>
+                            {formatDictionaryString(dict.price.minNights, {
+                              n: minimumStayNights as number,
+                            })}
+                          </li>
+                        )}
+                        {hasDeposit && (
+                          <li className="flex items-center gap-2.5 text-[12px] text-[var(--color-stone-700)]">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand/10 text-brand shrink-0">
+                              <ShieldCheck size={12} strokeWidth={1.9} aria-hidden />
+                            </span>
+                            {formatDictionaryString(dict.price.damageDeposit, {
+                              amount: formatCurrency(convertedDeposit, currency, effectiveLocale),
+                            })}
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+              <p className="min-w-0 text-[12px] font-semibold text-[var(--color-stone-800)] leading-snug">
                 <span className="tabular-nums">
                   {formatDateForLocale(seg.start_date, effectiveLocale)}
                   <span className="mx-1.5 text-[var(--color-stone-300)] font-medium">
@@ -440,6 +503,7 @@ export default function PriceList({
                   {formatDateForLocale(seg.end_date, effectiveLocale)}
                 </span>
               </p>
+              </div>
 
               {/* RIGHT — fiyat (indirimliyse yeşil + üstü çizili normal fiyat;
                   değilse mevcut marka turuncusu AYNEN) + kompakt Bilgi toggle. */}
@@ -452,13 +516,13 @@ export default function PriceList({
                     {/* 🔄 GECELİK fiyatın SOLUNDA, tek satır */}
                     <p className="mt-1 flex items-baseline justify-end gap-1.5 leading-none">
                     <span
-                      className="text-[9px] tracking-[0.14em] uppercase text-[var(--color-stone-400)] font-medium"
+                      className="text-[12px] tracking-[0.06em] uppercase text-[var(--color-stone-400)] font-medium"
                       aria-hidden
                     >
                       {dict.price.nightly}
                     </span>
                     <span
-                      className="font-display font-bold text-[16px] text-green-600 tracking-[-0.02em]"
+                      className="font-display font-bold text-[12px] text-green-600"
                       style={{ fontVariantNumeric: "tabular-nums" }}
                     >
                       {formatCurrency(discountedResult!.converted, currency, effectiveLocale)}
@@ -470,13 +534,13 @@ export default function PriceList({
                     {/* 🔄 GECELİK fiyatın SOLUNDA, tek satır */}
                     <p className="flex items-baseline justify-end gap-1.5 leading-none">
                     <span
-                      className="text-[9px] tracking-[0.14em] uppercase text-[var(--color-stone-400)] font-medium"
+                      className="text-[12px] tracking-[0.06em] uppercase text-[var(--color-stone-400)] font-medium"
                       aria-hidden
                     >
                       {dict.price.nightly}
                     </span>
                     <span
-                      className="font-display font-bold text-[16px] text-[#0A1633] tracking-[-0.02em]"
+                      className="font-display font-bold text-[12px] text-[#0A1633]"
                       style={{ fontVariantNumeric: "tabular-nums" }}
                     >
                       {formatCurrency(convertedPrice, currency, effectiveLocale)}
@@ -485,74 +549,6 @@ export default function PriceList({
                   </div>
                 )}
 
-                {/* BILGI — yalnız gösterilecek gerçek veri varsa render
-                    edilir. Desktop: hover ile açılır/kapanır. Mobile
-                    (hover yok): tap ile toggle. Panel absolute
-                    positioned → satır yüksekliği değişmez, layout
-                    zıplamaz. */}
-                {hasInfo && (
-                  <div
-                    className="relative"
-                    onMouseEnter={() => setOpenId(seg.key)}
-                    onMouseLeave={() =>
-                      setOpenId((cur) => (cur === seg.key ? null : cur))
-                    }
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenId((cur) => (cur === seg.key ? null : seg.key))
-                      }
-                      aria-expanded={isOpen}
-                      aria-label={dict.price.infoAriaLabel}
-                      className={
-                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold tracking-wide transition-all duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 " +
-                        (isOpen
-                          ? "border-brand/40 bg-brand/[0.08] text-brand shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-brand)_35%,transparent)]"
-                          : "border-[var(--color-stone-200)] text-[var(--color-stone-500)] hover:border-accent/40 hover:text-brand hover:bg-accent/[0.05]")
-                      }
-                    >
-                      <Info size={12} strokeWidth={2} aria-hidden />
-                    </button>
-
-                    {isOpen && (
-                      <div
-                        role="note"
-                        className={
-                          "pl-popover-in absolute right-0 z-20 w-60 overflow-hidden rounded-2xl border border-[var(--color-stone-100)] bg-white p-4 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.28)] " +
-                          (isLastRow ? "bottom-full mb-2" : "top-full mt-2")
-                        }
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="absolute inset-x-0 top-0 h-[2.5px] bg-brand "
-                        />
-                        <ul className="mt-1 space-y-2.5">
-                          {hasMinStay && (
-                            <li className="flex items-center gap-2.5 text-[12.5px] text-[var(--color-stone-700)]">
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-brand shrink-0">
-                                <Moon size={12} strokeWidth={1.9} aria-hidden />
-                              </span>
-                              {formatDictionaryString(dict.price.minNights, {
-                                n: minimumStayNights as number,
-                              })}
-                            </li>
-                          )}
-                          {hasDeposit && (
-                            <li className="flex items-center gap-2.5 text-[12.5px] text-[var(--color-stone-700)]">
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand/10 text-brand shrink-0">
-                                <ShieldCheck size={12} strokeWidth={1.9} aria-hidden />
-                              </span>
-                              {formatDictionaryString(dict.price.damageDeposit, {
-                                amount: formatCurrency(convertedDeposit, currency, effectiveLocale),
-                              })}
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
