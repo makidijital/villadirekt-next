@@ -495,7 +495,6 @@ export const en: Dictionary = {
       subtitle:
         "Discover great-value short breaks in the small gaps of the calendar.",
       carouselAriaLabel: "Short stay deals",
-      badge: "Last Minute Deal",
       nightsLabel: "{n}-night villas",
     },
     faq: {

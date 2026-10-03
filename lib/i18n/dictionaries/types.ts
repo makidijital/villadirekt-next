@@ -690,7 +690,6 @@ export type Dictionary = {
       title: string;
       subtitle: string;
       carouselAriaLabel: string;
-      badge: string;
       /** template: {n} */
       nightsLabel: string;
     };

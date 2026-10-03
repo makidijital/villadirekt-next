@@ -508,7 +508,6 @@ export const tr: Dictionary = {
       subtitle:
         "Takvimdeki kısa boşluklarda avantajlı kaçamak fırsatlarını keşfedin.",
       carouselAriaLabel: "Kısa süreli fırsatlar",
-      badge: "Son Dakika Fırsatı",
       nightsLabel: "{n} gecelik villalar",
     },
     faq: {

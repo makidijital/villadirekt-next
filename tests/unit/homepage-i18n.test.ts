@@ -66,7 +66,8 @@ describe("A) TR dictionary değerleri, taşınmadan önceki hardcoded metinlerle
     expect(h.regions.subtitle).toBe("Özenle seçilmiş bölgeler");
     expect(h.regions.ctaAll).toBe("Tüm bölgeler");
     expect(h.shortGaps.title).toBe("Kısa Süreli Fırsatlar");
-    expect(h.shortGaps.badge).toBe("Son Dakika Fırsatı");
+    /* "Son Dakika Fırsatı" rozeti kaldırıldı — key artık yok. */
+    expect("badge" in h.shortGaps).toBe(false);
     expect(h.faq.title).toBe("Sıkça Sorulan Sorular");
     expect(h.faq.eyebrow).toBe("Sıkça Sorulan");
     expect(h.reviews.title).toBe("Misafirlerimiz ne diyor?");

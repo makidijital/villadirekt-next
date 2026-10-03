@@ -497,7 +497,6 @@ export const de: Dictionary = {
       subtitle:
         "Entdecken Sie günstige Kurztrips in den kleinen Lücken des Kalenders.",
       carouselAriaLabel: "Kurzurlaub-Angebote",
-      badge: "Last-Minute-Angebot",
       nightsLabel: "Villen für {n} Nächte",
     },
     faq: {
