@@ -93,7 +93,7 @@ describe("VillaPoolSection — locale etiketleri", () => {
     expect(screen.getByText("4 m")).toBeInTheDocument();
   });
 
-  it("🛡️ ikon locale'den ve etiketten ETKİLENMEZ (başlık + her kartta 1 Waves)", () => {
+  it("🛡️ ikon locale'den ve etiketten ETKİLENMEZ (başlıkta ikon YOK, her kartta 1 Waves)", () => {
     const { container: en } = render(
       <VillaPoolSection villa={VILLA} locale="en" />
     );
@@ -102,10 +102,11 @@ describe("VillaPoolSection — locale etiketleri", () => {
       <VillaPoolSection villa={VILLA} locale="de" />
     );
     expect(de.querySelectorAll("svg").length).toBe(enSvg);
-    /* Başlık ikonu + her kartta 1 Waves (VILLA: 2 havuz × 3 ölçü
-       kartı + 1 ölçüsüz çocuk havuzu kartı = 7). */
-    expect(enSvg).toBe(1 + en.querySelectorAll(".rounded-\\[13px\\]").length);
-    expect(enSvg).toBe(8);
+    /* Başlıkta ikon YOK; yalnız her kartta 1 Waves (VILLA: 2 havuz ×
+       3 ölçü kartı + 1 ölçüsüz çocuk havuzu kartı = 7). */
+    expect(enSvg).toBe(en.querySelectorAll(".rounded-\\[13px\\]").length);
+    expect(enSvg).toBe(7);
+    expect(en.querySelector("h2 svg")).toBeNull();
   });
 
   it("🛡️ kart sırası ve sayısı locale'den bağımsız", () => {

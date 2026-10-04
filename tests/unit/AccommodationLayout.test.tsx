@@ -41,7 +41,7 @@ describe("🛡️ TR REGRESYON", () => {
     render(
       <AccommodationLayout bedrooms={BEDROOMS} bathrooms={BATHROOMS} />
     );
-    expect(screen.getByText("Konaklama Düzeni")).toBeInTheDocument();
+    expect(screen.getByText("Yatak Odaları ve Banyolar")).toBeInTheDocument();
   });
 
   it("TR oda/banyo adları AYNEN gösterilir", () => {
@@ -153,7 +153,7 @@ describe("enum etiketleri locale-aware", () => {
         locale="en"
       />
     );
-    expect(screen.getByText("Accommodation Layout")).toBeInTheDocument();
+    expect(screen.getByText("Bedrooms & Bathrooms")).toBeInTheDocument();
     expect(screen.getByText("Bedroom 1")).toBeInTheDocument();
     expect(screen.getByText("Bathroom 1")).toBeInTheDocument();
     expect(screen.getByText("No details provided")).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe("enum etiketleri locale-aware", () => {
         locale="de"
       />
     );
-    expect(screen.getByText("Unterkunftsaufteilung")).toBeInTheDocument();
+    expect(screen.getByText("Schlafzimmer & Badezimmer")).toBeInTheDocument();
     expect(screen.getByText("Schlafzimmer 1")).toBeInTheDocument();
     expect(screen.getByText("Badezimmer 1")).toBeInTheDocument();
     expect(screen.getByText("Keine Angaben")).toBeInTheDocument();

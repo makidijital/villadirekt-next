@@ -104,7 +104,7 @@ describe("dictionary — enum kapsama (drift koruması)", () => {
 
   it("accommodation UI metinleri TR'de mevcut component metinleriyle aynı", () => {
     const tr = getDictionary("tr");
-    expect(tr.accommodation.sectionTitle).toBe("Konaklama Düzeni");
+    expect(tr.accommodation.sectionTitle).toBe("Yatak Odaları ve Banyolar");
     expect(tr.accommodation.noDetail).toBe("Detay belirtilmedi");
     expect(tr.accommodation.bedroomFallback).toBe("{n}. Yatak Odası");
     expect(tr.accommodation.bathroomFallback).toBe("{n}. Banyo");

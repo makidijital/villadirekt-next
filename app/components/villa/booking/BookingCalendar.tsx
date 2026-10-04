@@ -261,7 +261,9 @@ export default function BookingCalendar({
                   margin: "auto",
                   background: bg,
                   color,
-                  fontSize: 13,
+                  /* 🔤 Public rezervasyon datepicker gün rakamı — 10px
+                     (hücre ölçüsü/renk/durum mantığı AYNEN). */
+                  fontSize: 10,
                   lineHeight: 1,
                   borderRadius: 6,
                   fontVariantNumeric: "tabular-nums",

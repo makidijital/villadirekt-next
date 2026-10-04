@@ -1144,6 +1144,12 @@ select.input {
 :where(:root:not(:has(.admin-shell))) .react-datepicker__day {
   color: var(--color-stone-700) !important;
 }
+/* 🔤 Public rezervasyon/arama datepicker'ları (Hero, /arama filtre,
+   teklif-al) — gün rakamları 10px. Admin'e SIZMAZ (:has(.admin-shell)
+   guard'ı); hücre ölçüsü/renk/durum sınıfları AYNEN. */
+:where(:root:not(:has(.admin-shell))) .react-datepicker__day {
+  font-size: 10px !important;
+}
 :where(:root:not(:has(.admin-shell))) .react-datepicker__day--selected,
 :where(:root:not(:has(.admin-shell))) .react-datepicker__day--in-selecting-range,
 :where(:root:not(:has(.admin-shell))) .react-datepicker__day--in-range {
