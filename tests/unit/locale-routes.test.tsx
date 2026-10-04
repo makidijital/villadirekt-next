@@ -1213,7 +1213,7 @@ describe.each(VILLA_DETAIL_ROUTES)(
         name: dict.villaTabs.availability,
       });
       const pricesHeading = screen.getByRole("heading", {
-        name: dict.villa.seasonPricesTitle,
+        name: dict.villa.detailPricingTitle,
       });
       expect(pricesHeading.closest("section")).toContainElement(availBtn);
       expect(

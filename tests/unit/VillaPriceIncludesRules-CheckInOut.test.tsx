@@ -8,6 +8,8 @@ import { render, screen } from "@testing-library/react";
 
 import VillaPriceIncludesAndRulesSection from "@/app/components/villa/VillaPriceIncludesAndRulesSection";
 import CheckInOutTimes from "@/app/components/villa/CheckInOutTimes";
+import VillaDistancesSection from "@/app/components/villa/VillaDistancesSection";
+import VillaFeaturesSection from "@/app/components/villa/VillaFeaturesSection";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 const INCLUDES = [
@@ -35,8 +37,8 @@ describe("VillaPriceIncludesAndRulesSection — minimal liste", () => {
         rules={RULES}
       />
     );
-    expect(screen.getByText(dict.villa.priceIncludesTitle)).toBeInTheDocument();
-    expect(screen.getByText(dict.villa.rulesTitle)).toBeInTheDocument();
+    expect(screen.getByText(dict.villa.detailPriceIncludesTitle)).toBeInTheDocument();
+    expect(screen.getByText(dict.villa.detailRulesTitle)).toBeInTheDocument();
     const items = Array.from(container.querySelectorAll("li")).map(
       (li) => li.textContent
     );
@@ -54,7 +56,7 @@ describe("VillaPriceIncludesAndRulesSection — minimal liste", () => {
       <VillaPriceIncludesAndRulesSection priceIncludes={INCLUDES} rules={[]} />
     );
     expect(container.firstElementChild).not.toHaveClass("lg:grid-cols-2");
-    expect(screen.queryByText(getDictionary("tr").villa.rulesTitle)).toBeNull();
+    expect(screen.queryByText(getDictionary("tr").villa.detailRulesTitle)).toBeNull();
   });
 
   it("kart/kutu/arka plan YOK; ikonlar küçük brand-blue (dahil: check, kural: info)", () => {
@@ -82,8 +84,8 @@ describe("VillaPriceIncludesAndRulesSection — minimal liste", () => {
         locale="en"
       />
     );
-    expect(screen.getByText(dict.villa.priceIncludesTitle)).toBeInTheDocument();
-    expect(screen.getByText(dict.villa.rulesTitle)).toBeInTheDocument();
+    expect(screen.getByText(dict.villa.detailPriceIncludesTitle)).toBeInTheDocument();
+    expect(screen.getByText(dict.villa.detailRulesTitle)).toBeInTheDocument();
   });
 });
 
@@ -112,5 +114,61 @@ describe("CheckInOutTimes — minimal giriş/çıkış", () => {
     render(<CheckInOutTimes checkIn="16:00" checkOut="10:00" locale="de" />);
     expect(screen.getByText(dict.villa.checkInOutTitle)).toBeInTheDocument();
     expect(screen.getByText(dict.villa.checkInLabel)).toBeInTheDocument();
+  });
+});
+
+describe("Public villa detay section başlıkları — yeni değerler (TR/EN/DE)", () => {
+  it("yeni key'ler doğru değerler; eski (özel link sayfası) key'leri DEĞİŞMEDİ", () => {
+    const tr = getDictionary("tr");
+    const en = getDictionary("en");
+    const de = getDictionary("de");
+    expect(tr.villa.detailPricingTitle).toBe("Fiyatlandırma");
+    expect(tr.villa.detailDistancesTitle).toBe("Uzaklıklar");
+    expect(tr.villa.detailFeaturesTitle).toBe("Özellikler");
+    expect(tr.villa.detailPriceIncludesTitle).toBe("Fiyata Dahil Olanlar");
+    expect(tr.villa.detailRulesTitle).toBe("Kurallar");
+    expect(tr.accommodation.sectionTitle).toBe("Yatak Odaları ve Banyolar");
+    expect(tr.pool.sectionTitle).toBe("Havuz Bilgileri");
+    expect(en.villa.detailPricingTitle).toBe("Pricing");
+    expect(en.villa.detailDistancesTitle).toBe("Distances");
+    expect(de.villa.detailPricingTitle).toBe("Preise");
+    expect(de.villa.detailRulesTitle).toBe("Regeln");
+    /* Eski key'ler (PrivateVillaPageBody) aynen. */
+    expect(tr.villa.seasonPricesTitle).toBe("Sezon Fiyatları");
+    expect(tr.villa.rulesTitle).toBe("Konaklama kuralları");
+  });
+
+  it("başlıklar 18px", () => {
+    render(
+      <VillaPriceIncludesAndRulesSection
+        priceIncludes={INCLUDES}
+        rules={RULES}
+      />
+    );
+    screen.getAllByRole("heading").forEach((h) => {
+      expect(h).toHaveClass("text-[18px]");
+      expect(h.className).not.toMatch(/md:text-\[22px\]/);
+    });
+  });
+});
+
+describe("Uzaklıklar / Özellikler başlıkları", () => {
+  it("Uzaklıklar: eyebrow ve açıklama render edilmez, başlık 'Uzaklıklar'", () => {
+    const tr = getDictionary("tr");
+    render(
+      <VillaDistancesSection
+        distances={[
+          { id: "d1", displayTitle: "Plaj", displayDistance: "1 km", iconKey: "waves" },
+        ]}
+      />
+    );
+    expect(screen.getByRole("heading", { name: "Uzaklıklar" })).toHaveClass("text-[18px]");
+    expect(screen.queryByText(tr.villa.distancesEyebrow)).toBeNull();
+    expect(screen.queryByText(tr.villa.distancesSubtitle)).toBeNull();
+  });
+
+  it("Özellikler başlığı", () => {
+    render(<VillaFeaturesSection features={[{ id: "f1", displayName: "Wi-Fi" }]} />);
+    expect(screen.getByRole("heading", { name: "Özellikler" })).toHaveClass("text-[18px]");
   });
 });

@@ -205,6 +205,13 @@ export const tr: Dictionary = {
     featuresEmpty: "Özellik bilgisi bulunmuyor",
     priceIncludesTitle: "Konaklama ücretine dahil",
     rulesTitle: "Konaklama kuralları",
+    /* Public villa detay (/kiralik-villa/[slug]) section başlıkları —
+       özel link sayfası eski key'leri kullanmaya devam eder. */
+    detailPricingTitle: "Fiyatlandırma",
+    detailDistancesTitle: "Uzaklıklar",
+    detailFeaturesTitle: "Özellikler",
+    detailPriceIncludesTitle: "Fiyata Dahil Olanlar",
+    detailRulesTitle: "Kurallar",
     checkInOutTitle: "Villa Giriş & Çıkış Saatleri",
     checkInLabel: "Giriş · Check-in",
     checkOutLabel: "Çıkış · Check-out",
@@ -249,7 +256,7 @@ export const tr: Dictionary = {
      metinleriyle BİREBİR aynı ("Konaklama Düzeni", "Detay belirtilmedi",
      `${i + 1}. Yatak Odası`, `${i + 1}. Banyo`). */
   accommodation: {
-    sectionTitle: "Konaklama Düzeni",
+    sectionTitle: "Yatak Odaları ve Banyolar",
     noDetail: "Detay belirtilmedi",
     bedroomFallback: "{n}. Yatak Odası",
     bathroomFallback: "{n}. Banyo",

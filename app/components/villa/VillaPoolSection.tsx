@@ -51,14 +51,9 @@ export default function VillaPoolSection({ villa, locale }: Props) {
 
   return (
     <section>
-      <div className="flex items-center gap-2.5 mb-4">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
-          <Waves size={16} strokeWidth={1.8} />
-        </span>
-        <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
-          {dict.pool.sectionTitle}
-        </h2>
-      </div>
+      <h2 className="mb-4 font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
+        {dict.pool.sectionTitle}
+      </h2>
 
       {/* Kompakt mavi kart dili — "Yakındaki Noktalar" / "Konaklama
           Düzeni" ile AYNI. Her havuz: tip etiketi + ölçü kartları

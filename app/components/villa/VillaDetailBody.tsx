@@ -232,8 +232,8 @@ export default function VillaDetailBody({
                  Özellikler bölümleri aynı sırayla normal akışta, alt alta
                  render edilir (parent `space-y` aralığını kullanır). */}
               <section>
-                <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
-                  {dict.villa.seasonPricesTitle}
+                <h2 className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
+                  {dict.villa.detailPricingTitle}
                 </h2>
                 {prices.length === 0 ? (
                   <p className="text-[var(--color-stone-400)] text-sm italic">

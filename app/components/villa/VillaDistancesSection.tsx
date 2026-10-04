@@ -82,23 +82,11 @@ export default function VillaDistancesSection({
   const dict = getDictionary(locale);
   return (
     <section>
-      <div className="max-w-xl">
-        <div className="flex items-center gap-2.5 mb-3">
-          <span
-            aria-hidden="true"
-            className="h-px w-9 bg-brand "
-          />
-          <span className="text-[11px] font-semibold tracking-[0.16em] text-[var(--color-stone-400)]">
-            {dict.villa.distancesEyebrow}
-          </span>
-        </div>
-        <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
-          {dict.villa.distancesTitle}
-        </h2>
-        <p className="mt-2.5 text-[14px] md:text-[14.5px] text-[var(--color-stone-500)] leading-relaxed">
-          {dict.villa.distancesSubtitle}
-        </p>
-      </div>
+      {/* Eyebrow ("ÇEVREYİ KEŞFEDİN") ve açıklama cümlesi kaldırıldı —
+          yalnız başlık. */}
+      <h2 className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
+        {dict.villa.detailDistancesTitle}
+      </h2>
 
       {/* 🛡️ Component-scoped satır fade/stagger animasyonu +
           reduced-motion guard — TR'deki AYNI inline stil bloğu. */}

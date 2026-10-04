@@ -35,7 +35,7 @@ export default function CheckInOutTimes({ checkIn, checkOut, locale }: Props) {
     <section aria-labelledby="checkinout-heading">
       <h2
         id="checkinout-heading"
-        className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]"
+        className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]"
       >
         {dict.villa.checkInOutTitle}
       </h2>

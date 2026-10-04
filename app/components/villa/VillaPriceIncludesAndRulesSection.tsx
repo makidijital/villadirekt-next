@@ -58,8 +58,8 @@ export default function VillaPriceIncludesAndRulesSection({
     >
       {priceIncludes.length > 0 && (
         <section>
-          <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
-            {dict.villa.priceIncludesTitle}
+          <h2 className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
+            {dict.villa.detailPriceIncludesTitle}
           </h2>
           <ul className="mt-4 space-y-3">
             {priceIncludes.map((p) => (
@@ -83,8 +83,8 @@ export default function VillaPriceIncludesAndRulesSection({
 
       {rules.length > 0 && (
         <section>
-          <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
-            {dict.villa.rulesTitle}
+          <h2 className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
+            {dict.villa.detailRulesTitle}
           </h2>
           <ul className="mt-4 space-y-3">
             {rules.map((r) => (

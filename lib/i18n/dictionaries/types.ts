@@ -314,6 +314,11 @@ export type Dictionary = {
     featuresEmpty: string;
     priceIncludesTitle: string;
     rulesTitle: string;
+    detailPricingTitle: string;
+    detailDistancesTitle: string;
+    detailFeaturesTitle: string;
+    detailPriceIncludesTitle: string;
+    detailRulesTitle: string;
     checkInOutTitle: string;
     checkInLabel: string;
     checkOutLabel: string;

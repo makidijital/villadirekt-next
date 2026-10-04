@@ -198,6 +198,13 @@ export const de: Dictionary = {
     featuresEmpty: "Keine Ausstattungsangaben vorhanden",
     priceIncludesTitle: "Im Aufenthalt enthalten",
     rulesTitle: "Hausregeln",
+    /* Public villa detay (/kiralik-villa/[slug]) section başlıkları —
+       özel link sayfası eski key'leri kullanmaya devam eder. */
+    detailPricingTitle: "Preise",
+    detailDistancesTitle: "Entfernungen",
+    detailFeaturesTitle: "Ausstattung",
+    detailPriceIncludesTitle: "Im Preis enthalten",
+    detailRulesTitle: "Regeln",
     checkInOutTitle: "Villa An- & Abreisezeiten",
     checkInLabel: "Anreise · Check-in",
     checkOutLabel: "Abreise · Check-out",
@@ -237,7 +244,7 @@ export const de: Dictionary = {
     wc: "WC",
   },
   accommodation: {
-    sectionTitle: "Unterkunftsaufteilung",
+    sectionTitle: "Schlafzimmer & Badezimmer",
     noDetail: "Keine Angaben",
     bedroomFallback: "Schlafzimmer {n}",
     bathroomFallback: "Badezimmer {n}",
