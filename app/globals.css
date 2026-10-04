@@ -1144,6 +1144,23 @@ select.input {
 :where(:root:not(:has(.admin-shell))) .react-datepicker__day {
   color: var(--color-stone-700) !important;
 }
+/* 📐 Public rezervasyon/arama datepicker'ları (Hero, /arama filtre,
+   teklif-al) — dış boşluk minimum. Kütüphane varsayılanı
+   `__month { margin: 0.5em }` + header `padding-top: 12px / bottom 8px`
+   → takvim etrafında gereksiz beyaz alan. Gün hücresi ölçüsü/margin'i
+   (2.1rem / 0.15rem) ve durum renkleri AYNEN; ay adı/oklar/hafta günleri
+   okunur kalır (navigation header'a göre yeniden ortalanır). Admin'e
+   SIZMAZ (:has(.admin-shell) guard'ı). */
+:where(:root:not(:has(.admin-shell))) .react-datepicker__month {
+  margin: 0.15rem !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__header {
+  padding-top: 8px !important;
+  padding-bottom: 2px !important;
+}
+:where(:root:not(:has(.admin-shell))) .react-datepicker__navigation {
+  top: 10px !important;
+}
 /* 🔤 Public rezervasyon/arama datepicker'ları (Hero, /arama filtre,
    teklif-al) — gün rakamları 10px. Admin'e SIZMAZ (:has(.admin-shell)
    guard'ı); hücre ölçüsü/renk/durum sınıfları AYNEN. */

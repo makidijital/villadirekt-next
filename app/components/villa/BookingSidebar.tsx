@@ -415,8 +415,8 @@ export default function BookingSidebar({
             className="
               absolute right-0 z-[999] mt-3 bg-white border border-[var(--color-stone-100)]
               rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.16)]
-              p-4 md:p-5
-              w-[min(22rem,calc(100vw-2.5rem))]
+              p-2
+              w-max max-w-[calc(100vw-2.5rem)]
             "
           >
             <BookingCalendar

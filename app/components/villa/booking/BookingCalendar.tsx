@@ -428,6 +428,10 @@ export default function BookingCalendar({
            ──────────────────────────────────────────────── */
         className={[
           "p-0",
+          /* 📐 RDP root'un kendi `.rdp { margin: 1em }` dış boşluğu
+             (her yönde ~16px beyaz alan) — public rezervasyon
+             takvimlerinde SIFIR. Hücre/tablo geometrisi AYNEN. */
+          "!m-0",
           /* 🛡️ Önceki turda dış strip vardı ve RDP caption'ı gizleniyordu
              ("[&_.rdp-caption]:hidden"). Dış strip kaldırıldığı için
              caption artık GÖRÜNÜR: takvimin İÇİNDEKİ ay/yıl başlığı +

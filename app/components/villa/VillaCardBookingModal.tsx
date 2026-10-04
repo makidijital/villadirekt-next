@@ -589,7 +589,7 @@ function ModalContent({
             UI Polish #3: wrapper w-full + box-border, padding eşit.
             BookingCalendar internally `.rdp-months !justify-center`
             kullanır → desktop + mobile DayPicker ortalanır. */}
-        <div className="w-full box-border rounded-2xl border border-[var(--color-stone-100)] p-3 md:p-4">
+        <div className="w-full box-border rounded-2xl border border-[var(--color-stone-100)] p-2">
           <BookingCalendar
             engine={engine}
             currentMonth={currentMonth}
