@@ -105,7 +105,7 @@ describe("🛡️ TR REGRESYON", () => {
         ".grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3"
       )
     ).toBeTruthy();
-    expect(container.querySelectorAll(".rounded-3xl")).toHaveLength(4);
+    expect(container.querySelectorAll(".rounded-\\[13px\\]")).toHaveLength(4);
   });
 });
 

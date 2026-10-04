@@ -30,6 +30,14 @@ import {
        çizmez; bu component ekstra guard).
    =============================================================== */
 
+/* Kompakt mavi kart dili — "Yakındaki Noktalar" ile AYNI: brand blue
+   (#1B4EF5), düz renk (gradient YOK), ~56px yükseklik, hafif mavi gölge,
+   sol ince ikon alanı + ad + detay; uzun metin `…` ile kısalır. */
+const CARD_CLASS =
+  "group flex items-center gap-2.5 min-w-0 rounded-[13px] bg-[#1B4EF5] px-3 py-2.5 shadow-[0_4px_12px_-8px_rgba(27,78,245,0.55)] transition duration-200 motion-reduce:transition-none hover:bg-[#2A5BF7] hover:-translate-y-px motion-reduce:hover:translate-y-0";
+const ICON_CLASS =
+  "shrink-0 w-8 h-8 rounded-[9px] bg-white/15 text-white flex items-center justify-center";
+
 type Props = {
   bedrooms: BedroomLayoutItem[];
   bathrooms: BathroomLayoutItem[];
@@ -61,8 +69,8 @@ export default function AccommodationLayout({
         {dict.accommodation.sectionTitle}
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-4">
-        {/* YATAK ODALARI — luxury suite kartları */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        {/* YATAK ODALARI — kompakt mavi kartlar */}
         {bedrooms.map((room, i) => {
           const bedSummary = room.beds
             .map((b) => `${getBedTypeLabel(b.type, locale)} × ${b.count}`)
@@ -70,42 +78,52 @@ export default function AccommodationLayout({
           return (
             <div
               key={`bed-${i}`}
-              className="group rounded-3xl border border-[var(--color-stone-100)] bg-white px-5 py-5 md:px-6 md:py-6 shadow-[0_6px_18px_-14px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-[var(--color-champagne-300)] hover:shadow-[0_16px_34px_-18px_rgba(0,0,0,0.2)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className={CARD_CLASS}
             >
-              <span className="w-10 h-10 rounded-2xl border border-[var(--color-stone-100)] bg-[var(--color-sand-50)] text-[var(--color-stone-600)] flex items-center justify-center">
-                <BedDouble size={17} strokeWidth={1.75} />
+              <span
+                aria-hidden="true"
+                className={ICON_CLASS}
+              >
+                <BedDouble size={15} strokeWidth={1.5} />
               </span>
-              <p className="font-display text-[16px] md:text-[17px] text-[var(--color-stone-900)] tracking-[-0.015em] mt-4 truncate">
-                {getBedroomNameLabel(room.name, locale) ||
-                  formatDictionaryString(dict.accommodation.bedroomFallback, {
-                    n: i + 1,
-                  })}
-              </p>
-              <p className="text-[13px] text-[var(--color-stone-500)] mt-1.5 leading-relaxed">
-                {bedSummary || dict.accommodation.noDetail}
-              </p>
+              <div className="min-w-0 flex-1 leading-tight">
+                <p className="text-[13px] font-semibold text-white truncate">
+                  {getBedroomNameLabel(room.name, locale) ||
+                    formatDictionaryString(dict.accommodation.bedroomFallback, {
+                      n: i + 1,
+                    })}
+                </p>
+                <p className="mt-0.5 text-[12px] font-medium text-white/80 truncate">
+                  {bedSummary || dict.accommodation.noDetail}
+                </p>
+              </div>
             </div>
           );
         })}
 
-        {/* BANYOLAR — luxury suite kartları */}
+        {/* BANYOLAR — kompakt mavi kartlar */}
         {bathrooms.map((b, i) => (
           <div
             key={`bath-${i}`}
-            className="group rounded-3xl border border-[var(--color-stone-100)] bg-white px-5 py-5 md:px-6 md:py-6 shadow-[0_6px_18px_-14px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-[var(--color-champagne-300)] hover:shadow-[0_16px_34px_-18px_rgba(0,0,0,0.2)] transition-[transform,box-shadow,border-color] duration-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className={CARD_CLASS}
           >
-            <span className="w-10 h-10 rounded-2xl border border-[var(--color-stone-100)] bg-[var(--color-sand-50)] text-[var(--color-stone-600)] flex items-center justify-center">
-              <Bath size={17} strokeWidth={1.75} />
+            <span
+              aria-hidden="true"
+              className={ICON_CLASS}
+            >
+              <Bath size={15} strokeWidth={1.5} />
             </span>
-            <p className="font-display text-[16px] md:text-[17px] text-[var(--color-stone-900)] tracking-[-0.015em] mt-4 truncate">
-              {getBathroomNameLabel(b.name, locale) ||
-                formatDictionaryString(dict.accommodation.bathroomFallback, {
-                  n: i + 1,
-                })}
-            </p>
-            <p className="text-[13px] text-[var(--color-stone-500)] mt-1.5 leading-relaxed">
-              {getBathroomTypeLabel(b.type, locale)}
-            </p>
+            <div className="min-w-0 flex-1 leading-tight">
+              <p className="text-[13px] font-semibold text-white truncate">
+                {getBathroomNameLabel(b.name, locale) ||
+                  formatDictionaryString(dict.accommodation.bathroomFallback, {
+                    n: i + 1,
+                  })}
+              </p>
+              <p className="mt-0.5 text-[12px] font-medium text-white/80 truncate">
+                {getBathroomTypeLabel(b.type, locale)}
+              </p>
+            </div>
           </div>
         ))}
       </div>
