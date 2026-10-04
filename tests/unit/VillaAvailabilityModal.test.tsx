@@ -140,3 +140,33 @@ describe("VillaAvailabilityModal", () => {
     expect(panel).toHaveClass("bg-[#FFFFFF]");
   });
 });
+
+describe("Müsaitlik popup takvimi — gün hücresi çerçevesi", () => {
+  it("ay içi her gün hücresinde rezervasyon takvimiyle AYNI inset 1px #E5E7EB çerçeve; header/ok/hafta günlerinde YOK", async () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+    const dialog = screen.getByRole("dialog");
+    await waitFor(() =>
+      expect(fetchAndExpandVillaAvailabilityMock).toHaveBeenCalledWith("v1")
+    );
+
+    const dayCells = Array.from(
+      dialog.querySelectorAll<HTMLElement>('[role="presentation"]')
+    );
+    expect(dayCells.length).toBeGreaterThanOrEqual(28);
+    for (const cell of dayCells) {
+      /* Ölçü/radius AYNEN. */
+      expect(cell).toHaveClass("aspect-square", "rounded-md");
+      const layer = cell.querySelector<HTMLElement>(":scope > div[aria-hidden]");
+      expect(layer).toBeTruthy();
+      expect(layer!.style.boxShadow).toBe("inset 0 0 0 1px #E5E7EB");
+    }
+
+    /* Hücre dışı öğelerde çerçeve YOK. */
+    const withShadow = Array.from(
+      dialog.querySelectorAll<HTMLElement>("[style]")
+    ).filter((el) => el.style.boxShadow.includes("#E5E7EB"));
+    expect(withShadow).toHaveLength(dayCells.length);
+    expect(screen.getByLabelText("Önceki ay").style.boxShadow).toBe("");
+  });
+});

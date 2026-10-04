@@ -11,6 +11,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { PUBLIC_DAY_CELL_BORDER_SHADOW } from "@/lib/calendar-day-cell.style";
+
 const read = (p: string) => readFileSync(join(process.cwd(), p), "utf8");
 
 describe("public datepicker gün rakamı font-size 10px", () => {
@@ -24,7 +26,8 @@ describe("public datepicker gün rakamı font-size 10px", () => {
 
   it("BookingCalendar gün hücresi: çok hafif 1px #E5E7EB çerçeve (inset, ölçü/radius AYNEN)", () => {
     const src = read("app/components/villa/booking/BookingCalendar.tsx");
-    expect(src).toContain('boxShadow: "inset 0 0 0 1px #E5E7EB"');
+    expect(src).toContain("boxShadow: PUBLIC_DAY_CELL_BORDER_SHADOW,");
+    expect(PUBLIC_DAY_CELL_BORDER_SHADOW).toBe("inset 0 0 0 1px #E5E7EB");
     expect(src).toMatch(/borderRadius: 6,/);
     expect(src).toMatch(/width: 40,\s*\n\s*height: 40,\s*\n\s*minWidth: 40,/);
   });

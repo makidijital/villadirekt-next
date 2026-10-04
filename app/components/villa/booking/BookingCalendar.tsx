@@ -28,6 +28,7 @@
    =============================================================== */
 
 import { DayPicker, type DayContentProps } from "react-day-picker";
+import { PUBLIC_DAY_CELL_BORDER_SHADOW } from "@/lib/calendar-day-cell.style";
 import "react-day-picker/dist/style.css";
 import { tr, enUS, de } from "date-fns/locale";
 
@@ -270,7 +271,7 @@ export default function BookingCalendar({
                      çizilir: kutu ölçüsü (40×40), radius, arka plan durum
                      renkleri (müsait/onaylı/beklemede/yarım gün) ve RDP
                      seçim stilleri DEĞİŞMEZ. */
-                  boxShadow: "inset 0 0 0 1px #E5E7EB",
+                  boxShadow: PUBLIC_DAY_CELL_BORDER_SHADOW,
                   fontVariantNumeric: "tabular-nums",
                 }}
               >

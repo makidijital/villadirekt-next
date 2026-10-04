@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { convertPrice, formatCurrency } from "@/lib/currency";
 import { useCurrency } from "@/app/context/CurrencyContext";
 import { getDayStyle } from "@/lib/calendar.engine";
+import { PUBLIC_DAY_CELL_BORDER_SHADOW } from "@/lib/calendar-day-cell.style";
 import { formatLocalDate } from "@/lib/date-format";
 import {
   fetchAndExpandVillaAvailability,
@@ -417,6 +418,11 @@ export default function AvailabilityInlineCalendar({
                   };
                   const gradientStyle: CSSProperties = {
                     background: bg,
+                    /* 🔲 Rezervasyon takvimiyle AYNI çok hafif 1px nötr
+                       çerçeve (ortak sabit). Inset → aspect-square ölçü,
+                       rounded-md radius ve gap AYNEN; getDayStyle arka
+                       planı üstünde çizilir, renkler değişmez. */
+                    boxShadow: PUBLIC_DAY_CELL_BORDER_SHADOW,
                   };
 
                   return (
