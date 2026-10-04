@@ -225,19 +225,6 @@ export default function VillaDetailBody({
                  Özellikler bölümleri aynı sırayla normal akışta, alt alta
                  render edilir (parent `space-y` aralığını kullanır). */}
               <section>
-                {/* 🗓️ MÜSAİTLİK — takvim artık sayfada sürekli açık DEĞİL;
-                    fiyatların hemen üstündeki buton MEVCUT takvimi
-                    (AvailabilityInlineCalendar, prop'lar AYNEN) popup
-                    içinde açar. */}
-                <div className="mb-6">
-                  <VillaAvailabilityModal
-                    villaId={villa.id}
-                    prices={prices}
-                    externalBlocks={externalBlocks}
-                    discounts={discounts}
-                    locale={locale}
-                  />
-                </div>
                 <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
                   {dict.villa.seasonPricesTitle}
                 </h2>
@@ -254,6 +241,18 @@ export default function VillaDetailBody({
                     locale={locale}
                   />
                 )}
+                {/* 🗓️ MÜSAİTLİK — fiyat listesinin HEMEN ALTINDA, aynı
+                    bölümün devamı; MEVCUT takvimi (AvailabilityInlineCalendar,
+                    prop'lar AYNEN) popup içinde açar. */}
+                <div className="mt-2">
+                  <VillaAvailabilityModal
+                    villaId={villa.id}
+                    prices={prices}
+                    externalBlocks={externalBlocks}
+                    discounts={discounts}
+                    locale={locale}
+                  />
+                </div>
               </section>
               <div className="space-y-10">
                 <VillaDistancesSection

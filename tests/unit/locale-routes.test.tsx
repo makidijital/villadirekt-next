@@ -1208,9 +1208,20 @@ describe.each(VILLA_DETAIL_ROUTES)(
       expect(
         screen.queryByLabelText(dict.availability.prevMonth)
       ).not.toBeInTheDocument();
-      fireEvent.click(
-        screen.getByRole("button", { name: dict.villaTabs.availability })
-      );
+      /* Buton fiyat bölümünün (başlık + liste) ALTINDA, aynı section içinde. */
+      const availBtn = screen.getByRole("button", {
+        name: dict.villaTabs.availability,
+      });
+      const pricesHeading = screen.getByRole("heading", {
+        name: dict.villa.seasonPricesTitle,
+      });
+      expect(pricesHeading.closest("section")).toContainElement(availBtn);
+      expect(
+        pricesHeading.compareDocumentPosition(availBtn) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+
+      fireEvent.click(availBtn);
       expect(screen.getByRole("dialog")).toBeInTheDocument();
       expect(
         screen.getByLabelText(dict.availability.prevMonth)

@@ -109,4 +109,34 @@ describe("VillaAvailabilityModal", () => {
     fireEvent.click(screen.getAllByRole("button")[0]);
     expect(screen.getByLabelText("Vorheriger Monat")).toBeInTheDocument();
   });
+
+  it("buton: tam genişlik, #E7000B, beyaz yazı, ikon+metin ortalı, yavaş pulse (reduced-motion guard'lı)", () => {
+    const { container } = render(
+      <VillaAvailabilityModal villaId="v1" prices={[]} />
+    );
+    const btn = screen.getByRole("button", { name: "Müsaitlik" });
+    for (const cls of [
+      "w-full",
+      "bg-[#E7000B]",
+      "text-white",
+      "justify-center",
+      "items-center",
+      "vd-avail-pulse",
+    ]) {
+      expect(btn).toHaveClass(cls);
+    }
+    const css = container.querySelector("style")?.textContent ?? "";
+    expect(css).toContain("@media (prefers-reduced-motion: no-preference)");
+    expect(css).toMatch(/vd-avail-pulse 2\.6s ease-in-out infinite/);
+    expect(css).not.toMatch(/gradient/i);
+  });
+
+  it("popup paneli tamamen beyaz (#FFFFFF)", () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+    const panel = screen
+      .getByRole("dialog")
+      .querySelector(":scope > div:not([aria-hidden])") as HTMLElement;
+    expect(panel).toHaveClass("bg-[#FFFFFF]");
+  });
 });
