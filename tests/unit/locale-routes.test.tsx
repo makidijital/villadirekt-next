@@ -1237,6 +1237,36 @@ describe.each(VILLA_DETAIL_ROUTES)(
       ).not.toBeInTheDocument();
     });
 
+    it("21b) giriş/çıkış saatleri YALNIZ 'Villa Giriş & Çıkış Saatleri' bölümünde; eski sağ-kolon kartı render edilmez", async () => {
+      const dict = getDictionary(locale);
+      const { default: Page } = await import(modulePath);
+      const element = await Page({
+        params: Promise.resolve({ slug: "test-villa" }),
+      });
+      const { container } = render(element);
+
+      /* Tek gösterim: başlık, etiketler ve saatler birer kez. */
+      expect(
+        screen.getAllByRole("heading", { name: dict.villa.checkInOutTitle })
+      ).toHaveLength(1);
+      expect(screen.getAllByText(dict.villa.checkInLabel)).toHaveLength(1);
+      expect(screen.getAllByText(dict.villa.checkOutLabel)).toHaveLength(1);
+      expect(screen.getAllByText("16:00")).toHaveLength(1);
+      expect(screen.getAllByText("10:00")).toHaveLength(1);
+
+      /* Sağ kolonda (aside) giriş/çıkış kartı YOK. */
+      const aside = container.querySelector("aside");
+      expect(aside).toBeTruthy();
+      expect(aside!.textContent).not.toContain(dict.villa.checkInOutTitle);
+      expect(aside!.textContent).not.toContain(dict.villa.checkInLabel);
+      expect(aside!.textContent).not.toContain("16:00");
+      expect(
+        screen
+          .getByRole("heading", { name: dict.villa.checkInOutTitle })
+          .closest("aside")
+      ).toBeNull();
+    });
+
     it("22) JSON-LD: vacationRentalLd + breadcrumbLd 'inLanguage' alanı sayfanın locale'iyle eşleşir", async () => {
       const { default: Page } = await import(modulePath);
       const element = await Page({

@@ -1,5 +1,4 @@
 import type { ComponentProps } from "react";
-import { Clock } from "lucide-react";
 
 /* ===============================================================
    🛡️ VillaDetailBody — PHASE 10G (TR/EN/DE TASARIM PARİTESİ)
@@ -45,6 +44,7 @@ import VillaDistancesSection, {
 import VillaFeaturesSection, {
   type TranslatedFeature,
 } from "@/app/components/villa/VillaFeaturesSection";
+import CheckInOutTimes from "@/app/components/villa/CheckInOutTimes";
 import VillaPriceIncludesAndRulesSection, {
   type TranslatedPriceInclude,
   type TranslatedRule,
@@ -121,6 +121,13 @@ export type VillaDetailBodyProps = {
   breadcrumbLd: Record<string, unknown>;
 };
 
+
+/* 🕓 Villa giriş/çıkış saatleri — ortak tek kaynak. Sayfada YALNIZ
+   "Villa Giriş & Çıkış Saatleri" bölümü (CheckInOutTimes) gösterir;
+   eski sağ-kolon giriş/çıkış kartı kaldırıldı. Değerler DEĞİŞMEDİ
+   (rezervasyon-kontrol share.resolve.ts ile aynı). */
+const CHECK_IN_TIME = "16:00";
+const CHECK_OUT_TIME = "10:00";
 export default function VillaDetailBody({
   locale,
   villa,
@@ -279,6 +286,14 @@ export default function VillaDetailBody({
                 locale={locale}
               />
 
+              {/* 🕓 VİLLA GİRİŞ & ÇIKIŞ SAATLERİ — dahil olanlar/kurallar
+                  bölümünün hemen altında, aynı minimal dil. */}
+              <CheckInOutTimes
+                checkIn={CHECK_IN_TIME}
+                checkOut={CHECK_OUT_TIME}
+                locale={locale}
+              />
+
               {/* 🛡️ FAZ 33 — REVIEWS SECTION */}
               <VillaReviewsSection
                 villaId={villa.id}
@@ -310,60 +325,6 @@ export default function VillaDetailBody({
                 initialEnd={initialEnd}
                 locale={locale}
               />
-
-              {/* 🕓 GİRİŞ & ÇIKIŞ SAATLERİ */}
-              <div
-                className="
-              mt-6 rounded-2xl
-              border border-[var(--color-stone-100)]
-              bg-[var(--color-sand-50)]/70
-              shadow-[0_10px_28px_-20px_rgba(0,0,0,0.18)]
-              px-5 py-5
-            "
-              >
-                <span className="inline-flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.22em] text-[var(--color-stone-400)]">
-                  <span
-                    aria-hidden="true"
-                    className="inline-block w-3 h-px bg-brand "
-                  />
-                  {dict.villa.checkInOutTitle}
-                </span>
-
-                <div className="mt-4 flex items-center">
-                  <div className="flex flex-1 items-center gap-3 min-w-0">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-brand">
-                      <Clock size={16} strokeWidth={1.8} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-stone-400)]">
-                        {dict.villa.checkInLabel}
-                      </p>
-                      <p className="font-display text-[21px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tabular-nums">
-                        16:00
-                      </p>
-                    </div>
-                  </div>
-
-                  <span
-                    aria-hidden="true"
-                    className="mx-4 h-10 w-px shrink-0 bg-[var(--color-stone-100)]"
-                  />
-
-                  <div className="flex flex-1 items-center gap-3 min-w-0">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
-                      <Clock size={16} strokeWidth={1.8} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-stone-400)]">
-                        {dict.villa.checkOutLabel}
-                      </p>
-                      <p className="font-display text-[21px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tabular-nums">
-                        10:00
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* 🛡️ "Nerede?" — konum kartı (harita modal içinde). */}
               <div
