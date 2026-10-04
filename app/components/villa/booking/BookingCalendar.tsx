@@ -29,6 +29,11 @@
 
 import { DayPicker, type DayContentProps } from "react-day-picker";
 import { PUBLIC_DAY_CELL_BORDER_SHADOW } from "@/lib/calendar-day-cell.style";
+
+/* RDP `.rdp-day` butonunun kendi şeffaf border genişliği
+   (react-day-picker/dist/style.css: `border: 2px solid transparent`).
+   Gün hücresi çerçeve overlay'i yanlardan bu kadar içeride çizilir. */
+const RDP_DAY_BORDER_PX = 2;
 import "react-day-picker/dist/style.css";
 import { tr, enUS, de } from "date-fns/locale";
 
@@ -267,14 +272,34 @@ export default function BookingCalendar({
                   fontSize: 10,
                   lineHeight: 1,
                   borderRadius: 6,
-                  /* 🔲 Çok hafif nötr 1px hücre çerçevesi — INSET shadow ile
-                     çizilir: kutu ölçüsü (40×40), radius, arka plan durum
-                     renkleri (müsait/onaylı/beklemede/yarım gün) ve RDP
-                     seçim stilleri DEĞİŞMEZ. */
-                  boxShadow: PUBLIC_DAY_CELL_BORDER_SHADOW,
+                  /* Çerçeve overlay'i (aşağıda) için konum bağlamı. */
+                  position: "relative",
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
+                {/* 🔲 Çok hafif nötr 1px hücre çerçevesi (ortak sabit).
+                    NEDEN OVERLAY: RDP `.rdp-day` butonu `max-width: 40px`
+                    + `border: 2px solid transparent` + `box-sizing:
+                    border-box` + `overflow: hidden` → içerik alanı 36px
+                    genişlikte; bu 40px hücrenin sol/sağ 2px'i KIRPILIYOR
+                    ve hücreye verilen inset shadow'un yan çizgileri
+                    görünmüyordu. Çizgi, hücrenin GÖRÜNEN alanına (yanlardan
+                    RDP_DAY_BORDER_PX içeride) oturan bu katmanda çizilir →
+                    dört kenar görünür; hücre 40×40, radius, gap ve durum
+                    renkleri AYNEN; komşu çizgiler üst üste binmez. */}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    left: RDP_DAY_BORDER_PX,
+                    right: RDP_DAY_BORDER_PX,
+                    borderRadius: 6,
+                    boxShadow: PUBLIC_DAY_CELL_BORDER_SHADOW,
+                    pointerEvents: "none",
+                  }}
+                />
                 <span
                   className={
                     isToday

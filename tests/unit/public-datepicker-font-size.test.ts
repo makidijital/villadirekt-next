@@ -30,6 +30,10 @@ describe("public datepicker gün rakamı font-size 10px", () => {
     expect(PUBLIC_DAY_CELL_BORDER_SHADOW).toBe("inset 0 0 0 1px #E5E7EB");
     expect(src).toMatch(/borderRadius: 6,/);
     expect(src).toMatch(/width: 40,\s*\n\s*height: 40,\s*\n\s*minWidth: 40,/);
+    /* Yan çizgiler RDP içerik alanında kırpılmasın diye çerçeve,
+       yanlardan RDP'nin 2px şeffaf border'ı kadar içeride çizilir. */
+    expect(src).toMatch(/const RDP_DAY_BORDER_PX = 2;/);
+    expect(src).toMatch(/left: RDP_DAY_BORDER_PX,\s*\n\s*right: RDP_DAY_BORDER_PX,/);
   });
 
   it("react-datepicker gün rakamı yalnız public scope'ta 10px", () => {

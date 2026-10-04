@@ -337,6 +337,48 @@ describe("BookingCalendar — Phase 10B locale (component visibility + TR defaul
     expect(trHeaders).not.toEqual(enHeaders);
     expect(enHeaders).not.toEqual(deHeaders);
   });
+
+  it("🔲 gün hücresi: 40×40 / min-width 40 / radius 6 / 10px AYNEN; #E5E7EB çerçeve görünen alana (yanlardan 2px içeride) dört kenarda çizilir", async () => {
+    const engine = await setupEngine();
+    const { container } = render(
+      <BookingCalendar
+        engine={engine.current}
+        currentMonth={new Date(2026, 9, 1)}
+        onCurrentMonthChange={() => {}}
+      />
+    );
+    const buttons = Array.from(
+      container.querySelectorAll<HTMLElement>("button.rdp-day")
+    );
+    expect(buttons.length).toBeGreaterThanOrEqual(28);
+    for (const btn of buttons) {
+      const cell = btn.firstElementChild as HTMLElement;
+      /* Hücre ölçüsü / radius / font AYNEN. */
+      expect(cell.style.width).toBe("40px");
+      expect(cell.style.height).toBe("40px");
+      expect(cell.style.minWidth).toBe("40px");
+      expect(cell.style.borderRadius).toBe("6px");
+      expect(cell.style.fontSize).toBe("10px");
+      /* Çerçeve artık hücrenin KENDİSİNDE değil (RDP içerik alanı 36px →
+         yanlar kırpılıyordu); görünen alana oturan overlay'de. */
+      expect(cell.style.boxShadow).toBe("");
+      expect(cell.style.position).toBe("relative");
+      const frame = cell.querySelector<HTMLElement>(
+        ':scope > span[aria-hidden="true"]'
+      );
+      expect(frame).toBeTruthy();
+      expect(frame!.style.position).toBe("absolute");
+      expect(frame!.style.top).toBe("0px");
+      expect(frame!.style.bottom).toBe("0px");
+      expect(frame!.style.left).toBe("2px");
+      expect(frame!.style.right).toBe("2px");
+      expect(frame!.style.borderRadius).toBe("6px");
+      expect(frame!.style.boxShadow).toBe("inset 0 0 0 1px #E5E7EB");
+      expect(frame!.style.pointerEvents).toBe("none");
+      /* Tarih rakamı overlay'in içinde değil — metin/okunabilirlik AYNEN. */
+      expect(frame!.textContent).toBe("");
+    }
+  });
 });
 
 /* ===============================================================
