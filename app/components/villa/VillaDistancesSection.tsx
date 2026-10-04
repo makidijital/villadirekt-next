@@ -117,9 +117,12 @@ export default function VillaDistancesSection({
           {dict.villa.distancesEmpty}
         </p>
       ) : (
+        /* Kompakt mavi kart grid — brand blue (#1B4EF5), düz renk
+           (gradient YOK), hafif shadow; sol ince ikon alanı + ad +
+           mesafe. Veri/sıralama/ikon eşlemesi AYNEN. */
         <div
           role="list"
-          className="mt-7 md:mt-8 border-t border-[var(--color-stone-100)]"
+          className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5"
         >
           {distances.map((d, i) => {
             const IconCmp: LucideIcon = DISTANCE_ICON_MAP[d.iconKey];
@@ -128,30 +131,31 @@ export default function VillaDistancesSection({
                 role="listitem"
                 key={d.id}
                 className="
-                  ynp-row group relative flex items-center gap-4 md:gap-5
-                  py-4 md:py-[18px]
-                  border-b border-[var(--color-stone-100)]
-                  transition-transform duration-300 motion-reduce:transition-none
-                  hover:translate-x-1.5 motion-reduce:hover:translate-x-0
+                  ynp-row group flex items-center gap-2.5 min-w-0
+                  rounded-[13px] bg-[#1B4EF5] px-3 py-2.5
+                  shadow-[0_4px_12px_-8px_rgba(27,78,245,0.55)]
+                  transition duration-200 motion-reduce:transition-none
+                  hover:bg-[#2A5BF7] hover:-translate-y-px motion-reduce:hover:translate-y-0
                 "
                 style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
               >
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-2.5 -left-px w-[2.5px] rounded-full bg-brand opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none"
-                />
-                <span className="relative shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-full bg-brand/10 text-brand flex items-center justify-center transition-colors duration-300 motion-reduce:transition-none group-hover:bg-brand/20 ">
-                  <IconCmp size={15} strokeWidth={1.75} />
-                </span>
-                <p className="relative min-w-0 flex-1 text-[14px] md:text-[15px] font-medium text-[var(--color-stone-700)] truncate tracking-[-0.005em]">
-                  {d.displayTitle}
-                </p>
-                <p
-                  className="relative shrink-0 font-display text-[16px] md:text-[18px] text-[var(--color-stone-900)] tracking-[-0.01em]"
-                  style={{ fontVariantNumeric: "tabular-nums" }}
+                  className="shrink-0 w-8 h-8 rounded-[9px] bg-white/15 text-white flex items-center justify-center"
                 >
-                  {d.displayDistance}
-                </p>
+                  <IconCmp size={15} strokeWidth={1.5} />
+                </span>
+                <div className="min-w-0 flex-1 leading-tight">
+                  <p className="text-[13px] font-semibold text-white truncate">
+                    {d.displayTitle}
+                  </p>
+                  <p
+                    className="mt-0.5 text-[12px] font-medium text-white/80 truncate"
+                    style={{ fontVariantNumeric: "tabular-nums" }}
+                  >
+                    {d.displayDistance}
+                  </p>
+                </div>
               </div>
             );
           })}
