@@ -23,6 +23,7 @@ import { useEffect, useState, type ComponentProps } from "react";
 import { CalendarDays, X } from "lucide-react";
 
 import AvailabilityInlineCalendar from "@/app/components/villa/AvailabilityInlineCalendar";
+import AvailabilityLegend from "@/app/components/villa/AvailabilityLegend";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 type Props = ComponentProps<typeof AvailabilityInlineCalendar>;
@@ -135,6 +136,10 @@ export default function VillaAvailabilityModal(props: Props) {
               <div className="overflow-x-auto">
                 <AvailabilityInlineCalendar {...props} />
               </div>
+              {/* "Onaylı / Beklemede / Müsait" legend'ı — YALNIZ bu
+                  read-only Müsaitlik takviminde (rezervasyon
+                  datepicker'larında gösterilmez). */}
+              <AvailabilityLegend locale={props.locale} />
             </div>
           </div>
         </div>

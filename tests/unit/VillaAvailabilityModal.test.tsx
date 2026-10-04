@@ -170,3 +170,29 @@ describe("Müsaitlik popup takvimi — gün hücresi çerçevesi", () => {
     expect(screen.getByLabelText("Önceki ay").style.boxShadow).toBe("");
   });
 });
+
+describe("Müsaitlik popup — 'Onaylı / Beklemede / Müsait' legend'ı", () => {
+  it("popup kapalıyken legend yok; açılınca üç legend da görünür", () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    expect(screen.queryByText("Onaylı")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toContainElement(screen.getByText("Onaylı"));
+    expect(dialog).toContainElement(screen.getByText("Beklemede"));
+    expect(dialog).toContainElement(screen.getByText("Müsait"));
+  });
+
+  it("EN/DE legend metinleri dictionary'den", () => {
+    const { unmount } = render(
+      <VillaAvailabilityModal villaId="v1" prices={[]} locale="en" />
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Availability" }));
+    expect(screen.getByText("Confirmed")).toBeInTheDocument();
+    expect(screen.getByText("Pending")).toBeInTheDocument();
+    expect(screen.getByText("Available")).toBeInTheDocument();
+    unmount();
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} locale="de" />);
+    fireEvent.click(screen.getAllByRole("button")[0]);
+    expect(screen.getByText("Bestätigt")).toBeInTheDocument();
+  });
+});

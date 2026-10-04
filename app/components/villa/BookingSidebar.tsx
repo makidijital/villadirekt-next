@@ -425,6 +425,9 @@ export default function BookingSidebar({
               onCurrentMonthChange={setCurrentMonth}
               onSelectComplete={() => setOpenCalendar(false)}
               locale={locale}
+              /* Rezervasyon datepicker'ı — legend YOK (yalnız Müsaitlik
+                 popup'ında gösterilir). */
+              showLegend={false}
             />
           </div>
         )}

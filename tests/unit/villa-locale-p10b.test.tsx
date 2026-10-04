@@ -338,6 +338,48 @@ describe("BookingCalendar — Phase 10B locale (component visibility + TR defaul
     expect(enHeaders).not.toEqual(deHeaders);
   });
 
+  it("showLegend={false} (rezervasyon datepicker'ları): 'Onaylı / Beklemede / Müsait' legend'ı render EDİLMEZ; takvim günleri AYNEN", async () => {
+    const engine = await setupEngine();
+    const { container } = render(
+      <BookingCalendar
+        engine={engine.current}
+        currentMonth={new Date(2026, 9, 1)}
+        onCurrentMonthChange={() => {}}
+        showLegend={false}
+      />
+    );
+    expect(container.querySelectorAll("button.rdp-day").length).toBeGreaterThanOrEqual(28);
+    expect(screen.queryByText("Onaylı")).toBeNull();
+    expect(screen.queryByText("Beklemede")).toBeNull();
+    expect(screen.queryByText("Müsait")).toBeNull();
+  });
+
+  it("showLegend={false} EN/DE: legend yok", async () => {
+    const engine = await setupEngine();
+    const { unmount } = render(
+      <BookingCalendar
+        engine={engine.current}
+        currentMonth={new Date(2026, 9, 1)}
+        onCurrentMonthChange={() => {}}
+        locale="en"
+        showLegend={false}
+      />
+    );
+    expect(screen.queryByText("Confirmed")).toBeNull();
+    expect(screen.queryByText("Available")).toBeNull();
+    unmount();
+    render(
+      <BookingCalendar
+        engine={engine.current}
+        currentMonth={new Date(2026, 9, 1)}
+        onCurrentMonthChange={() => {}}
+        locale="de"
+        showLegend={false}
+      />
+    );
+    expect(screen.queryByText("Bestätigt")).toBeNull();
+  });
+
   it("🔲 gün hücresi: 40×40 / min-width 40 / radius 6 / 10px AYNEN; #E5E7EB çerçeve görünen alana (yanlardan 2px içeride) dört kenarda çizilir", async () => {
     const engine = await setupEngine();
     const { container } = render(

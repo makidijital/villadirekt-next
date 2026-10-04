@@ -29,6 +29,7 @@
 
 import { DayPicker, type DayContentProps } from "react-day-picker";
 import { PUBLIC_DAY_CELL_BORDER_SHADOW } from "@/lib/calendar-day-cell.style";
+import AvailabilityLegend from "@/app/components/villa/AvailabilityLegend";
 
 /* RDP `.rdp-day` butonunun kendi şeffaf border genişliği
    (react-day-picker/dist/style.css: `border: 2px solid transparent`).
@@ -60,6 +61,10 @@ type Props = {
   /* Selection commit'inden sonra çağrılır (sidebar dropdown'u kapatır,
      modal noop veya animasyon yapabilir). Opsiyonel. */
   onSelectComplete?: () => void;
+  /** Takvim altındaki "Onaylı / Beklemede / Müsait" legend'ı. Varsayılan
+   *  `true` (eski davranış). Public rezervasyon datepicker'ları `false`
+   *  geçer; legend yalnız read-only Müsaitlik takviminde gösterilir. */
+  showLegend?: boolean;
   /* 🛡️ PHASE 10B — opsiyonel, default "tr". */
   locale?: Locale;
 };
@@ -70,6 +75,7 @@ export default function BookingCalendar({
   onCurrentMonthChange,
   onSelectComplete,
   locale,
+  showLegend = true,
 }: Props) {
   const { currency } = useCurrency();
   const dict = getDictionary(locale);
@@ -496,40 +502,10 @@ export default function BookingCalendar({
           border-top yok, hint yok. Erişilebilirlik için
           `title` attribute (tooltip).
           ─────────────────────────────────────────────────── */}
-      <div className="mt-4 flex items-center justify-center gap-4 text-[10px] tracking-[0.04em] text-[var(--color-stone-400)]">
-        <span
-          className="inline-flex items-center gap-1.5"
-          title={dict.availability.legendConfirmedTitle}
-        >
-          <span
-            className="inline-block w-1.5 h-1.5 rounded-full"
-            style={{ background: "rgba(239,68,68,0.55)" }}
-            aria-hidden
-          />
-          {dict.availability.legendConfirmed}
-        </span>
-        <span
-          className="inline-flex items-center gap-1.5"
-          title={dict.availability.legendPendingTitle}
-        >
-          <span
-            className="inline-block w-1.5 h-1.5 rounded-full"
-            style={{ background: "#facc15" }}
-            aria-hidden
-          />
-          {dict.availability.legendPending}
-        </span>
-        <span
-          className="inline-flex items-center gap-1.5"
-          title={dict.availability.legendAvailableTitle}
-        >
-          <span
-            className="inline-block w-1.5 h-1.5 rounded-full border border-[var(--color-stone-300)] bg-white"
-            aria-hidden
-          />
-          {dict.availability.legendAvailable}
-        </span>
-      </div>
+      {/* 🛡️ Legend artık ortak `AvailabilityLegend` component'inde
+          (markup/stil AYNEN). Rezervasyon takvimleri `showLegend={false}`
+          geçer; varsayılan (prop verilmezse) davranış DEĞİŞMEDİ. */}
+      {showLegend && <AvailabilityLegend locale={locale} />}
     </>
   );
 }

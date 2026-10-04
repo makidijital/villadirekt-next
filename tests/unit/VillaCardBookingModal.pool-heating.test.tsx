@@ -209,3 +209,22 @@ describe("VillaCardBookingModal — havuz ısıtma veri zinciri (availability AP
     expect(screen.queryByText("Havuz Isıtma")).not.toBeInTheDocument();
   });
 });
+
+describe("VillaCardBookingModal — rezervasyon datepicker legend'ı", () => {
+  it("takvim render edilir ama 'Onaylı / Beklemede / Müsait' legend'ı GÖSTERİLMEZ", async () => {
+    mockFetch(null);
+    render(
+      <VillaCardBookingModal
+        isOpen={true}
+        onClose={vi.fn()}
+        villaId="v1"
+        villaSlug="test-villa"
+        villaTitle="Test Villa"
+      />
+    );
+    await screen.findAllByRole("gridcell");
+    expect(screen.queryByText("Onaylı")).not.toBeInTheDocument();
+    expect(screen.queryByText("Beklemede")).not.toBeInTheDocument();
+    expect(screen.queryByText("Müsait")).not.toBeInTheDocument();
+  });
+});

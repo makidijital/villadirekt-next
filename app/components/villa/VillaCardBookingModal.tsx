@@ -604,6 +604,9 @@ function ModalContent({
             locale={locale}
             /* onSelectComplete verilmedi → modal calendar açık kalır,
                selection sonrası popup close DAVRANIŞI sidebar'a özgü. */
+            /* Rezervasyon datepicker'ı — legend YOK (yalnız Müsaitlik
+               popup'ında gösterilir). */
+            showLegend={false}
           />
         </div>
 

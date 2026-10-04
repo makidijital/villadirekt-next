@@ -96,3 +96,21 @@ describe("BookingSidebar — tarih alanı toggle", () => {
     expect(screen.getByText(getDictionary("tr").booking.adultsLabel)).toBeInTheDocument();
   });
 });
+
+describe("BookingSidebar — rezervasyon datepicker legend'ı", () => {
+  const T = { timeout: 8000 };
+  it("takvim açıkken 'Onaylı / Beklemede / Müsait' legend'ı GÖSTERİLMEZ", async () => {
+    const { container } = render(<BookingSidebar {...PROPS} locale="tr" />);
+    fireEvent.click(
+      screen.getByText("Giriş").closest("div.cursor-pointer") as HTMLElement
+    );
+    await waitFor(
+      () => expect(container.querySelector("button.rdp-day")).toBeTruthy(),
+      T
+    );
+    const dict = getDictionary("tr");
+    expect(screen.queryByText(dict.availability.legendConfirmed)).toBeNull();
+    expect(screen.queryByText(dict.availability.legendPending)).toBeNull();
+    expect(screen.queryByText(dict.availability.legendAvailable)).toBeNull();
+  });
+});
