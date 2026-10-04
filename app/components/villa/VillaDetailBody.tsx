@@ -33,7 +33,7 @@ import VillaPoolSection from "@/app/components/villa/VillaPoolSection";
 import VillaReviewsSection from "@/app/components/villa/VillaReviewsSection";
 import SimilarVillasSection from "@/app/components/villa/SimilarVillasSection";
 import FavoriteButton from "@/app/components/favorites/FavoriteButton";
-import AvailabilityInlineCalendar from "@/app/components/villa/AvailabilityInlineCalendar";
+import VillaAvailabilityModal from "@/app/components/villa/VillaAvailabilityModal";
 import Gallery from "@/app/components/villa/Gallery";
 import BookingSidebar from "@/app/components/villa/BookingSidebar";
 import MobileBookingCta from "@/app/components/villa/MobileBookingCta";
@@ -225,6 +225,19 @@ export default function VillaDetailBody({
                  Özellikler bölümleri aynı sırayla normal akışta, alt alta
                  render edilir (parent `space-y` aralığını kullanır). */}
               <section>
+                {/* 🗓️ MÜSAİTLİK — takvim artık sayfada sürekli açık DEĞİL;
+                    fiyatların hemen üstündeki buton MEVCUT takvimi
+                    (AvailabilityInlineCalendar, prop'lar AYNEN) popup
+                    içinde açar. */}
+                <div className="mb-6">
+                  <VillaAvailabilityModal
+                    villaId={villa.id}
+                    prices={prices}
+                    externalBlocks={externalBlocks}
+                    discounts={discounts}
+                    locale={locale}
+                  />
+                </div>
                 <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
                   {dict.villa.seasonPricesTitle}
                 </h2>
@@ -241,24 +254,6 @@ export default function VillaDetailBody({
                     locale={locale}
                   />
                 )}
-              </section>
-              <section>
-                <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
-                  {dict.villa.calendarTitle}
-                </h2>
-                <div className="mt-5 overflow-x-auto">
-                  <AvailabilityInlineCalendar
-                    villaId={villa.id}
-                    prices={prices}
-                    externalBlocks={externalBlocks}
-                    /* 🛡️ ADDITIVE — sayfa `getVillaDiscounts` ile
-                       ZATEN çekilen public indirim kayıtları; takvim
-                       günlük indirimli fiyatı bunlarla gösterir.
-                       Yeni veri kaynağı/sorgu YOK. */
-                    discounts={discounts}
-                    locale={locale}
-                  />
-                </div>
               </section>
               <div className="space-y-10">
                 <VillaDistancesSection

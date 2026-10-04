@@ -24,7 +24,7 @@
 =============================================================== */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 /* 🛡️ PHASE 10B — GERÇEK (mock'lanmamış) dictionary. Villa detay artık
    ComingSoon yerine gerçek locale metni render ediyor; assertion'lar
    TR hardcoded string yerine BU'ndan okunan gerçek EN/DE değerleriyle
@@ -1203,12 +1203,27 @@ describe.each(VILLA_DETAIL_ROUTES)(
       });
       render(element);
 
+      /* 🗓️ Takvim artık sayfada sürekli açık DEĞİL — fiyatların üstündeki
+         "Müsaitlik" butonu MEVCUT takvimi popup içinde açar. */
+      expect(
+        screen.queryByLabelText(dict.availability.prevMonth)
+      ).not.toBeInTheDocument();
+      fireEvent.click(
+        screen.getByRole("button", { name: dict.villaTabs.availability })
+      );
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
       expect(
         screen.getByLabelText(dict.availability.prevMonth)
       ).toBeInTheDocument();
       expect(
         screen.getByLabelText(dict.availability.nextMonth)
       ).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: dict.common.close }));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText(dict.availability.prevMonth)
+      ).not.toBeInTheDocument();
     });
 
     it("22) JSON-LD: vacationRentalLd + breadcrumbLd 'inLanguage' alanı sayfanın locale'iyle eşleşir", async () => {

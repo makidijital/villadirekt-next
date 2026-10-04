@@ -1,0 +1,112 @@
+/* ===============================================================
+   🗓️ VillaAvailabilityModal — "Müsaitlik" butonu + takvim popup'ı
+   ===============================================================
+   Takvim (AvailabilityInlineCalendar) ilk render'da GÖRÜNMEZ;
+   butona tıklayınca MEVCUT takvim modal içinde açılır; X / ESC /
+   backdrop ile kapanır. Availability fetch'i mock'lanır (proje
+   convention'ı — bkz. villa-locale-p10b.test.tsx).
+   =============================================================== */
+
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+
+const fetchAndExpandVillaAvailabilityMock = vi.fn();
+vi.mock("@/lib/villa-availability.helper", () => ({
+  fetchAndExpandVillaAvailability: (...args: unknown[]) =>
+    fetchAndExpandVillaAvailabilityMock(...args),
+}));
+
+import VillaAvailabilityModal from "@/app/components/villa/VillaAvailabilityModal";
+
+const EMPTY_AVAILABILITY = {
+  blockedDates: [],
+  checkinDates: [],
+  checkoutDates: [],
+  pendingCheckinDates: [],
+  pendingCheckoutDates: [],
+  pendingMiddleDates: [],
+  manualBlockedDates: [],
+  manualCheckinDates: [],
+  manualCheckoutDates: [],
+};
+
+beforeEach(() => {
+  fetchAndExpandVillaAvailabilityMock.mockReset();
+  fetchAndExpandVillaAvailabilityMock.mockResolvedValue(EMPTY_AVAILABILITY);
+});
+
+describe("VillaAvailabilityModal", () => {
+  it("ilk render'da takvim GÖRÜNMEZ, 'Müsaitlik' butonu görünür", () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    expect(
+      screen.getByRole("button", { name: "Müsaitlik" })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Önceki ay")).not.toBeInTheDocument();
+    expect(fetchAndExpandVillaAvailabilityMock).not.toHaveBeenCalled();
+  });
+
+  it("butona tıklayınca MEVCUT takvim popup içinde açılır", async () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(screen.getByText("Takvim")).toBeInTheDocument();
+    expect(screen.getByLabelText("Önceki ay")).toBeInTheDocument();
+    expect(screen.getByLabelText("Sonraki ay")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(fetchAndExpandVillaAvailabilityMock).toHaveBeenCalledWith("v1")
+    );
+  });
+
+  it("X (Kapat) butonu ile kapanır, takvim gizlenir", () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+    fireEvent.click(screen.getByRole("button", { name: "Kapat" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Önceki ay")).not.toBeInTheDocument();
+  });
+
+  it("ESC ile kapanır", () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("dışarı (backdrop) tıklayınca kapanır; popup içine tıklamak kapatmaz", () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+
+    fireEvent.click(screen.getByLabelText("Sonraki ay"));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    const backdrop = screen
+      .getByRole("dialog")
+      .querySelector(":scope > div[aria-hidden]") as HTMLElement;
+    fireEvent.click(backdrop);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("açıkken body scroll kilitlenir, kapanınca geri alınır", () => {
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Müsaitlik" }));
+    expect(document.body.style.overflow).toBe("hidden");
+    fireEvent.click(screen.getByRole("button", { name: "Kapat" }));
+    expect(document.body.style.overflow).toBe("");
+  });
+
+  it("EN/DE locale buton etiketi dictionary'den gelir", () => {
+    const { unmount } = render(
+      <VillaAvailabilityModal villaId="v1" prices={[]} locale="en" />
+    );
+    expect(
+      screen.getByRole("button", { name: "Availability" })
+    ).toBeInTheDocument();
+    unmount();
+    render(<VillaAvailabilityModal villaId="v1" prices={[]} locale="de" />);
+    fireEvent.click(screen.getAllByRole("button")[0]);
+    expect(screen.getByLabelText("Vorheriger Monat")).toBeInTheDocument();
+  });
+});
