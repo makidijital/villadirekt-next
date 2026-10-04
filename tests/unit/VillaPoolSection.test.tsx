@@ -93,7 +93,7 @@ describe("VillaPoolSection — locale etiketleri", () => {
     expect(screen.getByText("4 m")).toBeInTheDocument();
   });
 
-  it("🛡️ ikon locale'den ve etiketten ETKİLENMEZ (section başına 1 Waves)", () => {
+  it("🛡️ ikon locale'den ve etiketten ETKİLENMEZ (başlık + her kartta 1 Waves)", () => {
     const { container: en } = render(
       <VillaPoolSection villa={VILLA} locale="en" />
     );
@@ -102,7 +102,10 @@ describe("VillaPoolSection — locale etiketleri", () => {
       <VillaPoolSection villa={VILLA} locale="de" />
     );
     expect(de.querySelectorAll("svg").length).toBe(enSvg);
-    expect(enSvg).toBe(1);
+    /* Başlık ikonu + her kartta 1 Waves (VILLA: 2 havuz × 3 ölçü
+       kartı + 1 ölçüsüz çocuk havuzu kartı = 7). */
+    expect(enSvg).toBe(1 + en.querySelectorAll(".rounded-\\[13px\\]").length);
+    expect(enSvg).toBe(8);
   });
 
   it("🛡️ kart sırası ve sayısı locale'den bağımsız", () => {
@@ -112,18 +115,24 @@ describe("VillaPoolSection — locale etiketleri", () => {
     const { container: tr } = render(
       <VillaPoolSection villa={VILLA} locale="tr" />
     );
-    expect(en.querySelectorAll(".p-4.md\\:p-5").length).toBe(
-      tr.querySelectorAll(".p-4.md\\:p-5").length
+    expect(en.querySelectorAll(".space-y-3\\.5 > div").length).toBe(
+      tr.querySelectorAll(".space-y-3\\.5 > div").length
+    );
+    expect(en.querySelectorAll(".space-y-3\\.5 > div")).toHaveLength(3);
+    expect(en.querySelectorAll(".rounded-\\[13px\\]").length).toBe(
+      tr.querySelectorAll(".rounded-\\[13px\\]").length
     );
   });
 
-  it("className/grid yapısı TR bloğuyla aynı", () => {
+  it("kompakt kart grid yapısı (1 / sm:2 / lg:3 kolon)", () => {
     const { container } = render(
       <VillaPoolSection villa={VILLA} locale="en" />
     );
     expect(
-      container.querySelector(".rounded-2xl.border.divide-y")
+      container.querySelector(
+        ".grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3"
+      )
     ).toBeTruthy();
-    expect(container.querySelector(".grid.grid-cols-3")).toBeTruthy();
+    expect(container.querySelectorAll(".rounded-\\[13px\\]")).toHaveLength(7);
   });
 });
