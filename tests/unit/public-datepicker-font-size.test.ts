@@ -22,6 +22,13 @@ describe("public datepicker gün rakamı font-size 10px", () => {
     expect(src).toMatch(/width: 40,\s*\n\s*height: 40,/);
   });
 
+  it("BookingCalendar gün hücresi: çok hafif 1px #E5E7EB çerçeve (inset, ölçü/radius AYNEN)", () => {
+    const src = read("app/components/villa/booking/BookingCalendar.tsx");
+    expect(src).toContain('boxShadow: "inset 0 0 0 1px #E5E7EB"');
+    expect(src).toMatch(/borderRadius: 6,/);
+    expect(src).toMatch(/width: 40,\s*\n\s*height: 40,\s*\n\s*minWidth: 40,/);
+  });
+
   it("react-datepicker gün rakamı yalnız public scope'ta 10px", () => {
     const css = read("app/globals.css");
     expect(css).toMatch(

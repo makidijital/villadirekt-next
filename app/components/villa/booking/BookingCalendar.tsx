@@ -266,6 +266,11 @@ export default function BookingCalendar({
                   fontSize: 10,
                   lineHeight: 1,
                   borderRadius: 6,
+                  /* 🔲 Çok hafif nötr 1px hücre çerçevesi — INSET shadow ile
+                     çizilir: kutu ölçüsü (40×40), radius, arka plan durum
+                     renkleri (müsait/onaylı/beklemede/yarım gün) ve RDP
+                     seçim stilleri DEĞİŞMEZ. */
+                  boxShadow: "inset 0 0 0 1px #E5E7EB",
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
