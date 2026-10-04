@@ -45,26 +45,26 @@ export default function VillaFeaturesSection({
           {dict.villa.featuresEmpty}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-5">
+        /* Kompakt/minimal liste — kart kutuları kaldırıldı; sıkı 2/3
+           kolon grid, tek satır öğe, küçük çizgisel check ikonu.
+           Veri/sıralama AYNEN. */
+        <ul className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-2 mt-3.5">
           {features.map((f) => (
-            <div
+            <li
               key={f.id}
-              className="
-                flex items-center gap-2.5
-                text-[var(--color-stone-700)]
-                bg-white border border-[var(--color-stone-100)]
-                rounded-xl px-4 py-3 text-sm
-                hover:border-[var(--color-champagne-300)] hover:shadow-soft
-                transition
-              "
+              title={f.displayName}
+              className="flex items-center gap-1.5 min-w-0 text-[13px] leading-5 text-[var(--color-stone-700)]"
             >
-              <span className="w-5 h-5 rounded-full bg-[var(--color-sand-100)] flex items-center justify-center shrink-0">
-                <Check size={12} className="text-[var(--color-champagne-600)]" />
-              </span>
-              {f.displayName}
-            </div>
+              <Check
+                size={13}
+                strokeWidth={2.5}
+                aria-hidden="true"
+                className="shrink-0 text-[var(--color-champagne-600)]"
+              />
+              <span className="truncate">{f.displayName}</span>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </section>
   );
