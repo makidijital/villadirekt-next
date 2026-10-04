@@ -38,7 +38,6 @@ import Gallery from "@/app/components/villa/Gallery";
 import BookingSidebar from "@/app/components/villa/BookingSidebar";
 import MobileBookingCta from "@/app/components/villa/MobileBookingCta";
 import VillaInfoBar from "@/app/components/villa/VillaInfoBar";
-import VillaDetailTabs from "@/app/components/villa/VillaDetailTabs";
 import VillaMapModal from "@/app/components/villa/VillaMapModal";
 import VillaDistancesSection, {
   type TranslatedDistance,
@@ -222,61 +221,52 @@ export default function VillaDetailBody({
                 )}
               </section>
 
-              {/* 🛡️ TAB BAND — açıklama altı tab-content switching. */}
-              <VillaDetailTabs
-                locale={locale}
-                fiyatlar={
-                  <section>
-                    <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
-                      {dict.villa.seasonPricesTitle}
-                    </h2>
-                    {prices.length === 0 ? (
-                      <p className="text-[var(--color-stone-400)] text-sm italic">
-                        {dict.price.noPriceInfo}
-                      </p>
-                    ) : (
-                      <PriceList
-                        prices={prices}
-                        minimumStayNights={villa.minimum_stay_nights ?? null}
-                        deposit={villa.deposit ?? null}
-                        discounts={discounts}
-                        locale={locale}
-                      />
-                    )}
-                  </section>
-                }
-                musaitlik={
-                  <section>
-                    <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
-                      {dict.villa.calendarTitle}
-                    </h2>
-                    <div className="mt-5 overflow-x-auto">
-                      <AvailabilityInlineCalendar
-                        villaId={villa.id}
-                        prices={prices}
-                        externalBlocks={externalBlocks}
-                        /* 🛡️ ADDITIVE — sayfa `getVillaDiscounts` ile
-                           ZATEN çekilen public indirim kayıtları; takvim
-                           günlük indirimli fiyatı bunlarla gösterir.
-                           Yeni veri kaynağı/sorgu YOK. */
-                        discounts={discounts}
-                        locale={locale}
-                      />
-                    </div>
-                  </section>
-                }
-                konum={
-                  <div className="space-y-10">
-                    <VillaDistancesSection
-                      distances={distances}
-                      locale={locale}
-                    />
-                  </div>
-                }
-                ozellikler={
-                  <VillaFeaturesSection features={features} locale={locale} />
-                }
-              />
+              {/* 🛡️ Tab sistemi kaldırıldı — Fiyatlar, Müsaitlik, Konum ve
+                 Özellikler bölümleri aynı sırayla normal akışta, alt alta
+                 render edilir (parent `space-y` aralığını kullanır). */}
+              <section>
+                <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em] mb-4">
+                  {dict.villa.seasonPricesTitle}
+                </h2>
+                {prices.length === 0 ? (
+                  <p className="text-[var(--color-stone-400)] text-sm italic">
+                    {dict.price.noPriceInfo}
+                  </p>
+                ) : (
+                  <PriceList
+                    prices={prices}
+                    minimumStayNights={villa.minimum_stay_nights ?? null}
+                    deposit={villa.deposit ?? null}
+                    discounts={discounts}
+                    locale={locale}
+                  />
+                )}
+              </section>
+              <section>
+                <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
+                  {dict.villa.calendarTitle}
+                </h2>
+                <div className="mt-5 overflow-x-auto">
+                  <AvailabilityInlineCalendar
+                    villaId={villa.id}
+                    prices={prices}
+                    externalBlocks={externalBlocks}
+                    /* 🛡️ ADDITIVE — sayfa `getVillaDiscounts` ile
+                       ZATEN çekilen public indirim kayıtları; takvim
+                       günlük indirimli fiyatı bunlarla gösterir.
+                       Yeni veri kaynağı/sorgu YOK. */
+                    discounts={discounts}
+                    locale={locale}
+                  />
+                </div>
+              </section>
+              <div className="space-y-10">
+                <VillaDistancesSection
+                  distances={distances}
+                  locale={locale}
+                />
+              </div>
+              <VillaFeaturesSection features={features} locale={locale} />
 
               {/* 🛡️ KONAKLAMA DÜZENİ (mig 047) */}
               <AccommodationLayout
