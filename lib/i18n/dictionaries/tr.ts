@@ -350,6 +350,9 @@ export const tr: Dictionary = {
     submitting: "Gönderiliyor…",
     submit: "Yorumumu gönder",
     errorGeneric: "Yorumunuz kaydedilemedi. Lütfen tekrar deneyin.",
+    /* Yorum listesi aç/kapat (ilk açılışta 1 yorum). */
+    showMore: "Daha Fazla Göster",
+    showLess: "Daha Az Göster",
   },
   /* 🛡️ PHASE 10G — VillaCard.tsx'in BUGÜNKÜ hardcoded metinleri. */
   card: {

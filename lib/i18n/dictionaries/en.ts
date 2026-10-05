@@ -337,6 +337,9 @@ export const en: Dictionary = {
     submitting: "Sending…",
     submit: "Submit my review",
     errorGeneric: "Your review could not be saved. Please try again.",
+    /* Yorum listesi aç/kapat (ilk açılışta 1 yorum). */
+    showMore: "Show More",
+    showLess: "Show Less",
   },
   /* 🛡️ PHASE 10G — VillaCard.tsx */
   card: {

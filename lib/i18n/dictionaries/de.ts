@@ -338,6 +338,9 @@ export const de: Dictionary = {
     submit: "Bewertung senden",
     errorGeneric:
       "Ihre Bewertung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    /* Yorum listesi aç/kapat (ilk açılışta 1 yorum). */
+    showMore: "Mehr anzeigen",
+    showLess: "Weniger anzeigen",
   },
   /* 🛡️ PHASE 10G — VillaCard.tsx */
   card: {

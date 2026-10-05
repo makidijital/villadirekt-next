@@ -458,6 +458,8 @@ export type Dictionary = {
         (`reservation.form.errorGeneric` / `contact.form.errorGeneric`
         ile AYNI desen). */
     errorGeneric: string;
+    showMore: string;
+    showLess: string;
   };
   /* 🛡️ PHASE 10G — VillaCard.tsx (villa detay "Benzer Villalar" bölümü
      bu kartı EN/DE'de de render eder). TR değerleri component'in

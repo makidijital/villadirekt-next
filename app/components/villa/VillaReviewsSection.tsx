@@ -37,7 +37,6 @@ import {
   ShieldCheck,
   Quote,
   Sparkles,
-  MessageSquarePlus,
   ChevronDown,
 } from "lucide-react";
 
@@ -76,7 +75,6 @@ export default function VillaReviewsSection({
   locale?: Locale;
 }) {
   const dict = getDictionary(locale);
-  const effectiveLocale: Locale = locale ?? "tr";
   /* Featured review header'ın altında yer alır; diğerleri liste içinde. */
   const { featured, rest } = useMemo(() => {
     const featuredIdx = reviews.findIndex((r) => r.is_featured);
@@ -89,124 +87,108 @@ export default function VillaReviewsSection({
     };
   }, [reviews]);
 
+  /* 🧾 Görüntüleme sırası MEVCUT ile AYNI: (varsa) öne çıkan yorum en
+     üstte, ardından kalan yorumlar gelen sırayla. İlk açılışta yalnız
+     ilk yorum; "Daha Fazla Göster" ile tümü (yalnız görünür sayı state'i —
+     veri/sıralama/puan DEĞİŞMEZ). */
+  const ordered = useMemo(
+    () => (featured ? [featured, ...rest] : rest),
+    [featured, rest]
+  );
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? ordered : ordered.slice(0, 1);
+  const canToggle = ordered.length > 1;
+
   return (
-    <section className="space-y-8">
+    <section className="space-y-3">
       {/* ════════════════════════════════════════════════════
-          HEADER
+          YORUMLAR — minimal beyaz blok (kart/renkli zemin YOK)
           ════════════════════════════════════════════════════ */}
-      <header>
-        <p className="eyebrow mb-3 flex items-center gap-2">
-          <Star size={11} /> {dict.reviews.eyebrow}
-        </p>
-        <h2 className="font-display font-bold text-[20px] md:text-[22px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
-          {dict.reviews.title}
-        </h2>
+      <div className={REVIEWS_BOX_CLASS} data-testid="reviews-box">
+        <header className="pb-4 border-b border-[#E5E7EB]">
+          <h2 className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
+            {dict.reviews.title}
+          </h2>
 
-        {stats.count > 0 ? (
-          <div className="flex items-center gap-4 mt-4 flex-wrap">
-            <div className="inline-flex items-baseline gap-2">
-              <span
-                className="font-display text-[32px] md:text-[40px] text-[var(--color-stone-900)] tracking-[-0.02em] tabular-nums"
-              >
-                {stats.average.toFixed(1)}
+          {stats.count > 0 ? (
+            <div className="mt-2 flex items-center gap-2.5 flex-wrap">
+              <span className="inline-flex items-baseline gap-1">
+                <span className="font-display font-bold text-[26px] leading-none text-[#1B4EF5] tracking-[-0.02em] tabular-nums">
+                  {stats.average.toFixed(1)}
+                </span>
+                <span className="text-[12px] text-[var(--color-stone-500)]">
+                  {dict.reviews.outOfFive}
+                </span>
               </span>
-              <span className="text-[var(--color-stone-500)] text-sm">
-                {dict.reviews.outOfFive}
+              <StarRow value={stats.average} size={14} locale={locale} />
+              <span className="text-[12.5px] text-[var(--color-stone-500)] tabular-nums">
+                {formatDictionaryString(dict.reviews.countLabel, {
+                  n: stats.count,
+                })}
               </span>
             </div>
-            <StarRow value={stats.average} size={16} locale={locale} />
-            <span className="text-[13.5px] text-[var(--color-stone-500)] tabular-nums">
-              {formatDictionaryString(dict.reviews.countLabel, {
-                n: stats.count,
-              })}
-            </span>
-          </div>
-        ) : (
-          <p className="text-[var(--color-stone-500)] mt-4 text-sm">
-            {dict.reviews.empty}
-          </p>
+          ) : (
+            <p className="mt-2 text-[13px] text-[var(--color-stone-500)]">
+              {dict.reviews.empty}
+            </p>
+          )}
+        </header>
+
+        {visible.length > 0 && (
+          <ul className="divide-y divide-[#E5E7EB]" data-testid="reviews-list">
+            {visible.map((r) => (
+              <ReviewItem
+                key={r.id}
+                review={r}
+                isFeatured={r.is_featured}
+                locale={locale}
+              />
+            ))}
+          </ul>
         )}
-      </header>
 
-      {/* ════════════════════════════════════════════════════
-          FEATURED REVIEW (varsa)
-          ════════════════════════════════════════════════════ */}
-      {featured && (
-        <article
-          className="
-            relative rounded-2xl
-            bg-[var(--color-sand-50)] border border-[var(--color-stone-100)]
-            p-6 md:p-8
-            shadow-soft
-          "
-        >
-          <span
-            className="
-              absolute top-4 right-4
-              inline-flex items-center gap-1.5
-              text-[10.5px] tracking-[0.18em] uppercase font-medium
-              text-[var(--color-champagne-700)]
-            "
-            aria-label={dict.reviews.featuredAriaLabel}
-          >
-            <Sparkles size={11} />
-            {dict.reviews.featuredBadge}
-          </span>
-          <Quote
-            size={28}
-            className="text-[var(--color-champagne-500)] opacity-50"
-            aria-hidden
-          />
-          <p
-            className="
-              mt-3 text-[16px] md:text-[17px] leading-[1.75]
-              text-[var(--color-stone-700)] italic
-              whitespace-pre-line
-            "
-          >
-            {featured.comment}
-          </p>
-          <div className="mt-5 flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <Avatar name={featured.guest_name} />
-              <div>
-                <p className="font-display text-[15px] text-[var(--color-stone-900)] tracking-[-0.01em]">
-                  {featured.guest_name}
-                </p>
-                {featured.created_at && (
-                  <p className="text-[11.5px] text-[var(--color-stone-400)] mt-0.5 tabular-nums">
-                    {formatDateForLocale(featured.created_at, effectiveLocale)}
-                  </p>
-                )}
-              </div>
-            </div>
-            <StarRow value={featured.rating} size={14} locale={locale} />
+        {canToggle && (
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+              className="
+                inline-flex items-center gap-1.5 h-9 px-4
+                rounded-full bg-[#1B4EF5] text-white
+                text-[13px] font-semibold
+                hover:bg-[#1640CC]
+                transition-colors motion-reduce:transition-none
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/40 focus-visible:ring-offset-2
+              "
+            >
+              {expanded ? dict.reviews.showLess : dict.reviews.showMore}
+              <ChevronDown
+                size={14}
+                aria-hidden
+                className={
+                  "transition-transform duration-200 motion-reduce:transition-none " +
+                  (expanded ? "rotate-180" : "rotate-0")
+                }
+              />
+            </button>
           </div>
-        </article>
-      )}
+        )}
+      </div>
 
       {/* ════════════════════════════════════════════════════
-          REVIEW LIST
-          ════════════════════════════════════════════════════ */}
-      {rest.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {rest.map((r) => (
-            <ReviewCard key={r.id} review={r} locale={locale} />
-          ))}
-        </div>
-      )}
-
-      {/* ════════════════════════════════════════════════════
-          FORM — accordion (default kapalı)
-          ════════════════════════════════════════════════════
-          UX: form default kapalı; "Yorum Yap" CTA görünür.
-          Tıklayınca form expand olur, tekrar tıklayınca toggle.
-          Submit logic / form state / API / validation YALNIZ
-          ReviewForm içinde — accordion sadece visibility layer'ı. */}
+          FORM — accordion (default kapalı), yorumlar bloğuyla
+          AYNI container genişliği/dili. Submit logic / form state /
+          API / validation YALNIZ ReviewForm içinde. */}
       <ReviewFormAccordion villaId={villaId} locale={locale} />
     </section>
   );
 }
+
+/* Yorumlar bloğu ve "Yorum Yap" accordion'u için ORTAK container —
+   aynı genişlik (w-full, ana içerik kolonu), border, radius, zemin. */
+const REVIEWS_BOX_CLASS =
+  "w-full rounded-[14px] border border-[#E5E7EB] bg-white px-4 md:px-5 py-4";
 
 /* ===============================================================
    📝 REVIEW FORM ACCORDION — visibility wrapper
@@ -231,40 +213,33 @@ function ReviewFormAccordion({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="space-y-4">
+    <div className={REVIEWS_BOX_CLASS} data-testid="review-form-accordion">
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
         aria-expanded={isOpen}
         className="
-          group inline-flex items-center gap-2.5
-          rounded-full border border-[var(--color-stone-200)]
-          bg-white px-5 py-2.5
-          text-[13.5px] font-medium text-[var(--color-stone-800)]
-          shadow-soft
-          hover:border-[var(--color-champagne-300)]
-          hover:text-[var(--color-stone-900)]
-          transition-colors motion-reduce:transition-none
-          focus:outline-none focus-visible:ring-2
-          focus-visible:ring-[var(--color-champagne-300)]
+          w-full flex items-center justify-between gap-3 text-left
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/30 rounded-md
         "
       >
-        <MessageSquarePlus
-          size={14}
-          className="text-[var(--color-champagne-600)]"
-          aria-hidden
-        />
-        {isOpen ? dict.reviews.formClose : dict.reviews.formOpen}
+        <span className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]">
+          {dict.reviews.formOpen}
+        </span>
         <ChevronDown
-          size={14}
+          size={18}
           aria-hidden
           className={
-            "text-[var(--color-stone-400)] transition-transform duration-200 motion-reduce:transition-none " +
+            "shrink-0 text-[var(--color-stone-700)] transition-transform duration-200 motion-reduce:transition-none " +
             (isOpen ? "rotate-180" : "rotate-0")
           }
         />
       </button>
-      {isOpen && <ReviewForm villaId={villaId} locale={locale} />}
+      {isOpen && (
+        <div className="mt-4">
+          <ReviewForm villaId={villaId} locale={locale} />
+        </div>
+      )}
     </div>
   );
 }
@@ -287,11 +262,11 @@ function Avatar({ name }: { name: string }) {
   return (
     <span
       className="
-        w-10 h-10 rounded-full
+        w-8 h-8 shrink-0 rounded-full
         bg-[var(--color-sand-100)]
         border border-[var(--color-stone-100)]
         flex items-center justify-center
-        font-display text-[14px] text-[var(--color-champagne-700)]
+        font-display text-[12px] text-[var(--color-champagne-700)]
         tracking-[-0.01em]
       "
       aria-hidden
@@ -302,53 +277,48 @@ function Avatar({ name }: { name: string }) {
 }
 
 /* ===============================================================
-   REVIEW CARD — list item
+   REVIEW ITEM — minimal liste satırı (kart/hover/renkli zemin YOK)
    =============================================================== */
-function ReviewCard({
+function ReviewItem({
   review,
+  isFeatured,
   locale,
 }: {
   review: VillaReviewPublic;
+  isFeatured: boolean;
   locale?: Locale;
 }) {
+  const dict = getDictionary(locale);
   const effectiveLocale: Locale = locale ?? "tr";
   return (
-    <article
-      className="
-        rounded-2xl bg-white border border-[var(--color-stone-100)]
-        p-5 md:p-6
-        hover:border-[var(--color-champagne-300)]
-        hover:shadow-[0_8px_20px_-12px_rgb(27_26_23/0.08)]
-        transition-colors motion-reduce:transition-none
-        flex flex-col gap-3
-      "
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <Avatar name={review.guest_name} />
-          <div className="min-w-0">
-            <p className="font-display text-[15px] text-[var(--color-stone-900)] tracking-[-0.01em] truncate">
-              {review.guest_name}
-            </p>
-            {review.created_at && (
-              <p className="text-[11.5px] text-[var(--color-stone-400)] mt-0.5 tabular-nums">
-                {formatDateForLocale(review.created_at, effectiveLocale)}
-              </p>
-            )}
-          </div>
+    <li className="py-4 flex gap-3">
+      <Avatar name={review.guest_name} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-[13.5px] font-semibold text-[#1B4EF5] truncate">
+            {review.guest_name}
+          </p>
+          <StarRow value={review.rating} size={12} locale={locale} />
+          {isFeatured && (
+            <span
+              className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[var(--color-stone-500)]"
+              aria-label={dict.reviews.featuredAriaLabel}
+            >
+              <Sparkles size={10} aria-hidden />
+              {dict.reviews.featuredBadge}
+            </span>
+          )}
         </div>
-        <StarRow value={review.rating} size={13} locale={locale} />
+        {review.created_at && (
+          <p className="mt-0.5 text-[11.5px] text-[var(--color-stone-400)] tabular-nums">
+            {formatDateForLocale(review.created_at, effectiveLocale)}
+          </p>
+        )}
+        <p className="mt-2 text-[13.5px] leading-[1.65] text-[var(--color-stone-700)] whitespace-pre-line">
+          {review.comment}
+        </p>
       </div>
-
-      <p
-        className="
-          text-[14.5px] text-[var(--color-stone-700)]
-          leading-[1.7] whitespace-pre-line
-        "
-      >
-        {review.comment}
-      </p>
-    </article>
+    </li>
   );
 }
 
@@ -368,7 +338,7 @@ function StarRow({
   const rounded = Math.round(value);
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-accent"
+      className="inline-flex items-center gap-0.5 text-[#FAD716]"
       aria-label={formatDictionaryString(dict.reviews.ratingAriaLabel, {
         value: value.toFixed(1),
       })}
