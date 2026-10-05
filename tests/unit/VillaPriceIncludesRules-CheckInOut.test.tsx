@@ -109,6 +109,16 @@ describe("CheckInOutTimes — minimal giriş/çıkış", () => {
     expect(screen.queryByText("16:00")).toBeNull();
   });
 
+  it("container: çok soft açık mavi zemin (#F5F8FF), gradient/border YOK; içerik AYNEN", () => {
+    const { container } = render(<CheckInOutTimes checkIn="16:00" checkOut="10:00" />);
+    const section = container.querySelector("section") as HTMLElement;
+    expect(section).toHaveClass("bg-[#F5F8FF]", "rounded-[14px]");
+    expect(section.className).not.toMatch(/gradient|border/);
+    expect(screen.getByRole("heading")).toHaveClass("text-[18px]", "font-bold");
+    expect(screen.getByText("16:00")).toHaveClass("text-[15px]", "font-semibold");
+    expect(container.querySelectorAll("svg.lucide-clock")).toHaveLength(2);
+  });
+
   it("DE locale etiketleri", () => {
     const dict = getDictionary("de");
     render(<CheckInOutTimes checkIn="16:00" checkOut="10:00" locale="de" />);

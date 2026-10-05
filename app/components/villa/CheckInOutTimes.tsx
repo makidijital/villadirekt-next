@@ -32,7 +32,15 @@ export default function CheckInOutTimes({ checkIn, checkOut, locale }: Props) {
   ];
 
   return (
-    <section aria-labelledby="checkinout-heading">
+    /* Çok soft, neredeyse beyaz açık mavi zemin (#F5F8FF — brand blue
+       ailesinden, belirgin DEĞİL; gradient/border YOK). Önceden zemin/
+       padding yoktu; metin kenara yapışmasın diye minimum iç boşluk +
+       yorumlar bloğuyla aynı 14px radius. İçerik (başlık, ikonlar,
+       etiketler, saatler, grid) AYNEN. */
+    <section
+      aria-labelledby="checkinout-heading"
+      className="rounded-[14px] bg-[#F5F8FF] px-4 py-4 md:px-5"
+    >
       <h2
         id="checkinout-heading"
         className="font-display font-bold text-[18px] leading-tight text-[var(--color-stone-900)] tracking-[-0.015em]"
