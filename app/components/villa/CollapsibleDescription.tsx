@@ -47,10 +47,13 @@ export default function CollapsibleDescription({
   const clamped = collapsible && !expanded;
 
   return (
-    <div className="bg-white border border-[var(--color-stone-100)] rounded-[20px] shadow-sm mt-5 p-6 md:p-7">
+    /* Minimal: kutu/arka plan/border/shadow/radius/padding YOK — düz sayfa
+       zemininde yalnız metin. Üstteki villa bilgi kartına yapışmasın diye
+       yalnız küçük bir üst boşluk (mt-3). Clamp/expand mantığı AYNEN. */
+    <div className="mt-3 p-0">
       <div
         className={
-          "villa-description text-[var(--color-stone-600)] leading-[1.75] text-[15px] " +
+          "villa-description text-[var(--color-stone-600)] leading-[1.75] text-[13px] " +
           "overflow-hidden transition-[max-height] duration-500 ease-in-out " +
           (clamped
             ? "max-h-[6.5rem] md:max-h-[10rem] [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
