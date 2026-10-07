@@ -1,5 +1,6 @@
-import Link from "next/link";
-import { Check, ChevronRight } from "lucide-react";
+import { Check } from "lucide-react";
+
+import PublicBreadcrumb from "@/app/components/ui/PublicBreadcrumb";
 
 /* ===============================================================
    🧾 ReservationCheckoutHeader — /rezervasyon/[slug] checkout başlığı
@@ -15,10 +16,11 @@ import { Check, ChevronRight } from "lucide-react";
    Tüm metinler çağıran taraftan (dictionary) gelir — hardcoded YOK.
    =============================================================== */
 
-export type CheckoutCrumb = { name: string; href?: string };
+export type { BreadcrumbItem as CheckoutCrumb } from "@/app/components/ui/PublicBreadcrumb";
+import type { BreadcrumbItem } from "@/app/components/ui/PublicBreadcrumb";
 
 type Props = {
-  breadcrumb: CheckoutCrumb[];
+  breadcrumb: BreadcrumbItem[];
   breadcrumbAriaLabel?: string;
   steps: { label: string }[];
   /** 0-based aktif adım indeksi (görsel). */
@@ -39,29 +41,8 @@ export default function ReservationCheckoutHeader({
 }: Props) {
   return (
     <header className="mb-6 md:mb-8">
-      {/* BREADCRUMB */}
-      <nav
-        aria-label={breadcrumbAriaLabel}
-        className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[12px] text-[#64708A]"
-      >
-        {breadcrumb.map((c, i) => (
-          <span key={`${c.name}-${i}`} className="inline-flex items-center gap-x-2">
-            {i > 0 && (
-              <ChevronRight size={12} aria-hidden="true" className="text-[#A3ACBD]" />
-            )}
-            {c.href ? (
-              <Link
-                href={c.href}
-                className="hover:text-[#1B4EF5] transition-colors motion-reduce:transition-none"
-              >
-                {c.name}
-              </Link>
-            ) : (
-              <span className="font-semibold text-[#0A1633]">{c.name}</span>
-            )}
-          </span>
-        ))}
-      </nav>
+      {/* BREADCRUMB — ortak PublicBreadcrumb (markup/stil AYNEN taşındı) */}
+      <PublicBreadcrumb items={breadcrumb} ariaLabel={breadcrumbAriaLabel} />
 
       <div className="mt-4 md:mt-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div className="min-w-0">

@@ -24,7 +24,7 @@
 =============================================================== */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 /* 🛡️ PHASE 10B — GERÇEK (mock'lanmamış) dictionary. Villa detay artık
    ComingSoon yerine gerçek locale metni render ediyor; assertion'lar
    TR hardcoded string yerine BU'ndan okunan gerçek EN/DE değerleriyle
@@ -1235,6 +1235,30 @@ describe.each(VILLA_DETAIL_ROUTES)(
       expect(
         screen.queryByLabelText(dict.availability.prevMonth)
       ).not.toBeInTheDocument();
+    });
+
+    it("21c) breadcrumb: Ana sayfa → Kiralık Villalar → villa adı (locale-prefixli linkler, son öğe link DEĞİL)", async () => {
+      const dict = getDictionary(locale);
+      const { default: Page } = await import(modulePath);
+      const element = await Page({
+        params: Promise.resolve({ slug: "test-villa" }),
+      });
+      const { container } = render(element);
+
+      const nav = container.querySelector('nav[aria-label="Breadcrumb"]') as HTMLElement;
+      expect(nav).toBeTruthy();
+      const home = within(nav).getByText(dict.villasArchive.breadcrumbHome);
+      const villas = within(nav).getByText(dict.villasArchive.breadcrumbCurrent);
+      expect(home.closest("a")).toHaveAttribute("href", `/${locale}`);
+      expect(villas.closest("a")).toHaveAttribute("href", `/${locale}/kiralik-villalar`);
+
+      /* Son öğe: sayfanın zaten render ettiği villa başlığı (h1 ile AYNI). */
+      const h1 = container.querySelector("h1") as HTMLElement;
+      const current = nav.querySelector('[aria-current="page"]') as HTMLElement;
+      expect(current.textContent).toBe(h1.textContent);
+      expect(current.closest("a")).toBeNull();
+      expect(current).toHaveClass("truncate");
+      expect(nav.querySelectorAll("a")).toHaveLength(2);
     });
 
     it("21b) giriş/çıkış saatleri YALNIZ 'Villa Giriş & Çıkış Saatleri' bölümünde; eski sağ-kolon kartı render edilmez", async () => {

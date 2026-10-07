@@ -45,6 +45,8 @@ import VillaFeaturesSection, {
   type TranslatedFeature,
 } from "@/app/components/villa/VillaFeaturesSection";
 import CheckInOutTimes from "@/app/components/villa/CheckInOutTimes";
+import PublicBreadcrumb from "@/app/components/ui/PublicBreadcrumb";
+import { localeHref } from "@/lib/i18n/locale-href";
 import VillaPriceIncludesAndRulesSection, {
   type TranslatedPriceInclude,
   type TranslatedRule,
@@ -175,6 +177,23 @@ export default function VillaDetailBody({
           {/* SEO — JSON-LD structured data */}
           <JsonLd data={vacationRentalLd} />
           <JsonLd data={breadcrumbLd} />
+
+          {/* 🧭 BREADCRUMB — /rezervasyon ile AYNI görsel dil (ortak
+              PublicBreadcrumb). Ana sayfa → Kiralık Villalar → villa adı
+              (sayfanın zaten render ettiği `villaTitle`). Linkler aktif
+              locale'i korur (localeHref). Mobilde tek satır + truncate. */}
+          <PublicBreadcrumb
+            singleLine
+            className="mb-4 md:mb-5"
+            items={[
+              { name: dict.villasArchive.breadcrumbHome, href: localeHref("/", locale) },
+              {
+                name: dict.villasArchive.breadcrumbCurrent,
+                href: localeHref("/kiralik-villalar", locale),
+              },
+              { name: villaTitle },
+            ]}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-10">
             {/* LEFT — ~70%: galeri + villa bilgi + içerik gövdesi */}
