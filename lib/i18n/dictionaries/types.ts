@@ -1077,11 +1077,14 @@ export type Dictionary = {
       ogDescription: string;
     };
     hero: {
+      pageEyebrow: string;
+      pageTitle: string;
       eyebrow: string;
       title: string;
       description: string;
     };
     info: {
+      whatsappCta: string;
       /** "Doğrudan ulaşın" — iletişim kartları başlığı. */
       title: string;
       socialMedia: string;
@@ -1092,6 +1095,7 @@ export type Dictionary = {
       location: string;
     };
     form: {
+      cardTitle: string;
       eyebrow: string;
       title: string;
       description: string;

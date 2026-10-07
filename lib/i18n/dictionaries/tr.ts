@@ -810,12 +810,15 @@ export const tr: Dictionary = {
         "Akdeniz villalarımız hakkında bilgi almak ve rezervasyon için bizimle iletişime geçin.",
     },
     hero: {
+      pageEyebrow: "Bize Ulaşın",
+      pageTitle: "Size Nasıl Yardımcı Olabiliriz?",
       eyebrow: "İletişim",
       title: "İletişim & Destek",
       description:
         "Sorularınız, görüşleriniz veya rezervasyon talepleriniz için bize ulaşın. Size en kısa sürede yardımcı olmaktan memnuniyet duyarız.",
     },
     info: {
+      whatsappCta: "WhatsApp'tan hızlıca ulaşın",
       title: "Doğrudan ulaşın",
       socialMedia: "Sosyal Medya",
       phone: "Telefon",
@@ -824,6 +827,7 @@ export const tr: Dictionary = {
       location: "Lokasyon",
     },
     form: {
+      cardTitle: "Mesaj Gönderin",
       eyebrow: "Mesaj",
       title: "Bir not bırakın.",
       description: "Formu doldurun; en kısa sürede size dönelim.",

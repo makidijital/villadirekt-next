@@ -20,7 +20,7 @@
 =============================================================== */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -356,22 +356,21 @@ describe("TR byte-identity — eski hardcoded metinler", () => {
    =============================================================== */
 describe("Gövde render — TR/EN/DE", () => {
   it.each(["tr", "en", "de"] as const)(
-    "15) %s: hero breadcrumb/eyebrow/başlık/açıklama kendi dilinde",
+    "15) %s: breadcrumb/eyebrow/başlık/açıklama kendi dilinde (🎨 PageHero → PublicBreadcrumb + kompakt başlık)",
     async (locale) => {
       const d = { tr, en, de }[locale];
-      await renderBody(locale);
-      expect(screen.getByTestId("hero-breadcrumb")).toHaveTextContent(
-        `${d.search.breadcrumbHome} / ${d.header.contact}`
-      );
-      expect(screen.getByTestId("hero-eyebrow")).toHaveTextContent(
-        d.contact.hero.eyebrow
-      );
-      expect(screen.getByTestId("hero-title")).toHaveTextContent(
-        d.contact.hero.title
-      );
-      expect(screen.getByTestId("hero-description")).toHaveTextContent(
-        d.contact.hero.description
-      );
+      const { container } = await renderBody(locale);
+      const nav = container.querySelector('nav[aria-label="Breadcrumb"]') as HTMLElement;
+      expect(nav).toBeTruthy();
+      expect(nav).toHaveTextContent(`${d.search.breadcrumbHome}${d.header.contact}`);
+      const home = within(nav).getByText(d.search.breadcrumbHome).closest("a");
+      expect(home).toHaveAttribute("href", locale === "tr" ? "/" : `/${locale}`);
+      expect(within(nav).getByText(d.header.contact)).toHaveAttribute("aria-current", "page");
+      expect(screen.getByText(d.contact.hero.pageEyebrow)).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 1, name: d.contact.hero.pageTitle })
+      ).toBeInTheDocument();
+      expect(screen.getByText(d.contact.hero.description)).toBeInTheDocument();
     }
   );
 
@@ -847,5 +846,87 @@ describe("SOURCE-LOCK — hardcoded TR kalmadı", () => {
       );
       expect(others.join(" ")).not.toContain("@");
     }
+  });
+});
+
+/* ===============================================================
+   🎨 UI REDESIGN — "müşteri destek merkezi" (yalnız sunum).
+   Veri/form/validation/API sözleşmesi yukarıdaki testlerle AYNEN kilitli.
+   =============================================================== */
+describe("UI redesign — /iletisim", () => {
+  it("zemin #F7F9FC; sol hızlı iletişim / sağ form (~%45/%55), mobilde tek kolon", async () => {
+    const { container } = await renderBody("tr");
+    expect(container.firstElementChild).toHaveClass("bg-[#F7F9FC]");
+    const formTitle = screen.getByRole("heading", { name: tr.contact.form.cardTitle });
+    const formCard = formTitle.closest("section") as HTMLElement;
+    expect(formCard).toHaveClass("rounded-[18px]", "border-[#E5E7EB]", "bg-white");
+    const grid = formCard.parentElement as HTMLElement;
+    expect(grid).toHaveClass("grid", "grid-cols-1", "lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1fr)]");
+    const [left, right] = Array.from(grid.children) as HTMLElement[];
+    expect(left.tagName).toBe("ASIDE");
+    expect(right).toBe(formCard);
+    /* Mobil sıra (DOM): iletişim → WhatsApp → form. */
+    expect(left).toContainElement(screen.getByText(SETTINGS.email));
+  });
+
+  it("iletişim satırları: tel / mailto / WhatsApp href'leri AYNEN; 64px+ kart, mavi ikon, taşma yok", async () => {
+    await renderBody("tr");
+    const tel = screen.getAllByRole("link").find((a) => a.getAttribute("href")?.startsWith("tel:"))!;
+    expect(tel).toHaveAttribute("href", "tel:+905551112233");
+    const mail = screen.getByText(SETTINGS.email).closest("a")!;
+    expect(mail).toHaveAttribute("href", `mailto:${SETTINGS.email}`);
+    for (const row of [tel, mail]) {
+      expect(row).toHaveClass("min-h-[64px]", "rounded-[14px]", "border-[#E5E7EB]", "min-w-0");
+      expect(row.querySelector("span.text-\\[\\#1B4EF5\\] svg")).toBeTruthy();
+    }
+    const address = screen.getByText(SETTINGS.address);
+    expect(address).toHaveClass("break-words");
+    /* Adres satırı link değil (mevcut davranış). */
+    expect(address.closest("a")).toBeNull();
+  });
+
+  it.each(["tr", "en", "de"] as const)(
+    "%s: WhatsApp CTA — mevcut whatsapp_link, #00A86B, yeni sekme",
+    async (locale) => {
+      const d = { tr, en, de }[locale];
+      await renderBody(locale);
+      const cta = screen.getByText(d.contact.info.whatsappCta).closest("a")!;
+      expect(cta).toHaveAttribute("href", SETTINGS.whatsapp_link);
+      expect(cta).toHaveAttribute("target", "_blank");
+      expect(cta).toHaveClass("bg-[#00A86B]", "h-[50px]", "w-full");
+    }
+  );
+
+  it("form kartı: 'Mesaj Gönderin' + mevcut açıklama; tüm alanlar korunur; input 50px / 13px / #DDE3EC", async () => {
+    await renderBody("tr");
+    const f = tr.contact.form;
+    expect(screen.getByText(f.description)).toBeInTheDocument();
+    for (const ph of [f.namePlaceholder, f.phonePlaceholder, f.emailPlaceholder]) {
+      expect(screen.getByPlaceholderText(ph)).toHaveClass(
+        "h-[50px]", "text-[13px]", "rounded-[12px]", "border-[#DDE3EC]", "focus:border-[#1B4EF5]"
+      );
+    }
+    const ta = screen.getByPlaceholderText(f.messagePlaceholder);
+    expect(ta.tagName).toBe("TEXTAREA");
+    expect(ta).toHaveClass("min-h-[130px]", "resize-none");
+    /* Honeypot alanı DURUYOR. */
+    expect(document.querySelector('input[name="website"]')).toBeTruthy();
+    const btn = screen.getByText(f.submit).closest("button")!;
+    expect(btn).toHaveAttribute("type", "submit");
+    expect(btn).toHaveClass("w-full", "h-[52px]", "bg-[#1B4EF5]", "rounded-[12px]", "font-semibold");
+  });
+
+  it("harita / SSS / CTA korunur; CTA gradient/glow içermez", async () => {
+    const { container } = await renderBody("en");
+    const iframe = screen.getByTitle(en.contact.map.iframeTitle);
+    expect(iframe.getAttribute("src")).toContain(encodeURIComponent(SETTINGS.address));
+    expect(iframe.parentElement).toHaveClass("rounded-2xl", "overflow-hidden", "border-[#E5E7EB]");
+    expect(screen.getByRole("link", { name: en.contact.cta.button })).toHaveAttribute("href", "/en/arama");
+    expect(container.innerHTML).not.toMatch(/gradient|blur-\[/);
+  });
+
+  it("JSON-LD (breadcrumb + organization) hâlâ render edilir", async () => {
+    const { container } = await renderBody("tr");
+    expect(container.querySelectorAll('script[type="application/ld+json"]').length).toBe(2);
   });
 });

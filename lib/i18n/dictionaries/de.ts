@@ -796,12 +796,15 @@ export const de: Dictionary = {
         "Kontaktieren Sie uns für Informationen zu unseren mediterranen Villen und für Ihre Buchung.",
     },
     hero: {
+      pageEyebrow: "Kontakt aufnehmen",
+      pageTitle: "Wie können wir Ihnen helfen?",
       eyebrow: "Kontakt",
       title: "Kontakt & Support",
       description:
         "Melden Sie sich mit Ihren Fragen, Anregungen oder Buchungsanfragen. Wir helfen Ihnen gerne so schnell wie möglich weiter.",
     },
     info: {
+      whatsappCta: "Schnell per WhatsApp erreichen",
       title: "Direkt erreichen",
       socialMedia: "Soziale Medien",
       phone: "Telefon",
@@ -810,6 +813,7 @@ export const de: Dictionary = {
       location: "Standort",
     },
     form: {
+      cardTitle: "Senden Sie uns eine Nachricht",
       eyebrow: "Nachricht",
       title: "Hinterlassen Sie uns eine Nachricht.",
       description:

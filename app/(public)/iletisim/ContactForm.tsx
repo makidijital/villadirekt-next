@@ -147,7 +147,7 @@ export default function ContactForm({
   const disabled = status === "pending" || status === "success";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* HONEYPOT — gerçek kullanıcı görmez (tabindex=-1 + aria-hidden) */}
       <div
         aria-hidden="true"
@@ -194,8 +194,8 @@ export default function ContactForm({
         onChange={setEmail}
         disabled={disabled}
       />
-      <div className="space-y-2">
-        <label className="text-[11px] tracking-[0.18em] uppercase font-medium text-[var(--color-stone-500)] block">
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64708A] block">
           {dict.messageLabel}
         </label>
         <textarea
@@ -205,32 +205,32 @@ export default function ContactForm({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           disabled={disabled}
-          className="w-full px-4 py-3.5 rounded-2xl border border-[var(--color-stone-200)] bg-white/70 backdrop-blur-sm text-[15px] text-[var(--color-stone-900)] placeholder:text-[var(--color-stone-400)] focus:outline-none focus:border-[var(--color-champagne-500)] focus:ring-4 focus:ring-[var(--color-champagne-500)]/15 focus:bg-white transition leading-relaxed resize-none disabled:opacity-60"
+          className="w-full min-h-[130px] px-4 py-3 rounded-[12px] border border-[#DDE3EC] bg-white text-[13px] text-[#0A1633] placeholder:text-[#8A93A6] hover:border-[#B9C3D3] focus:outline-none focus:border-[#1B4EF5] focus:ring-4 focus:ring-[#1B4EF5]/10 transition-[border-color,box-shadow] leading-relaxed resize-none disabled:opacity-60"
         />
       </div>
 
       {/* ERROR / SUCCESS bar (subtle, premium) */}
       {status === "error" && errorMsg && (
-        <div className="flex items-start gap-2.5 text-[13px] text-red-700 bg-red-50/70 border border-red-100 rounded-2xl px-4 py-3.5">
+        <div className="flex items-start gap-2.5 text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-[12px] px-4 py-3">
           <AlertCircle size={15} className="mt-0.5 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
       {status === "success" && (
-        <div className="flex items-start gap-2.5 text-[13px] text-[var(--color-stone-700)] bg-[var(--color-sand-50)]/80 border border-[var(--color-stone-100)] rounded-2xl px-4 py-3.5">
+        <div className="flex items-start gap-2.5 text-[13px] text-[#0A1633] bg-[#E6F6EF] border border-[#BFE8D5] rounded-[12px] px-4 py-3">
           <Check
             size={15}
-            className="mt-0.5 shrink-0 text-[var(--color-champagne-700)]"
+            className="mt-0.5 shrink-0 text-[#00A86B]"
           />
           <span>{dict.success}</span>
         </div>
       )}
 
-      <div className="pt-2">
+      <div className="pt-1">
         <button
           type="submit"
           disabled={disabled}
-          className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-7 py-3.5 rounded-full bg-[var(--color-stone-900)] text-white text-[13.5px] font-medium tracking-[0.04em] hover:bg-[var(--color-stone-700)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-18px_rgba(27,26,23,0.5)] disabled:opacity-70 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
+          className="inline-flex w-full justify-center items-center gap-2 h-[52px] px-6 rounded-[12px] bg-[#1B4EF5] text-white text-[14px] font-semibold shadow-[0_6px_16px_-8px_rgba(27,78,245,0.55)] hover:bg-[#1640CC] hover:-translate-y-px transition-[background-color,transform,box-shadow] duration-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/40 focus-visible:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
         >
           {status === "success" ? (
             <>
@@ -244,7 +244,7 @@ export default function ContactForm({
             </>
           )}
         </button>
-        <p className="text-[11.5px] text-[var(--color-stone-400)] mt-4 leading-relaxed">
+        <p className="text-[11.5px] text-[#8A93A6] mt-3 leading-relaxed text-center">
           {dict.privacy}
         </p>
       </div>
@@ -270,8 +270,8 @@ function Field({
   disabled?: boolean;
 }) {
   return (
-    <div className="space-y-2">
-      <label className="text-[11px] tracking-[0.18em] uppercase font-medium text-[var(--color-stone-500)] block">
+    <div className="space-y-1.5">
+      <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64708A] block">
         {label}
       </label>
       <input
@@ -281,7 +281,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full px-4 py-3.5 rounded-2xl border border-[var(--color-stone-200)] bg-white/70 backdrop-blur-sm text-[15px] text-[var(--color-stone-900)] placeholder:text-[var(--color-stone-400)] focus:outline-none focus:border-[var(--color-champagne-500)] focus:ring-4 focus:ring-[var(--color-champagne-500)]/15 focus:bg-white transition disabled:opacity-60"
+        className="w-full h-[50px] px-4 rounded-[12px] border border-[#DDE3EC] bg-white text-[13px] text-[#0A1633] placeholder:text-[#8A93A6] hover:border-[#B9C3D3] focus:outline-none focus:border-[#1B4EF5] focus:ring-4 focus:ring-[#1B4EF5]/10 transition-[border-color,box-shadow] disabled:opacity-60"
       />
     </div>
   );

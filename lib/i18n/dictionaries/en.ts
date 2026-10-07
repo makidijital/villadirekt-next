@@ -789,12 +789,15 @@ export const en: Dictionary = {
         "Get in touch for information about our Mediterranean villas and to make a reservation.",
     },
     hero: {
+      pageEyebrow: "Get in Touch",
+      pageTitle: "How Can We Help You?",
       eyebrow: "Contact",
       title: "Contact & Support",
       description:
         "Reach out with your questions, feedback or reservation requests. We will be glad to help you as soon as possible.",
     },
     info: {
+      whatsappCta: "Reach us quickly on WhatsApp",
       title: "Reach us directly",
       socialMedia: "Social Media",
       phone: "Phone",
@@ -803,6 +806,7 @@ export const en: Dictionary = {
       location: "Location",
     },
     form: {
+      cardTitle: "Send Us a Message",
       eyebrow: "Message",
       title: "Leave us a note.",
       description: "Fill in the form and we will get back to you shortly.",

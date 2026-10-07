@@ -18,7 +18,7 @@ import {
   buildBreadcrumb,
   buildOrganization,
 } from "@/app/components/seo/StructuredData";
-import PageHero from "@/app/components/ui/PageHero";
+import PublicBreadcrumb from "@/app/components/ui/PublicBreadcrumb";
 import ContactForm from "@/app/(public)/iletisim/ContactForm";
 
 /* 🛡️ PUBLIC İLETİŞİM ÇOKLU DİL — `/kiralik-villalar` (KiralikVillalarPageBody)
@@ -100,31 +100,31 @@ export default async function ContactPageBody({
   const contactRows: Row[] = (
     [
       phone && {
-        icon: <Phone size={17} />,
+        icon: <Phone size={16} />,
         label: dict.info.phone,
         value: phone,
         href: `tel:${phone.replace(/\s/g, "")}`,
       },
       whatsappLink && {
-        icon: <MessageCircle size={17} />,
+        icon: <MessageCircle size={16} />,
         label: "WhatsApp",
         value: phone || whatsappLink,
         href: whatsappLink,
         external: true,
       },
       email && {
-        icon: <Mail size={17} />,
+        icon: <Mail size={16} />,
         label: dict.info.email,
         value: email,
         href: `mailto:${email}`,
       },
       businessHours && {
-        icon: <Clock size={17} />,
+        icon: <Clock size={16} />,
         label: dict.info.businessHours,
         value: businessHours,
       },
       address && {
-        icon: <MapPin size={17} />,
+        icon: <MapPin size={16} />,
         label: dict.info.location,
         value: address,
       },
@@ -135,28 +135,28 @@ export default async function ContactPageBody({
   const socialRows: Row[] = (
     [
       instagram && {
-        icon: <AtSign size={17} />,
+        icon: <AtSign size={16} />,
         label: "Instagram",
         value: extractHandle(instagram) || instagram,
         href: instagram,
         external: true,
       },
       facebook && {
-        icon: <Globe size={17} />,
+        icon: <Globe size={16} />,
         label: "Facebook",
         value: extractHandle(facebook) || facebook,
         href: facebook,
         external: true,
       },
       youtube && {
-        icon: <Tv size={17} />,
+        icon: <Tv size={16} />,
         label: "YouTube",
         value: extractHandle(youtube) || youtube,
         href: youtube,
         external: true,
       },
       tiktok && {
-        icon: <Music2 size={17} />,
+        icon: <Music2 size={16} />,
         label: "TikTok",
         value: extractHandle(tiktok) || tiktok,
         href: tiktok,
@@ -191,153 +191,147 @@ export default async function ContactPageBody({
     sameAs: [instagram, facebook, youtube, tiktok],
   });
 
+  /* 🎨 UI REDESIGN — "müşteri destek merkezi": #F7F9FC zemin, ortak
+     PublicBreadcrumb, kompakt başlık, sol hızlı iletişim / sağ form
+     (~%45 / %55), harita + SSS + CTA aynı sırada ve aynı veriyle.
+     Veri (settings), satır koşulları, href'ler, JSON-LD ve form akışı
+     BİREBİR AYNI — yalnız JSX/className değişti. */
   return (
-    <>
+    <div className="bg-[#F7F9FC]">
       <JsonLd data={breadcrumbLd} />
       <JsonLd data={organizationLd} />
 
-      {/* HERO — paylaşılan PageHero (kompakt editorial band) */}
-      <PageHero
-        breadcrumb={[
-          { name: breadcrumbHome, href: localeHref("/", locale) },
-          { name: breadcrumbCurrent },
-        ]}
-        eyebrow={dict.hero.eyebrow}
-        title={dict.hero.title}
-        description={dict.hero.description}
-      />
+      <div className="section-narrow pt-6 md:pt-10 pb-16 md:pb-24">
+        <PublicBreadcrumb
+          className="mb-6 md:mb-8"
+          items={[
+            { name: breadcrumbHome, href: localeHref("/", locale) },
+            { name: breadcrumbCurrent },
+          ]}
+        />
 
-      {/* ============================================================
-          CONTACT EXPERIENCE — dekoratif gradient + glass form
-      ============================================================ */}
-      <div className="relative overflow-hidden bg-white ">
-        {/* DECOR — hafif gradient blur küreler (pointer-events yok) */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0"
-        >
-          <div className="absolute -top-40 -right-24 w-[560px] h-[560px] rounded-full bg-[var(--brand-coral)]/10 blur-[130px]" />
-          <div className="absolute top-1/3 -left-44 w-[520px] h-[520px] rounded-full bg-[var(--color-champagne-500)]/15 blur-[130px]" />
-          <div className="absolute bottom-10 right-1/4 w-[440px] h-[440px] rounded-full bg-[var(--color-sand-100)]/60 blur-[110px]" />
-        </div>
+        {/* HEADER — kompakt */}
+        <header className="max-w-2xl">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#1B4EF5]">
+            {dict.hero.pageEyebrow}
+          </p>
+          <h1 className="mt-2 font-display font-bold text-[28px] md:text-[34px] leading-tight tracking-[-0.02em] text-[#0A1633]">
+            {dict.hero.pageTitle}
+          </h1>
+          <p className="mt-2.5 text-[13.5px] md:text-[14.5px] leading-relaxed text-[#5B6478]">
+            {dict.hero.description}
+          </p>
+        </header>
 
-        <div className="relative z-10">
-
-          {/* GRID — sol iletişim/sosyal, sağ glass form */}
-          <section className="px-5 md:px-10 lg:px-16 pt-12 md:pt-16 pb-24 md:pb-32">
-            <div className="site-container">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-                {/* LEFT — bilgi + sosyal kartlar */}
-                <aside className="lg:col-span-5 space-y-8">
-                  {hasContactRows && (
-                    <div>
-                      <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)] mb-5">
-                        <span className="inline-block w-6 h-px bg-[var(--color-stone-300)] align-middle mr-2" />
-                        {dict.info.title}
-                      </p>
-                      <div className="space-y-3">
-                        {contactRows.map((r, i) => (
-                          <InfoRow key={`c-${i}`} {...r} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {hasSocialRows && (
-                    <div>
-                      <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)] mb-5">
-                        <span className="inline-block w-6 h-px bg-[var(--color-stone-300)] align-middle mr-2" />
-                        {dict.info.socialMedia}
-                      </p>
-                      <div className="space-y-3">
-                        {socialRows.map((r, i) => (
-                          <InfoRow key={`s-${i}`} {...r} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </aside>
-
-                {/* RIGHT — glass form kartı */}
-                <div className="lg:col-span-7">
-                  <div className="relative rounded-[28px] border border-white/70 bg-white/60 backdrop-blur-xl shadow-[0_28px_80px_-32px_rgba(27,26,23,0.28)] p-6 md:p-10">
-                    {/* iç parıltı */}
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/25 "
-                    />
-                    <div className="mb-7 md:mb-9">
-                      <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-champagne-700)]">
-                        <span className="inline-block w-6 h-px bg-[var(--color-champagne-500)]/60 align-middle mr-2" />
-                        {dict.form.eyebrow}
-                      </p>
-                      <h2 className="font-display text-[28px] md:text-[38px] text-[var(--color-stone-900)] mt-4 leading-[1.08] tracking-[-0.025em]">
-                        {dict.form.title}
-                      </h2>
-                      <p className="text-[14px] text-[var(--color-stone-500)] mt-3 leading-relaxed">
-                        {dict.form.description}
-                      </p>
-                    </div>
-                    <ContactForm locale={locale} />
-                  </div>
+        {/* ANA LAYOUT — sol hızlı iletişim (~%45) / sağ form (~%55) */}
+        <div className="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1fr)] gap-5 lg:gap-7 items-start">
+          <aside className="min-w-0 space-y-5">
+            {hasContactRows && (
+              <section aria-labelledby="contact-info-title">
+                <h2
+                  id="contact-info-title"
+                  className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#64708A]"
+                >
+                  {dict.info.title}
+                </h2>
+                <div className="space-y-2.5">
+                  {contactRows.map((r, i) => (
+                    <InfoRow key={`c-${i}`} {...r} />
+                  ))}
                 </div>
-              </div>
-            </div>
+              </section>
+            )}
+
+            {/* WHATSAPP CTA — mevcut whatsapp_link (satırla AYNI href) */}
+            {whatsappLink && (
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center gap-2 h-[50px] rounded-[12px] bg-[#00A86B] px-5 text-[14px] font-semibold text-white hover:bg-[#009160] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A86B]/40"
+              >
+                <MessageCircle size={17} strokeWidth={1.9} aria-hidden="true" />
+                {dict.info.whatsappCta}
+              </a>
+            )}
+
+            {hasSocialRows && (
+              <section aria-labelledby="contact-social-title">
+                <h2
+                  id="contact-social-title"
+                  className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#64708A]"
+                >
+                  {dict.info.socialMedia}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5">
+                  {socialRows.map((r, i) => (
+                    <InfoRow key={`s-${i}`} {...r} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </aside>
+
+          {/* FORM KARTI */}
+          <section
+            aria-labelledby="contact-form-title"
+            className="min-w-0 rounded-[18px] border border-[#E5E7EB] bg-white shadow-[0_10px_30px_-20px_rgba(10,22,51,0.2)] p-5 md:p-7"
+          >
+            <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#8A93A6]">
+              {dict.form.eyebrow}
+            </p>
+            <h2
+              id="contact-form-title"
+              className="mt-1 font-display font-bold text-[20px] md:text-[22px] leading-tight tracking-[-0.015em] text-[#0A1633]"
+            >
+              {dict.form.cardTitle}
+            </h2>
+            <p className="mt-1.5 mb-5 md:mb-6 text-[13px] leading-relaxed text-[#64708A]">
+              {dict.form.description}
+            </p>
+            <ContactForm locale={locale} />
           </section>
         </div>
-      </div>
 
-      {/* ============================================================
-          MAP — modern container
-      ============================================================ */}
-      <section className="px-5 md:px-10 lg:px-16 pb-24 md:pb-32">
-        <div className="site-container">
-          <div className="flex items-end justify-between gap-6 mb-8 md:mb-12">
-            <div>
-              <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)]">
-                <span className="inline-block w-6 h-px bg-[var(--color-stone-300)] align-middle mr-2" />
-                {dict.map.eyebrow}
-              </p>
-              <h2 className="font-display text-[28px] md:text-[42px] lg:text-[50px] text-[var(--color-stone-900)] mt-4 leading-[1.05] tracking-[-0.02em]">
-                {dict.map.title}
-              </h2>
-            </div>
+        {/* HARİTA — mevcut iframe/src mantığı AYNEN */}
+        <section className="mt-10 md:mt-14" aria-labelledby="contact-map-title">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#1B4EF5]">
+            {dict.map.eyebrow}
+          </p>
+          <h2
+            id="contact-map-title"
+            className="mt-1.5 mb-4 font-display font-bold text-[20px] md:text-[22px] leading-tight tracking-[-0.015em] text-[#0A1633]"
+          >
+            {dict.map.title}
+          </h2>
+          <div className="relative aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/8] rounded-2xl overflow-hidden border border-[#E5E7EB] bg-white">
+            <iframe
+              title={dict.map.iframeTitle}
+              src={
+                address
+                  ? `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=11&output=embed`
+                  : "https://www.google.com/maps?q=Kalkan%2C+Kas%2C+Antalya&z=11&output=embed"
+              }
+              className="absolute inset-0 w-full h-full"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
           </div>
-          <div className="relative rounded-[28px] p-1.5 bg-[var(--color-sand-100)] border border-[var(--color-stone-100)] shadow-[0_28px_80px_-40px_rgba(27,26,23,0.3)]">
-            <div className="relative aspect-[16/10] md:aspect-[21/9] rounded-[22px] overflow-hidden bg-[var(--color-sand-50)]">
-              <iframe
-                title={dict.map.iframeTitle}
-                src={
-                  address
-                    ? `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=11&output=embed`
-                    : "https://www.google.com/maps?q=Kalkan%2C+Kas%2C+Antalya&z=11&output=embed"
-                }
-                className="absolute inset-0 w-full h-full"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ============================================================
-          FAQ — yeniden tasarım (numaralı premium kartlar)
-      ============================================================ */}
-      <section className="px-5 md:px-10 lg:px-16 pb-24 md:pb-32">
-        <div className="site-container">
-          <div className="mb-12 md:mb-16">
-            <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)]">
-              <span className="inline-block w-6 h-px bg-[var(--color-stone-300)] align-middle mr-2" />
-              {dict.faq.eyebrow}
-            </p>
-            <h2 className="font-display text-[32px] md:text-[48px] lg:text-[54px] text-[var(--color-stone-900)] mt-6 leading-[1.03] tracking-[-0.025em] max-w-xl">
-              {dict.faq.title}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+        {/* SSS — mevcut 3 madde AYNEN */}
+        <section className="mt-10 md:mt-14" aria-labelledby="contact-faq-title">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#1B4EF5]">
+            {dict.faq.eyebrow}
+          </p>
+          <h2
+            id="contact-faq-title"
+            className="mt-1.5 mb-4 font-display font-bold text-[20px] md:text-[22px] leading-tight tracking-[-0.015em] text-[#0A1633]"
+          >
+            {dict.faq.title}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <FaqBlock
               index="01"
               q={dict.faq.items.responseTime.question}
@@ -354,46 +348,33 @@ export default async function ContactPageBody({
               a={dict.faq.items.customOffer.answer}
             />
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ============================================================
-          CTA — yeniden tasarım (premium koyu panel + coral aksan)
-      ============================================================ */}
-      <section className="px-5 md:px-10 lg:px-16 pb-32 md:pb-44">
-        <div className="site-container">
-          <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-brand px-8 md:px-16 py-16 md:py-24 text-center shadow-[0_40px_100px_-40px_rgba(0,0,0,0.6)]">
-            {/* dekoratif coral glow */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[320px] rounded-full bg-accent/20 blur-[120px]"
-            />
-            <div className="relative">
-              <p className="inline-flex items-center gap-2 text-[11px] tracking-[0.28em] uppercase font-medium text-accent">
-                <span className="inline-block w-6 h-px bg-accent/60" />
+        {/* CTA — sade navy panel (gradient/glow YOK), link AYNEN */}
+        <section className="mt-10 md:mt-14">
+          <div className="rounded-[18px] bg-[#0A1633] px-6 py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-8">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#FAD716]">
                 {dict.cta.eyebrow}
               </p>
-              <h2 className="font-display text-[32px] md:text-[54px] lg:text-[60px] text-white mt-6 leading-[1.03] tracking-[-0.03em]">
-                {dict.cta.titleLead}
-                <br />
-                <span className="text-white/50">{dict.cta.titleAccent}</span>
+              <h2 className="mt-2 font-display font-bold text-[22px] md:text-[26px] leading-tight tracking-[-0.02em] text-white">
+                {dict.cta.titleLead}{" "}
+                <span className="text-white/60">{dict.cta.titleAccent}</span>
               </h2>
-              <p className="text-white/70 mt-6 leading-relaxed max-w-xl mx-auto">
+              <p className="mt-2 max-w-xl text-[13px] md:text-[14px] leading-relaxed text-white/70">
                 {dict.cta.description}
               </p>
-              <div className="mt-10">
-                <Link
-                  href={localeHref("/arama", locale)}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[var(--color-stone-900)] text-[13.5px] font-medium tracking-[0.04em] hover:bg-white/90 transition-colors shadow-[0_18px_40px_-18px_rgba(0,0,0,0.5)]"
-                >
-                  {dict.cta.button} <ArrowUpRight size={14} />
-                </Link>
-              </div>
             </div>
+            <Link
+              href={localeHref("/arama", locale)}
+              className="shrink-0 inline-flex items-center justify-center gap-2 h-[50px] px-6 rounded-[12px] bg-white text-[14px] font-semibold text-[#0A1633] hover:bg-[#EEF3FF] transition-colors motion-reduce:transition-none"
+            >
+              {dict.cta.button} <ArrowUpRight size={15} />
+            </Link>
           </div>
-        </div>
-      </section>
-    </>
+        </section>
+      </div>
+    </div>
   );
 }
 
@@ -427,30 +408,32 @@ function InfoRow({
     <Wrapper
       {...linkProps}
       className={
-        "group relative flex items-center gap-4 rounded-2xl border border-[var(--color-stone-100)] bg-white/70 backdrop-blur-sm px-4 py-4 transition-all duration-300 motion-reduce:transition-none " +
+        "group flex items-center gap-3 min-h-[64px] rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-3 min-w-0 transition-[border-color,transform,box-shadow] duration-200 motion-reduce:transition-none " +
         (isLink
-          ? "hover:-translate-y-0.5 hover:border-[var(--color-champagne-500)]/40 hover:shadow-[0_18px_44px_-22px_rgba(27,26,23,0.28)] hover:bg-white"
+          ? "hover:border-[#1B4EF5]/40 hover:-translate-y-px hover:shadow-[0_6px_16px_-10px_rgba(27,78,245,0.35)] motion-reduce:hover:translate-y-0"
           : "")
       }
     >
-      <span className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[var(--color-sand-100)] ring-1 ring-[var(--color-stone-100)] text-[var(--color-champagne-700)] transition-colors duration-300 group-hover:bg-brand group-hover:text-white group-hover:ring-transparent">
+      <span
+        aria-hidden="true"
+        className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-[10px] bg-[#EEF3FF] text-[#1B4EF5]"
+      >
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10.5px] tracking-[0.22em] uppercase font-medium text-[var(--color-stone-500)]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64708A]">
           {label}
         </p>
-        <p className="text-[15px] md:text-[15.5px] text-[var(--color-stone-900)] mt-1 leading-[1.4] break-words whitespace-pre-line">
+        <p className="mt-0.5 text-[13px] font-medium leading-[1.45] text-[#0A1633] break-words [overflow-wrap:anywhere] whitespace-pre-line">
           {value}
         </p>
       </div>
       {isLink ? (
-        <span
+        <ArrowUpRight
+          size={15}
           aria-hidden="true"
-          className="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full border border-[var(--color-stone-200)] text-[var(--color-stone-400)] transition-all duration-300 group-hover:border-[var(--color-champagne-500)] group-hover:text-[var(--color-champagne-700)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-        >
-          <ArrowUpRight size={13} />
-        </span>
+          className="shrink-0 text-[#A3ACBD] transition-colors group-hover:text-[#1B4EF5]"
+        />
       ) : null}
     </Wrapper>
   );
@@ -467,16 +450,14 @@ function FaqBlock({
   a: string;
 }) {
   return (
-    <div className="group rounded-3xl border border-[var(--color-stone-100)] bg-white/70 backdrop-blur-sm p-6 md:p-7 transition-all duration-300 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-[0_22px_50px_-26px_rgba(27,26,23,0.25)] hover:border-[var(--color-champagne-500)]/30">
-      <span className="font-display text-[15px] text-[var(--color-champagne-700)] tabular-nums">
+    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5">
+      <span className="font-display font-bold text-[12px] text-[#1B4EF5] tabular-nums">
         {index}
       </span>
-      <h3 className="font-display text-[19px] md:text-[21px] text-[var(--color-stone-900)] mt-3 leading-[1.25] tracking-[-0.01em]">
+      <h3 className="mt-1.5 font-display font-bold text-[15px] leading-snug text-[#0A1633]">
         {q}
       </h3>
-      <p className="text-[14px] md:text-[14.5px] leading-[1.7] text-[var(--color-stone-500)] mt-4">
-        {a}
-      </p>
+      <p className="mt-2 text-[13px] leading-[1.65] text-[#5B6478]">{a}</p>
     </div>
   );
 }
