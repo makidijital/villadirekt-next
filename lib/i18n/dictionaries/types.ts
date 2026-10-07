@@ -1027,6 +1027,14 @@ export type Dictionary = {
       dateRequired: string;
     };
     success: {
+      summaryTitle: string;
+      nextStepTitle: string;
+      trustSaved: string;
+      trustContact: string;
+      trustWhatsapp: string;
+      phoneLabel: string;
+      copyRef: string;
+      copiedRef: string;
       metaTitle: string;
       eyebrow: string;
       title: string;

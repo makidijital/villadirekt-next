@@ -1,5 +1,17 @@
 import Link from "next/link";
-import { CheckCircle2, Home, MessageCircle, ArrowLeft } from "lucide-react";
+import {
+  CheckCircle2,
+  Check,
+  Home,
+  MessageCircle,
+  ArrowLeft,
+  Phone,
+  ClipboardCheck,
+  ArrowRight,
+} from "lucide-react";
+
+import PublicBreadcrumb from "@/app/components/ui/PublicBreadcrumb";
+import CopyReferenceButton from "@/app/components/reservation/CopyReferenceButton";
 
 import { getCachedSettings } from "@/lib/cache.helpers";
 
@@ -45,7 +57,8 @@ export default async function ReservationSuccessBody({
   locale = DEFAULT_LOCALE,
 }: Props) {
   const sp = (await searchParams) || {};
-  const dict = getDictionary(locale).reservation.success;
+  const dictionary = getDictionary(locale);
+  const dict = dictionary.reservation.success;
 
   /* 🛡️ TR'de prefix YOK → href'ler BİREBİR eskisi gibi ("/",
      "/kiralik-villa/<slug>"). EN/DE'de mevcut gerçek route'lara
@@ -70,161 +83,172 @@ export default async function ReservationSuccessBody({
     settings?.whatsapp_link?.trim() ||
     (phoneDigits ? `https://wa.me/${phoneDigits}` : null);
 
+  /* Telefon — WhatsApp ile AYNI settings kaynağı (yeni veri YOK). */
+  const phoneDisplay = (settings?.phone || "").trim();
+  /* tel: deseni villa detay CTA ile AYNI (`tel:${phone.trim()}`). */
+  const phoneHref = phoneDisplay ? `tel:${phoneDisplay}` : null;
+
+  /* 🎨 UI REDESIGN — /rezervasyon checkout ile AYNI dil: #F7F9FC zemin,
+     ortak PublicBreadcrumb, beyaz kartlar. ref / villa / WhatsApp /
+     ana sayfa / villa detay href'leri ve koşulları BİREBİR AYNI. */
+  const homeHref = localePrefix === "" ? "/" : localePrefix;
+
   return (
-    <section
-      className="
-        min-h-[70vh]
-        flex items-center justify-center
-        px-5 md:px-10 py-16 md:py-24
-      "
-    >
-      <div className="max-w-2xl w-full text-center">
-        {/* Yeşil check ikonu — luxury success badge */}
-        <div className="flex justify-center mb-7 md:mb-9">
+    <div className="bg-[#F7F9FC]">
+      <div className="section-narrow pt-6 md:pt-10 pb-16 md:pb-24">
+        {/* Villa adı bu sayfada bilinmiyor (yalnız slug) → yeni veri
+            çekilmez; breadcrumb: Ana sayfa → Rezervasyon. */}
+        <PublicBreadcrumb
+          className="mb-6 md:mb-8"
+          items={[
+            { name: dictionary.search.breadcrumbHome, href: homeHref },
+            { name: dictionary.reservation.page.breadcrumbCurrent },
+          ]}
+        />
+
+        {/* SUCCESS HEADER */}
+        <header className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
           <div
-            className="
-              w-24 h-24 md:w-28 md:h-28 rounded-full
-              bg-emerald-50
-              ring-2 ring-emerald-100
-              flex items-center justify-center
-              text-emerald-600
-              shadow-[0_20px_44px_-16px_rgba(16,185,129,0.28)]
-            "
             aria-hidden
+            className="flex h-12 w-12 md:h-14 md:w-14 shrink-0 items-center justify-center rounded-full bg-[#E6F6EF] text-[#00A86B]"
           >
-            <CheckCircle2 size={56} strokeWidth={1.5} />
+            <CheckCircle2 size={28} strokeWidth={1.9} className="md:hidden" />
+            <CheckCircle2 size={32} strokeWidth={1.9} className="hidden md:block" />
           </div>
-        </div>
-
-        {/* Eyebrow */}
-        <p className="text-[10.5px] tracking-[0.28em] uppercase font-medium text-[var(--brand-coral)]">
-          {dict.eyebrow}
-        </p>
-
-        {/* Başlık */}
-        <h1
-          className="
-            font-display
-            text-[32px] md:text-[44px]
-            text-[var(--color-stone-900)]
-            mt-4
-            tracking-[-0.02em]
-            leading-[1.05]
-          "
-        >
-          {dict.title}
-        </h1>
-
-        {/* Açıklama */}
-        <p
-          className="
-            text-[15px] md:text-[16.5px]
-            text-[var(--color-stone-600)]
-            mt-5 md:mt-6
-            max-w-xl mx-auto
-            leading-[1.75]
-          "
-        >
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#00A86B]">
+              {dict.eyebrow}
+            </p>
+            <h1 className="mt-1 font-display font-bold text-[26px] md:text-[32px] leading-tight tracking-[-0.02em] text-[#0A1633]">
+              {dict.title}
+            </h1>
+          </div>
+        </header>
+        <p className="mt-3 md:mt-4 max-w-2xl text-[13.5px] md:text-[14.5px] leading-relaxed text-[#5B6478]">
           {dict.description}
         </p>
 
-        {/* Referans kartı — yalnız ref varsa render */}
-        {refNumber && (
-          <div
-            className="
-              mt-8 md:mt-10
-              inline-flex flex-col items-center
-              rounded-2xl
-              border border-[var(--color-stone-100)]
-              bg-[var(--color-sand-50)]
-              px-6 py-4 md:px-8 md:py-5
-            "
-          >
-            <p className="text-[10.5px] tracking-[0.22em] uppercase font-medium text-[var(--color-stone-500)]">
-              {dict.referenceLabel}
-            </p>
-            <p
-              className="
-                font-display text-[18px] md:text-[20px]
-                text-[var(--color-stone-900)]
-                mt-2 tracking-[-0.01em]
-                select-all break-all
-              "
-              style={{ fontVariantNumeric: "tabular-nums" }}
-            >
-              {refNumber}
-            </p>
-            <p className="text-[11.5px] text-[var(--color-stone-500)] mt-2 max-w-xs">
-              {dict.referenceHint}
-            </p>
-          </div>
-        )}
-
-        {/* Aksiyon butonları */}
+        {/* ANA İÇERİK — sol özet / sağ sonraki adım */}
         <div
-          className="
-            mt-10 md:mt-12
-            flex flex-col sm:flex-row items-stretch sm:items-center justify-center
-            gap-3
-          "
+          className={
+            "mt-6 md:mt-8 grid grid-cols-1 gap-4 md:gap-5 items-start " +
+            (refNumber ? "lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]" : "")
+          }
         >
+          {/* SOL — REZERVASYON ÖZETİ (yalnız ref varsa; davranış aynı) */}
+          {refNumber && (
+            <section className={SUCCESS_CARD_CLASS} aria-labelledby="success-summary-title">
+              <h2
+                id="success-summary-title"
+                className="flex items-center gap-2 font-display font-bold text-[16px] text-[#0A1633]"
+              >
+                <ClipboardCheck size={16} strokeWidth={1.9} className="text-[#1B4EF5]" aria-hidden />
+                {dict.summaryTitle}
+              </h2>
+              <div className="mt-4 rounded-[12px] border border-[#E5E7EB] bg-[#F7F9FC] p-4">
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#64708A]">
+                  {dict.referenceLabel}
+                </p>
+                <div className="mt-1.5 flex items-center gap-2.5 min-w-0">
+                  <p
+                    className="min-w-0 flex-1 font-display font-bold text-[15px] md:text-[17px] leading-snug text-[#0A1633] select-all break-all"
+                    style={{ fontVariantNumeric: "tabular-nums" }}
+                  >
+                    {refNumber}
+                  </p>
+                  <CopyReferenceButton
+                    value={refNumber}
+                    label={dict.copyRef}
+                    copiedLabel={dict.copiedRef}
+                  />
+                </div>
+                <p className="mt-2 text-[12px] leading-relaxed text-[#64708A]">
+                  {dict.referenceHint}
+                </p>
+              </div>
+            </section>
+          )}
+
+          {/* SAĞ — SONRAKİ ADIM / İLETİŞİM */}
+          <section className={SUCCESS_CARD_CLASS} aria-labelledby="success-next-title">
+            <h2
+              id="success-next-title"
+              className="flex items-center gap-2 font-display font-bold text-[16px] text-[#0A1633]"
+            >
+              <ArrowRight size={16} strokeWidth={1.9} className="text-[#1B4EF5]" aria-hidden />
+              {dict.nextStepTitle}
+            </h2>
+            {/* Güven maddeleri — mevcut açıklamadaki bilgilerden türetildi
+                (yeni garanti YOK); WhatsApp maddesi yalnız link varsa. */}
+            <ul className="mt-4 space-y-2.5">
+              {[
+                dict.trustSaved,
+                dict.trustContact,
+                ...(whatsappHref ? [dict.trustWhatsapp] : []),
+              ].map((t) => (
+                <li key={t} className="flex items-center gap-2.5 text-[13px] text-[#0A1633]">
+                  <span
+                    aria-hidden
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E6F6EF] text-[#00A86B]"
+                  >
+                    <Check size={12} strokeWidth={3} />
+                  </span>
+                  {t}
+                </li>
+              ))}
+            </ul>
+            {phoneHref && phoneDisplay && (
+              <a
+                href={phoneHref}
+                className="mt-4 flex items-center gap-2.5 rounded-[12px] border border-[#E5E7EB] px-3.5 py-3 text-[13px] text-[#0A1633] hover:border-[#C9D3E3] transition-colors motion-reduce:transition-none"
+              >
+                <Phone size={15} strokeWidth={1.9} className="text-[#1B4EF5]" aria-hidden />
+                <span className="text-[#64708A]">{dict.phoneLabel}</span>
+                <span className="ml-auto font-semibold tabular-nums truncate">{phoneDisplay}</span>
+              </a>
+            )}
+          </section>
+        </div>
+
+        {/* AKSİYON BUTONLARI — üçü de AYNI koşul/href ile */}
+        <div className="mt-6 md:mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3">
           {whatsappHref && (
             <a
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="
-                inline-flex items-center justify-center gap-2
-                px-6 py-3 rounded-full
-                bg-emerald-600 text-white
-                text-[13.5px] font-medium tracking-[0.02em]
-                shadow-[0_18px_36px_-14px_rgba(16,185,129,0.55),0_4px_12px_-6px_rgba(16,185,129,0.35)]
-                hover:bg-emerald-700
-                hover:-translate-y-[1px]
-                transition-[transform,box-shadow,background-color] duration-300
-                motion-reduce:transition-none motion-reduce:hover:translate-y-0
-                focus:outline-none focus-visible:ring-2
-                focus-visible:ring-emerald-500/40
-              "
+              className={BTN_BASE + " bg-[#00A86B] text-white hover:bg-[#009160] focus-visible:ring-[#00A86B]/40"}
             >
-              <MessageCircle size={15} strokeWidth={1.75} />
+              <MessageCircle size={16} strokeWidth={1.9} />
               {dict.whatsappCta}
             </a>
           )}
 
           <Link
-            href={localePrefix === "" ? "/" : localePrefix}
-            className="btn-primary !px-6 !py-3 text-[13.5px]"
+            href={homeHref}
+            className={BTN_BASE + " bg-[#1B4EF5] text-white hover:bg-[#1640CC] focus-visible:ring-[#1B4EF5]/40"}
           >
-            <Home size={15} strokeWidth={1.75} />
+            <Home size={16} strokeWidth={1.9} />
             {dict.homeCta}
           </Link>
 
           {villaSlug && (
             <Link
               href={`${localePrefix}/kiralik-villa/${villaSlug}`}
-              className="
-                inline-flex items-center justify-center gap-2
-                px-6 py-3 rounded-full
-                border border-[var(--color-stone-200)]
-                text-[var(--color-stone-700)]
-                text-[13.5px] font-medium tracking-[0.02em]
-                hover:border-[var(--brand-coral)]
-                hover:text-[var(--color-stone-900)]
-                hover:bg-[var(--brand-coral-tint)]
-                hover:-translate-y-[1px]
-                transition-[transform,border-color,color,background-color] duration-300
-                motion-reduce:transition-none motion-reduce:hover:translate-y-0
-                focus:outline-none focus-visible:ring-2
-                focus-visible:ring-[var(--brand-coral)]/30
-              "
+              className={BTN_BASE + " border border-[#E5E7EB] bg-white text-[#0A1633] hover:border-[#C9D3E3] hover:bg-[#FBFCFE] focus-visible:ring-[#1B4EF5]/30"}
             >
-              <ArrowLeft size={15} strokeWidth={1.75} />
+              <ArrowLeft size={16} strokeWidth={1.9} />
               {dict.villaCta}
             </Link>
           )}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
+
+const SUCCESS_CARD_CLASS =
+  "min-w-0 rounded-2xl border border-[#E5E7EB] bg-white shadow-[0_1px_2px_rgba(10,22,51,0.04)] p-5 md:p-6";
+
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-2 h-[50px] px-5 w-full sm:w-auto rounded-[12px] text-[14px] font-semibold transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2";

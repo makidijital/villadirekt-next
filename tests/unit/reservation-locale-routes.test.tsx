@@ -1372,3 +1372,101 @@ describe("ReservationCheckoutHeader — sunum", () => {
     expect(items[0]).not.toHaveAttribute("aria-current");
   });
 });
+
+/* ===============================================================
+   🎨 /rezervasyon/basarili — UI REDESIGN (sunum). Mantık testleri
+   (20–28: metinler, ref, CTA href'leri, WhatsApp türetimi) AYNEN.
+   =============================================================== */
+describe("ReservationSuccessBody — checkout tasarım dili (UI)", () => {
+  it.each(LOCALES)("%s — breadcrumb: Ana sayfa → Rezervasyon (villa adı bilinmiyor; yeni veri YOK)", async (locale) => {
+    const { container } = await renderSuccess(locale, { ref: "RES-1", villa: "test-villa" });
+    const d = getDictionary(locale);
+    const nav = container.querySelector('nav[aria-label="Breadcrumb"]') as HTMLElement;
+    expect(nav).toBeTruthy();
+    const links = nav.querySelectorAll("a");
+    expect(links).toHaveLength(1);
+    expect(links[0].textContent).toBe(d.search.breadcrumbHome);
+    expect(links[0]).toHaveAttribute("href", locale === "tr" ? "/" : `/${locale}`);
+    const current = nav.querySelector('[aria-current="page"]') as HTMLElement;
+    expect(current.textContent).toBe(d.reservation.page.breadcrumbCurrent);
+  });
+
+  it("zemin #F7F9FC; başlık 26px mobil / 32px desktop; yeşil success ikonu", async () => {
+    const { container } = await renderSuccess("tr");
+    expect(container.firstElementChild).toHaveClass("bg-[#F7F9FC]");
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(h1).toHaveClass("text-[26px]", "md:text-[32px]", "font-bold");
+    expect(container.querySelector(".text-\\[\\#00A86B\\] svg.lucide-circle-check-big, .text-\\[\\#00A86B\\] svg")).toBeTruthy();
+  });
+
+  it.each(LOCALES)("%s — 'Rezervasyon Özeti' (ref) + 'Sonraki Adım' kartları ve güven maddeleri", async (locale) => {
+    await renderSuccess(locale, { ref: "RES-123" });
+    const d = getDictionary(locale).reservation.success;
+    expect(screen.getByRole("heading", { name: d.summaryTitle })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: d.nextStepTitle })).toBeInTheDocument();
+    for (const t of [d.trustSaved, d.trustContact, d.trustWhatsapp]) {
+      expect(screen.getByText(t)).toBeInTheDocument();
+    }
+    /* Referans numarası özet kartında, taşmasın diye break-all. */
+    const ref = screen.getByText("RES-123");
+    expect(ref).toHaveClass("break-all", "select-all");
+    expect(screen.getByRole("heading", { name: d.summaryTitle }).closest("section")).toContainElement(ref);
+  });
+
+  it("ref yoksa özet kartı yok; sonraki adım kartı tek kolon", async () => {
+    await renderSuccess("en");
+    const d = getDictionary("en").reservation.success;
+    expect(screen.queryByRole("heading", { name: d.summaryTitle })).toBeNull();
+    const next = screen.getByRole("heading", { name: d.nextStepTitle }).closest("section") as HTMLElement;
+    expect(next.parentElement).not.toHaveClass("lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]");
+  });
+
+  it("WhatsApp yoksa 'WhatsApp üzerinden ulaşabilirsiniz' maddesi de gösterilmez", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getCachedSettingsMock.mockResolvedValue({} as any);
+    await renderSuccess("tr");
+    const d = getDictionary("tr").reservation.success;
+    expect(screen.queryByText(d.trustWhatsapp)).toBeNull();
+    expect(screen.getByText(d.trustSaved)).toBeInTheDocument();
+  });
+
+  it("telefon: settings.phone ile tel: linki (FloatingSocial/TopBar deseni)", async () => {
+    await renderSuccess("tr");
+    const d = getDictionary("tr").reservation.success;
+    const a = screen.getByText(d.phoneLabel).closest("a") as HTMLElement;
+    expect(a).toHaveAttribute("href", "tel:+90 555 111 22 33");
+    expect(a).toHaveTextContent("+90 555 111 22 33");
+  });
+
+  it("butonlar: WhatsApp #00A86B · Ana sayfa #1B4EF5 · Villa beyaz/border; 50px, mobilde tam genişlik", async () => {
+    await renderSuccess("tr", { villa: "test-villa" });
+    const d = getDictionary("tr").reservation.success;
+    const wa = screen.getByText(d.whatsappCta).closest("a") as HTMLElement;
+    const home = screen.getByText(d.homeCta).closest("a") as HTMLElement;
+    const villa = screen.getByText(d.villaCta).closest("a") as HTMLElement;
+    expect(wa).toHaveClass("bg-[#00A86B]", "text-white");
+    expect(wa).toHaveAttribute("target", "_blank");
+    expect(home).toHaveClass("bg-[#1B4EF5]", "text-white");
+    expect(villa).toHaveClass("bg-white", "border-[#E5E7EB]", "text-[#0A1633]");
+    for (const b of [wa, home, villa]) {
+      expect(b).toHaveClass("h-[50px]", "rounded-[12px]", "w-full", "sm:w-auto");
+    }
+    /* Sıra AYNEN: WhatsApp → Ana sayfa → Villa. */
+    expect(wa.compareDocumentPosition(home) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(home.compareDocumentPosition(villa) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("kopyala butonu YALNIZ mevcut referans değerini panoya yazar", async () => {
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    await renderSuccess("tr", { ref: "91125f89-2eaf-499e-b1cd-de25b6c1125f" });
+    const d = getDictionary("tr").reservation.success;
+    fireEvent.click(screen.getByRole("button", { name: d.copyRef }));
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith("91125f89-2eaf-499e-b1cd-de25b6c1125f")
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: d.copiedRef })).toBeInTheDocument()
+    );
+  });
+});
