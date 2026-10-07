@@ -28,7 +28,6 @@ import path from "node:path";
 import { tr } from "@/lib/i18n/dictionaries/tr";
 import { en } from "@/lib/i18n/dictionaries/en";
 import { de } from "@/lib/i18n/dictionaries/de";
-import { buildLocaleAlternates } from "@/lib/i18n/seo-alternates";
 import { getLocaleSwitchTargets } from "@/lib/i18n/locale-switch.helper";
 import { PUBLIC_SORT_LABELS } from "@/lib/pagination";
 
@@ -481,21 +480,21 @@ describe("Gövde render — TR/EN/DE görünür metinler", () => {
   );
 
   it.each(["tr", "en", "de"] as const)(
-    "17) %s: 'Hakkında' bloğu kendi dilinde",
+    "17) %s: 'Hakkında / Bir konaklamadan fazlası.' bloğu KALDIRILDI; liste + başlık + breadcrumb duruyor",
     async (locale) => {
       const d = { tr, en, de }[locale].villasArchive;
       await renderBody(locale);
-      expect(screen.getByText(d.aboutEyebrow)).toBeInTheDocument();
-      expect(screen.getByText(d.aboutParagraph1)).toBeInTheDocument();
-      expect(screen.getByText(d.aboutParagraph2)).toBeInTheDocument();
-      const link = screen.getByRole("link", {
-        name: d.aboutParagraph3LinkLabel,
-      });
-      /* Arama route'u locale-aware. */
-      expect(link).toHaveAttribute(
-        "href",
-        buildLocaleAlternates("/arama", locale).canonical
-      );
+      expect(screen.queryByText(d.aboutEyebrow)).toBeNull();
+      expect(screen.queryByText(d.aboutTitleLead)).toBeNull();
+      expect(screen.queryByText(d.aboutTitleAccent)).toBeNull();
+      expect(screen.queryByText(d.aboutParagraph1)).toBeNull();
+      expect(screen.queryByText(d.aboutParagraph2)).toBeNull();
+      expect(
+        screen.queryByRole("link", { name: d.aboutParagraph3LinkLabel })
+      ).toBeNull();
+      expect(document.getElementById("kv-about-heading")).toBeNull();
+      /* Geri kalan sayfa AYNEN: villa kartları render ediliyor. */
+      expect(screen.getAllByTestId("villa-card").length).toBeGreaterThan(0);
     }
   );
 

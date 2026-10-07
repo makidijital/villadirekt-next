@@ -517,44 +517,10 @@ export default async function KiralikVillalarPageBody({
                   </>
                 )}
 
-                {/* 🛡️ SEO HAKKINDA — results column içinde inline.
-                   (Mizanpaj gerekçesi için git geçmişine bakınız; bu
-                   fazda yalnız metinler dictionary'ye taşındı.) */}
-                <div className="mt-16 md:mt-20 rounded-2xl bg-[var(--color-sand-50)]/60 border border-[var(--color-stone-100)] px-6 py-10 md:px-10 md:py-14">
-                  <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 md:gap-10">
-                    <div className="xl:col-span-2">
-                      <p className="text-[11px] tracking-[0.28em] uppercase font-medium text-[var(--color-stone-500)]">
-                        <span className="inline-block w-8 h-px bg-[var(--color-stone-300)] align-middle mr-3" />
-                        {dict.aboutEyebrow}
-                      </p>
-                      <h2
-                        id="kv-about-heading"
-                        className="font-display text-[30px] md:text-[40px] xl:text-[44px] text-[var(--color-stone-900)] mt-5 leading-[1.05] tracking-[-0.025em]"
-                      >
-                        {dict.aboutTitleLead}
-                        <br />
-                        <span className="text-[var(--color-stone-400)]">
-                          {dict.aboutTitleAccent}
-                        </span>
-                      </h2>
-                    </div>
-
-                    <div className="xl:col-span-3 space-y-5 text-[15px] leading-[1.7] text-[var(--color-stone-600)]">
-                      <p>{dict.aboutParagraph1}</p>
-                      <p>{dict.aboutParagraph2}</p>
-                      <p>
-                        {dict.aboutParagraph3Lead}{" "}
-                        <Link
-                          href={searchPath}
-                          className="text-[var(--color-stone-900)] underline decoration-[var(--color-champagne-500)] decoration-1 underline-offset-4 hover:decoration-[var(--color-champagne-700)] transition-colors motion-reduce:transition-none"
-                        >
-                          {dict.aboutParagraph3LinkLabel}
-                        </Link>{" "}
-                        {dict.aboutParagraph3Trail}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                {/* "Hakkında / Bir konaklamadan fazlası." bloğu KALDIRILDI
+                   (liste sayfaları sadeleştirildi). villasArchive.about*
+                   dictionary key'leri yerinde duruyor (yalnız bu blok
+                   kullanıyordu; silinmedi). */}
               </div>
             </div>
           </div>
