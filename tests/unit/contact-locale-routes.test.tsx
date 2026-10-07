@@ -391,26 +391,27 @@ describe("Gövde render — TR/EN/DE", () => {
   );
 
   it.each(["tr", "en", "de"] as const)(
-    "17) %s: harita bloğu ve iframe title kendi dilinde",
+    "17) %s: harita bölümü KALDIRILDI (iframe/başlık yok); adres satırı AYNEN",
     async (locale) => {
       const c = { tr, en, de }[locale].contact;
       await renderBody(locale);
-      expect(screen.getByText(c.map.eyebrow)).toBeInTheDocument();
-      expect(screen.getByText(c.map.title)).toBeInTheDocument();
-      expect(screen.getByTitle(c.map.iframeTitle)).toBeInTheDocument();
+      expect(screen.queryByTitle(c.map.iframeTitle)).toBeNull();
+      expect(screen.queryByText(c.map.title)).toBeNull();
+      expect(document.querySelector("iframe")).toBeNull();
+      expect(screen.getByText(c.info.location)).toBeInTheDocument();
+      expect(screen.getByText(SETTINGS.address)).toBeInTheDocument();
     }
   );
 
   it.each(["tr", "en", "de"] as const)(
-    "18) %s: 3 FAQ kartı kendi dilinde",
+    "18) %s: SSS bölümü KALDIRILDI (başlık + 3 kart yok)",
     async (locale) => {
       const c = { tr, en, de }[locale].contact;
       await renderBody(locale);
-      expect(screen.getByText(c.faq.eyebrow)).toBeInTheDocument();
-      expect(screen.getByText(c.faq.title)).toBeInTheDocument();
+      expect(screen.queryByText(c.faq.eyebrow)).toBeNull();
+      expect(screen.queryByText(c.faq.title)).toBeNull();
       for (const item of Object.values(c.faq.items)) {
-        expect(screen.getByText(item.question)).toBeInTheDocument();
-        expect(screen.getByText(item.answer)).toBeInTheDocument();
+        expect(screen.queryByText(item.question)).toBeNull();
       }
     }
   );
@@ -518,8 +519,8 @@ describe("Settings verisi", () => {
   it("28) settings okunamazsa sayfa ÇÖKMEZ (defensive empty-state)", async () => {
     getCachedSettingsMock.mockRejectedValue(new Error("db down"));
     await renderBody("en");
-    /* Dictionary metinleri yine görünür. */
-    expect(screen.getByText(en.contact.map.title)).toBeInTheDocument();
+    /* Dictionary metinleri yine görünür (harita kaldırıldı → başlık). */
+    expect(screen.getByText(en.contact.hero.pageTitle)).toBeInTheDocument();
     /* İletişim satırları gizlenir. */
     expect(screen.queryByText(en.contact.info.title)).toBeNull();
   });
@@ -916,12 +917,14 @@ describe("UI redesign — /iletisim", () => {
     expect(btn).toHaveClass("w-full", "h-[52px]", "bg-[#1B4EF5]", "rounded-[12px]", "font-semibold");
   });
 
-  it("harita / SSS / CTA korunur; CTA gradient/glow içermez", async () => {
+  it("sayfa sırası: iletişim+form → CTA (son bölüm); CTA gradient/glow içermez", async () => {
     const { container } = await renderBody("en");
-    const iframe = screen.getByTitle(en.contact.map.iframeTitle);
-    expect(iframe.getAttribute("src")).toContain(encodeURIComponent(SETTINGS.address));
-    expect(iframe.parentElement).toHaveClass("rounded-2xl", "overflow-hidden", "border-[#E5E7EB]");
-    expect(screen.getByRole("link", { name: en.contact.cta.button })).toHaveAttribute("href", "/en/arama");
+    const cta = screen.getByRole("link", { name: en.contact.cta.button });
+    expect(cta).toHaveAttribute("href", "/en/arama");
+    const form = screen.getByRole("heading", { name: en.contact.form.cardTitle });
+    expect(form.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const ctaSection = cta.closest("section") as HTMLElement;
+    expect(ctaSection.nextElementSibling).toBeNull();
     expect(container.innerHTML).not.toMatch(/gradient|blur-\[/);
   });
 

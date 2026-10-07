@@ -193,7 +193,8 @@ export default async function ContactPageBody({
 
   /* 🎨 UI REDESIGN — "müşteri destek merkezi": #F7F9FC zemin, ortak
      PublicBreadcrumb, kompakt başlık, sol hızlı iletişim / sağ form
-     (~%45 / %55), harita + SSS + CTA aynı sırada ve aynı veriyle.
+     (~%45 / %55), ardından CTA. Harita ve SSS bölümleri kaldırıldı
+     (adres bilgisi sol iletişim satırında AYNEN).
      Veri (settings), satır koşulları, href'ler, JSON-LD ve form akışı
      BİREBİR AYNI — yalnız JSX/className değişti. */
   return (
@@ -293,63 +294,6 @@ export default async function ContactPageBody({
           </section>
         </div>
 
-        {/* HARİTA — mevcut iframe/src mantığı AYNEN */}
-        <section className="mt-10 md:mt-14" aria-labelledby="contact-map-title">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#1B4EF5]">
-            {dict.map.eyebrow}
-          </p>
-          <h2
-            id="contact-map-title"
-            className="mt-1.5 mb-4 font-display font-bold text-[20px] md:text-[22px] leading-tight tracking-[-0.015em] text-[#0A1633]"
-          >
-            {dict.map.title}
-          </h2>
-          <div className="relative aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/8] rounded-2xl overflow-hidden border border-[#E5E7EB] bg-white">
-            <iframe
-              title={dict.map.iframeTitle}
-              src={
-                address
-                  ? `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=11&output=embed`
-                  : "https://www.google.com/maps?q=Kalkan%2C+Kas%2C+Antalya&z=11&output=embed"
-              }
-              className="absolute inset-0 w-full h-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </div>
-        </section>
-
-        {/* SSS — mevcut 3 madde AYNEN */}
-        <section className="mt-10 md:mt-14" aria-labelledby="contact-faq-title">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#1B4EF5]">
-            {dict.faq.eyebrow}
-          </p>
-          <h2
-            id="contact-faq-title"
-            className="mt-1.5 mb-4 font-display font-bold text-[20px] md:text-[22px] leading-tight tracking-[-0.015em] text-[#0A1633]"
-          >
-            {dict.faq.title}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-            <FaqBlock
-              index="01"
-              q={dict.faq.items.responseTime.question}
-              a={dict.faq.items.responseTime.answer}
-            />
-            <FaqBlock
-              index="02"
-              q={dict.faq.items.dates.question}
-              a={dict.faq.items.dates.answer}
-            />
-            <FaqBlock
-              index="03"
-              q={dict.faq.items.customOffer.question}
-              a={dict.faq.items.customOffer.answer}
-            />
-          </div>
-        </section>
-
         {/* CTA — sade navy panel (gradient/glow YOK), link AYNEN */}
         <section className="mt-10 md:mt-14">
           <div className="rounded-[18px] bg-[#0A1633] px-6 py-8 md:px-10 md:py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-8">
@@ -436,29 +380,6 @@ function InfoRow({
         />
       ) : null}
     </Wrapper>
-  );
-}
-
-/* FAQ — numaralı premium kart */
-function FaqBlock({
-  index,
-  q,
-  a,
-}: {
-  index: string;
-  q: string;
-  a: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5">
-      <span className="font-display font-bold text-[12px] text-[#1B4EF5] tabular-nums">
-        {index}
-      </span>
-      <h3 className="mt-1.5 font-display font-bold text-[15px] leading-snug text-[#0A1633]">
-        {q}
-      </h3>
-      <p className="mt-2 text-[13px] leading-[1.65] text-[#5B6478]">{a}</p>
-    </div>
   );
 }
 
