@@ -5,7 +5,7 @@ import { getVillaImages } from "@/app/services/villa-image/villa-image.read";
 import { resolveVillaImageUrl } from "@/lib/storage.helpers";
 
 import ReservationForm from "@/app/components/reservation/ReservationForm";
-import PageHero from "@/app/components/ui/PageHero";
+import ReservationCheckoutHeader from "@/app/components/reservation/ReservationCheckoutHeader";
 
 /* 🛡️ REZERVASYON ÇOKLU DİL — statik UI metinleri MEVCUT public
    dictionary'den (`reservation.page` + `search.breadcrumbHome` +
@@ -134,30 +134,35 @@ export default async function ReservationPageBody({
     custom_prepayment_rate: villa.custom_prepayment_rate,
   };
 
+  /* 🎨 CHECKOUT LAYOUT (UI turu) — PageHero bandı yerine kompakt
+     checkout başlığı + çok hafif sayfa zemini. Breadcrumb isim/href'leri,
+     ReservationForm prop'ları ve tüm veri akışı BİREBİR AYNI. */
   return (
-    <>
-      {/* HERO — paylaşılan premium PageHero (kompakt editorial band) */}
-      <PageHero
-        breadcrumb={[
-          {
-            name: dictionary.search.breadcrumbHome,
-            href: localePrefix === "" ? "/" : localePrefix,
-          },
-          {
-            name: dictionary.villasArchive.breadcrumbCurrent,
-            href: `${localePrefix}/kiralik-villalar`,
-          },
-          { name: dict.breadcrumbCurrent },
-        ]}
-        title={dict.title}
-        description={dict.description}
-        badge={{
-          eyebrow: dict.badgeEyebrow,
-          lines: [dict.badgeLine1, dict.badgeLine2, dict.badgeLine3],
-        }}
-      />
+    <div className="bg-[#F7F9FC]">
+      <div className="section-narrow pt-6 md:pt-10 pb-16 md:pb-24">
+        <ReservationCheckoutHeader
+          breadcrumb={[
+            {
+              name: dictionary.search.breadcrumbHome,
+              href: localePrefix === "" ? "/" : localePrefix,
+            },
+            {
+              name: dictionary.villasArchive.breadcrumbCurrent,
+              href: `${localePrefix}/kiralik-villalar`,
+            },
+            { name: dict.breadcrumbCurrent },
+          ]}
+          steps={[
+            { label: dict.stepVilla },
+            { label: dict.stepDetails },
+            { label: dict.stepReservation },
+          ]}
+          activeStep={1}
+          stepsAriaLabel={dict.stepsAriaLabel}
+          title={dict.checkoutTitle}
+          description={dict.description}
+        />
 
-      <div className="section-narrow pt-12 md:pt-16 pb-20">
         <ReservationForm
           villa={reservationVilla}
           prices={prices}
@@ -174,6 +179,6 @@ export default async function ReservationPageBody({
           children={children}
         />
       </div>
-    </>
+    </div>
   );
 }

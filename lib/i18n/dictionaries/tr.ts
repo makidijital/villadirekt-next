@@ -684,6 +684,11 @@ export const tr: Dictionary = {
      metinlerin BİREBİR kopyasıdır; render çıktısı byte-identical. */
   reservation: {
     page: {
+      checkoutTitle: "Rezervasyonunuzu Tamamlayın",
+      stepsAriaLabel: "Rezervasyon adımları",
+      stepVilla: "Villa Seçimi",
+      stepDetails: "Bilgiler",
+      stepReservation: "Rezervasyon",
       breadcrumbCurrent: "Rezervasyon",
       title: "Kişisel Bilgilerinizi Girin",
       description:
@@ -697,12 +702,15 @@ export const tr: Dictionary = {
       notFoundTitle: "Villa bulunamadı",
     },
     summary: {
+      summaryLabel: "Rezervasyon Özeti",
       eyebrow: "Konaklama",
       guestsCount: "{n} misafir",
       nightsCount: "{n} gece",
       payNowAll: "Şimdi ödenecek (Tüm tutar)",
     },
     form: {
+      stayInfoTitle: "Konaklama Bilgileri",
+      nightsLabel: "Gece",
       step1Eyebrow: "Adım 1",
       step1Title: "İletişim bilgileri",
       step1Subtitle: "Rezervasyon için ulaşılabileceğimiz bilgileri paylaş.",

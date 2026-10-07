@@ -15,7 +15,17 @@ import { getPublicSettingsAction as getPublicSettings } from "@/app/services/set
    Görünen ülke adı için paketi import ETMEYEN saf helper kullanılır
    (`getCountryLabel` ile BİREBİR aynı mantık). */
 import { formatCountryLabel } from "@/lib/country-label";
-import { Calendar, Users, CreditCard, CheckCircle2 } from "lucide-react";
+import {
+  Calendar,
+  CalendarDays,
+  Users,
+  UserRound,
+  MapPin,
+  CreditCard,
+  Wallet,
+  CheckCircle2,
+  ShieldCheck,
+} from "lucide-react";
 
 import {
   calculateGrandTotal,
@@ -658,81 +668,479 @@ export default function ReservationForm({
     }
   };
 
+  /* 🎨 Checkout input dili (UI turu): ~50px yükseklik, 13px metin,
+     11px radius, #DDE3EC border, odakta #1B4EF5 + hafif mavi halka.
+     inputOk/inputErr seçimi (validation görünümü) AYNEN. */
   const inputBase =
-    "w-full !border rounded-xl px-4 py-3 text-sm bg-white text-[var(--color-stone-900)] transition";
+    "w-full !border rounded-[11px] h-[50px] px-4 text-[13px] bg-white text-[#0A1633] placeholder:text-[#8A93A6] outline-none transition-[border-color,box-shadow] focus:ring-4 focus:ring-[#1B4EF5]/10";
   const inputOk =
-    "!border-[var(--color-stone-100)] focus:!border-[var(--color-champagne-500)]";
-  const inputErr = "!border-red-500";
+    "!border-[#DDE3EC] hover:!border-[#B9C3D3] focus:!border-[#1B4EF5]";
+  const inputErr = "!border-red-500 focus:ring-red-500/10";
 
+  /* Konaklama Bilgileri kartı için tarih gösterimi — mevcut özet ile
+     AYNI kaynak (start/end) ve AYNI timeZone; yalnız biçim (yıl dahil). */
+  const formatStayDate = (d?: string) =>
+    d
+      ? new Date(d).toLocaleDateString(LOCALE_BCP47[activeLocale], {
+          weekday: "short",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "Europe/Istanbul",
+        })
+      : "—";
+
+  /* 🎨 CHECKOUT LAYOUT (UI turu) — desktop: sol ~%62 bilgiler, sağ ~%38
+     sticky özet; mobil: tek kolon (önce bilgiler, sonra özet + CTA).
+     State / handler / validation / fiyat değişkenleri ve submit akışı
+     BİREBİR AYNI — yalnız JSX yerleşimi ve className'ler değişti. */
   return (
-    <div className="space-y-8 lg:space-y-10">
-      {/* ÜST — REZERVASYON ÖZETİ (villa görseli + fiyat özeti, geniş
-          yatay kart). 🛡️ UI/layout turu — Sadece bu bloğun konumu ve iç
-          düzeni değişti: daha önce sağda dar "sticky" bir sidebar olarak
-          duruyordu, artık sayfanın üstünde geniş, yatay bir özet kartı.
-          İçerik/veri/hesaplama (result, formatCurrency, totalPrice,
-          prepayment, prepaymentRate, form.payment_preference vb.)
-          BİREBİR AYNI; yeni hesaplama YAZILMADI. */}
-      <div className="card-premium overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-5">
-          <div className="md:col-span-2 relative">
-            <img
-              src={image || "/placeholder.jpg"}
-              className="w-full h-56 md:h-full object-cover"
-              alt={villa.title}
-            />
-          </div>
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.63fr)_minmax(0,1fr)] gap-5 lg:gap-7 items-start">
+      {/* ═══════════════ SOL — REZERVASYON BİLGİLERİ ═══════════════ */}
+      <div className="min-w-0 space-y-4 md:space-y-5">
+        {/* A) KONAKLAMA BİLGİLERİ — salt bilgi (seçim önceki adımda) */}
+        <section className={CARD_CLASS}>
+          <SectionHeader
+            icon={<CalendarDays size={16} strokeWidth={1.9} />}
+            title={dict.form.stayInfoTitle}
+          />
+          <dl className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            {[
+              { k: bookingDict.checkInPillLabel, v: formatStayDate(start) },
+              { k: bookingDict.checkOutPillLabel, v: formatStayDate(end) },
+              { k: dict.form.nightsLabel, v: String(start && end ? getNights() : "—") },
+              { k: bookingDict.guestsLabel, v: String(form.guests || 1) },
+            ].map((it) => (
+              <div
+                key={it.k}
+                className="rounded-[11px] border border-[#E5E7EB] bg-[#F7F9FC] px-3.5 py-3 min-w-0"
+              >
+                <dt className="text-[11px] font-medium text-[#64708A]">{it.k}</dt>
+                <dd className="mt-1 text-[13px] font-semibold text-[#0A1633] tabular-nums truncate">
+                  {it.v}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
-          <div className="md:col-span-3 p-6 space-y-5">
-            <div>
-              <p className="eyebrow">{dict.summary.eyebrow}</p>
-              <h3 className="font-display text-xl text-[var(--color-stone-900)] mt-1.5 leading-snug">
-                {villa.title}
-              </h3>
+          {/* CONTACT SECTION */}
+          <Section
+            eyebrow={dict.form.step1Eyebrow}
+            icon={<UserRound size={16} strokeWidth={1.9} />}
+            title={dict.form.step1Title}
+            subtitle={dict.form.step1Subtitle}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { key: "name", placeholder: dict.form.namePlaceholder },
+                { key: "email", placeholder: dict.form.emailPlaceholder },
+                { key: "identity", placeholder: dict.form.identityPlaceholder },
+              ].map((field) => (
+                <div key={field.key}>
+                  <input
+                    value={(form as any)[field.key]}
+                    placeholder={field.placeholder}
+                    onChange={(e) => {
+                      setForm({ ...form, [field.key]: e.target.value });
+                      setErrors((prev: any) => ({
+                        ...prev,
+                        [field.key]: "",
+                      }));
+                    }}
+                    className={`${inputBase} ${errors[field.key] ? inputErr : inputOk
+                      }`}
+                  />
+                  {errors[field.key] && (
+                    <p className="text-xs text-red-500 mt-1.5">
+                      {errors[field.key]}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              {/* 🛡️ TELEFON 1 + TELEFON 2 — ikisi de ZORUNLU, ülke kodları
+                  BİRBİRİNDEN BAĞIMSIZ. Mevcut input/select tasarım dili
+                  (inputBase/inputOk/inputErr) aynen kullanıldı; yeni kart,
+                  yeni renk, yeni component mimarisi YOK. Mobilde ülke kodu
+                  sabit genişlikte, numara kalan alanı doldurur. */}
+              {(
+                [
+                  {
+                    key: "phone" as const,
+                    dialKey: "phone_dial" as const,
+                    nationalKey: "phone_national" as const,
+                    label: dict.form.phoneLabel,
+                    placeholder: dict.form.phonePlaceholder,
+                  },
+                  {
+                    key: "phone2" as const,
+                    dialKey: "phone2_dial" as const,
+                    nationalKey: "phone2_national" as const,
+                    label: dict.form.phone2Label,
+                    placeholder: dict.form.phone2Placeholder,
+                  },
+                ]
+              ).map((f) => (
+                <div key={f.key}>
+                  {/* 🛡️ GÖRÜNÜR ÜST LABEL KALDIRILDI ("Telefon 1 *" /
+                      "Telefon 2 *"). Diğer alanlarla (Ad/E-posta/TC) aynı
+                      şekilde yalnız placeholder gösterilir. `f.label`
+                      SİLİNMEDİ: select ve input'un aria-label'ında kalır →
+                      ekran okuyucu hangi telefon olduğunu bilmeye devam
+                      eder. Zorunluluk mantığı DEĞİŞMEDİ. */}
+                  <div className="flex items-stretch gap-2">
+                    <select
+                      aria-label={`${f.label} — ${dict.form.phoneCountryAriaLabel}`}
+                      value={form[f.dialKey]}
+                      onChange={(e) => {
+                        const dial = e.target.value;
+                        setForm({
+                          ...form,
+                          [f.dialKey]: dial,
+                          [f.key]: joinPhone(dial, form[f.nationalKey]),
+                        });
+                        setErrors((prev) => ({ ...prev, [f.key]: "" }));
+                      }}
+                      className={`${inputBase} ${
+                        errors[f.key] ? inputErr : inputOk
+                      } !w-[104px] shrink-0 px-2 tabular-nums`}
+                    >
+                      {DIAL_CODES.map((c) => (
+                        <option key={c.iso} value={c.dial}>
+                          {c.dial} {c.label}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      id={`reservation-${f.key}`}
+                      aria-label={f.label}
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete={f.key === "phone" ? "tel" : "tel-national"}
+                      value={form[f.nationalKey]}
+                      placeholder={f.placeholder}
+                      onChange={(e) => {
+                        const national = e.target.value;
+                        setForm({
+                          ...form,
+                          [f.nationalKey]: national,
+                          [f.key]: joinPhone(form[f.dialKey], national),
+                        });
+                        setErrors((prev) => ({ ...prev, [f.key]: "" }));
+                      }}
+                      className={`${inputBase} ${
+                        errors[f.key] ? inputErr : inputOk
+                      } flex-1 min-w-0`}
+                    />
+                  </div>
+                  {errors[f.key] && (
+                    <p className="text-xs text-red-500 mt-1.5">{errors[f.key]}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* ADDRESS SECTION */}
+          <Section
+            eyebrow={dict.form.step2Eyebrow}
+            icon={<MapPin size={16} strokeWidth={1.9} />}
+            title={dict.form.step2Title}
+            subtitle={dict.form.step2Subtitle}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <select
+                value={form.country || ""}
+                onChange={(e) => handleCountryChange(e.target.value)}
+                className={`${inputBase} ${inputOk}`}
+              >
+                <option value="">{dict.form.countrySelect}</option>
+                {countries.map((c) => (
+                  <option key={c.isoCode} value={c.isoCode}>
+                    {/* 🌍 Display override: TR locale'de "Türkiye";
+                        EN/DE'de Intl ülke adı. Option value hâlâ ISO code
+                        (`c.isoCode`); form payload ve validation aynen
+                        ISO code akar. */}
+                    {formatCountryLabel(c.isoCode, activeLocale, () => c.name)}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={form.city ?? ""}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+                disabled={!form.country}
+                className={`${inputBase} ${inputOk} disabled:opacity-60`}
+              >
+                <option value="">
+                  {form.country
+                    ? dict.form.citySelect
+                    : dict.form.citySelectDisabled}
+                </option>
+                {cities.map((c) => (
+                  <option key={c.isoCode} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                value={form.address}
+                placeholder={dict.form.addressPlaceholder}
+                className={`md:col-span-2 ${inputBase} ${inputOk}`}
+                onChange={(e) =>
+                  setForm({ ...form, address: e.target.value })
+                }
+              />
+
+              <input
+                value={form.note}
+                placeholder={dict.form.notePlaceholder}
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+                className={`md:col-span-2 ${inputBase} ${inputOk}`}
+              />
+            </div>
+          </Section>
+
+          {/* GUESTS SECTION */}
+          <Section
+            eyebrow={dict.form.step3Eyebrow}
+            icon={<Users size={16} strokeWidth={1.9} />}
+            title={dict.form.step3Title}
+            subtitle={dict.form.step3Subtitle}
+          >
+            <div className="bg-[#F7F9FC] border border-[#E5E7EB] rounded-[11px] px-4 py-3 text-[13px] flex justify-between items-center gap-3 mb-4">
+              <span className="font-medium text-[var(--color-stone-700)]">
+                {dict.form.totalGuestsLabel}
+              </span>
+              <span className="text-[var(--color-stone-900)] font-semibold">
+                {formatDictionaryString(dict.form.guestsPersonCount, {
+                  n: form.guests || 1,
+                })}
+                {(adults || children) && (
+                  <span className="text-[var(--color-stone-500)] ml-2 font-normal">
+                    (
+                    {formatDictionaryString(bookingDict.guestsSummary, {
+                      adults: adults || 0,
+                      children: children || 0,
+                    })}
+                    )
+                  </span>
+                )}
+              </span>
             </div>
 
-            {start && end && (
-              <div className="flex items-center gap-3 text-sm text-[var(--color-stone-700)] border-y border-[var(--color-stone-100)] py-4">
-                <Calendar
-                  size={16}
-                  className="text-[var(--color-champagne-500)]"
-                />
-                <span>
-                  {/* 🛡️ Europe/Istanbul explicit — server SSR / client
-                       hidrasyon aynı çıktı (UTC server'da day kayması yok). */}
-                  {new Date(start).toLocaleDateString(LOCALE_BCP47[activeLocale], {
-                    day: "numeric",
-                    month: "long",
-                    timeZone: "Europe/Istanbul",
-                  })}{" "}
-                  –{" "}
-                  {new Date(end).toLocaleDateString(LOCALE_BCP47[activeLocale], {
-                    day: "numeric",
-                    month: "long",
-                    timeZone: "Europe/Istanbul",
-                  })}
-                  <span className="text-[var(--color-stone-400)] ml-2">
-                    {formatDictionaryString(dict.summary.nightsCount, {
-                      n: getNights(),
+            {guestNames.length > 0 && (
+              <div className="space-y-2.5">
+                <p className="text-[12px] tracking-[0.08em] uppercase font-semibold text-[var(--color-stone-500)]">
+                  {dict.form.otherGuests}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {guestNames.map((g, i) => (
+                    <input
+                      key={i}
+                      value={g}
+                      placeholder={formatDictionaryString(
+                        dict.form.guestNamePlaceholder,
+                        { n: i + 2 }
+                      )}
+                      onChange={(e) => {
+                        const updated = [...guestNames];
+                        updated[i] = e.target.value;
+                        setGuestNames(updated);
+                      }}
+                      className={`${inputBase} ${inputOk}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </Section>
+
+          {/* PAYMENT */}
+          <Section
+            eyebrow={dict.form.step4Eyebrow}
+            icon={<CreditCard size={16} strokeWidth={1.9} />}
+            title={dict.form.step4Title}
+            subtitle={dict.form.step4Subtitle}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {paymentMethods.length === 0 && (
+                <p className="text-sm text-[var(--color-stone-400)] italic">
+                  {dict.form.noPaymentMethod}
+                </p>
+              )}
+              {paymentMethods.map((p) => {
+                const checked = form.payment_method_id === p.id;
+                return (
+                  <label
+                    key={p.id}
+                    className={`
+                      flex items-center gap-3 px-4 min-h-[50px] py-3 rounded-[11px]
+                      border cursor-pointer transition
+                      ${checked
+                        ? "border-[#1B4EF5] bg-[#F5F8FF] ring-1 ring-[#1B4EF5]/15"
+                        : "border-[#DDE3EC] bg-white hover:border-[#B9C3D3]"
+                      }
+                    `}
+                  >
+                    <input
+                      type="radio"
+                      checked={checked}
+                      onChange={() =>
+                        setForm({ ...form, payment_method_id: p.id })
+                      }
+                      className="!w-4 !h-4 accent-[#1B4EF5]"
+                    />
+                    <CreditCard
+                      size={16}
+                      className="text-[#1B4EF5]"
+                    />
+                    <span className="text-[13px] font-medium text-[#0A1633]">
+                      {resolveTaxonomyName(
+                        p.name,
+                        p.name_by_locale,
+                        activeLocale
+                      )}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            {errors.payment_method_id && (
+              <p className="text-xs text-red-500 mt-2">
+                {errors.payment_method_id}
+              </p>
+            )}
+          </Section>
+
+          {/* PAYMENT PREFERENCE */}
+          <Section
+            eyebrow={dict.form.step5Eyebrow}
+            icon={<Wallet size={16} strokeWidth={1.9} />}
+            title={dict.form.step5Title}
+            subtitle={dict.form.step5Subtitle}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                {
+                  value: "prepayment" as PaymentPreference,
+                  label: dict.form.prepaymentOption,
+                  hint: formatDictionaryString(dict.form.prepaymentHint, {
+                    rate: prepaymentRate,
+                  }),
+                },
+                {
+                  value: "full_payment" as PaymentPreference,
+                  label: dict.form.fullPaymentOption,
+                  hint: dict.form.fullPaymentHint,
+                },
+              ].map((opt) => {
+                const checked = form.payment_preference === opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`
+                      flex items-start gap-3 px-4 py-3 rounded-[11px]
+                      border cursor-pointer transition
+                      ${checked
+                        ? "border-[#1B4EF5] bg-[#F5F8FF] ring-1 ring-[#1B4EF5]/15"
+                        : "border-[#DDE3EC] bg-white hover:border-[#B9C3D3]"
+                      }
+                    `}
+                  >
+                    <input
+                      type="radio"
+                      name="payment_preference"
+                      checked={checked}
+                      onChange={() =>
+                        setForm({ ...form, payment_preference: opt.value })
+                      }
+                      className="!w-4 !h-4 mt-0.5 accent-[#1B4EF5]"
+                    />
+                    <span className="flex-1">
+                      <span className="block text-[13px] font-semibold text-[#0A1633]">
+                        {opt.label}
+                      </span>
+                      <span className="block text-[11px] text-[var(--color-stone-500)] mt-0.5">
+                        {opt.hint}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </Section>
+
+      </div>
+
+      {/* ═══════════════ SAĞ — STICKY REZERVASYON ÖZETİ ═══════════════ */}
+      <aside className="min-w-0 lg:sticky lg:top-24">
+        <div className="rounded-[20px] border border-[#E5E7EB] bg-white shadow-[0_10px_30px_-18px_rgba(10,22,51,0.22)] overflow-hidden">
+          <div className="p-5 md:p-6 space-y-4">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-[#1B4EF5]">
+              {dict.summary.summaryLabel}
+            </p>
+
+            {/* Villa — görsel + ad (veri AYNEN) */}
+            <div className="flex items-center gap-3.5">
+              <img
+                src={image || "/placeholder.jpg"}
+                className="w-[76px] h-[64px] shrink-0 rounded-[12px] object-cover bg-[#EEF1F6]"
+                alt={villa.title}
+              />
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-[#64708A]">{dict.summary.eyebrow}</p>
+                <h2 className="mt-0.5 font-display font-bold text-[16px] leading-snug text-[#0A1633] line-clamp-2">
+                  {villa.title}
+                </h2>
+              </div>
+            </div>
+
+            <div className="space-y-2 border-y border-[#E5E7EB] py-3.5">
+              {start && end && (
+                <div className="flex items-center gap-2.5 text-[13px] text-[#0A1633]">
+                  <Calendar
+                    size={16}
+                    className="shrink-0 text-[#1B4EF5]"
+                  />
+                  <span>
+                    {/* 🛡️ Europe/Istanbul explicit — server SSR / client
+                         hidrasyon aynı çıktı (UTC server'da day kayması yok). */}
+                    {new Date(start).toLocaleDateString(LOCALE_BCP47[activeLocale], {
+                      day: "numeric",
+                      month: "long",
+                      timeZone: "Europe/Istanbul",
+                    })}{" "}
+                    –{" "}
+                    {new Date(end).toLocaleDateString(LOCALE_BCP47[activeLocale], {
+                      day: "numeric",
+                      month: "long",
+                      timeZone: "Europe/Istanbul",
+                    })}
+                    <span className="text-[var(--color-stone-400)] ml-2">
+                      {formatDictionaryString(dict.summary.nightsCount, {
+                        n: getNights(),
+                      })}
+                    </span>
+                  </span>
+                </div>
+              )}
+              {form.guests && (
+                <div className="flex items-center gap-2.5 text-[13px] text-[#0A1633]">
+                  <Users
+                    size={16}
+                    className="shrink-0 text-[#1B4EF5]"
+                  />
+                  <span>
+                    {formatDictionaryString(dict.summary.guestsCount, {
+                      n: form.guests,
                     })}
                   </span>
-                </span>
-              </div>
-            )}
-
-            {form.guests && (
-              <div className="flex items-center gap-3 text-sm text-[var(--color-stone-700)] -mt-1">
-                <Users
-                  size={16}
-                  className="text-[var(--color-champagne-500)]"
-                />
-                <span>
-                  {formatDictionaryString(dict.summary.guestsCount, {
-                    n: form.guests,
-                  })}
-                </span>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
             {/* 🛡️ UI/layout turu — fiyat özeti kartı artık villa detayındaki
                 BookingSummary.tsx ile AYNI görsel dil (accent çizgi, Toplam
@@ -832,512 +1240,216 @@ export default function ReservationForm({
                 />
               )}
             </div>
-
           </div>
-        </div>
-      </div>
 
-      {/* ALT — FORM (artık tam genişlik; dar sağ-sidebar kolonuna
-          sıkışmıyor). 🛡️ UI/layout turu — yalnız dış wrapper/className
-          değişti (grid-cols-3 + lg:col-span-2 kaldırıldı). Form içeriği
-          (adımlar, inputlar, state, handler'lar, validation) BİREBİR
-          AYNI. */}
-      <div className="card-premium p-6 md:p-8 space-y-9">
-        {/* 🛡️ INLINE ERROR BANNER — submitError null değilse görünür.
-           alert() yerine modern inline feedback. */}
-        {submitError && (
-          <div
-            role="alert"
-            className="
-              rounded-2xl border border-red-200 bg-red-50
-              px-4 py-3 text-[13.5px] text-red-700
-              flex items-start gap-3
-            "
-          >
-            <span aria-hidden className="mt-0.5">⚠️</span>
-            <span className="flex-1 leading-relaxed">{submitError}</span>
-            <button
-              type="button"
-              onClick={() => setSubmitError(null)}
-              aria-label={dict.form.errorDismissAriaLabel}
-              className="text-red-500 hover:text-red-700 transition-colors shrink-0"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-        {/* CONTACT SECTION */}
-        <Section
-          eyebrow={dict.form.step1Eyebrow}
-          title={dict.form.step1Title}
-          subtitle={dict.form.step1Subtitle}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { key: "name", placeholder: dict.form.namePlaceholder },
-              { key: "email", placeholder: dict.form.emailPlaceholder },
-              { key: "identity", placeholder: dict.form.identityPlaceholder },
-            ].map((field) => (
-              <div key={field.key}>
-                <input
-                  value={(form as any)[field.key]}
-                  placeholder={field.placeholder}
-                  onChange={(e) => {
-                    setForm({ ...form, [field.key]: e.target.value });
-                    setErrors((prev: any) => ({
-                      ...prev,
-                      [field.key]: "",
-                    }));
-                  }}
-                  className={`${inputBase} ${errors[field.key] ? inputErr : inputOk
-                    }`}
-                />
-                {errors[field.key] && (
-                  <p className="text-xs text-red-500 mt-1.5">
-                    {errors[field.key]}
-                  </p>
-                )}
+          {/* CTA bölümü — onay + gönder (mantık AYNEN) */}
+          <div className="border-t border-[#E5E7EB] bg-[#FBFCFE] p-5 md:p-6 space-y-4">
+            {/* 🛡️ INLINE ERROR BANNER — submitError null değilse görünür.
+               alert() yerine modern inline feedback. */}
+            {submitError && (
+              <div
+                role="alert"
+                className="
+                  rounded-2xl border border-red-200 bg-red-50
+                  px-4 py-3 text-[13.5px] text-red-700
+                  flex items-start gap-3
+                "
+              >
+                <span aria-hidden className="mt-0.5">⚠️</span>
+                <span className="flex-1 leading-relaxed">{submitError}</span>
+                <button
+                  type="button"
+                  onClick={() => setSubmitError(null)}
+                  aria-label={dict.form.errorDismissAriaLabel}
+                  className="text-red-500 hover:text-red-700 transition-colors shrink-0"
+                >
+                  ✕
+                </button>
               </div>
-            ))}
-
-            {/* 🛡️ TELEFON 1 + TELEFON 2 — ikisi de ZORUNLU, ülke kodları
-                BİRBİRİNDEN BAĞIMSIZ. Mevcut input/select tasarım dili
-                (inputBase/inputOk/inputErr) aynen kullanıldı; yeni kart,
-                yeni renk, yeni component mimarisi YOK. Mobilde ülke kodu
-                sabit genişlikte, numara kalan alanı doldurur. */}
-            {(
-              [
-                {
-                  key: "phone" as const,
-                  dialKey: "phone_dial" as const,
-                  nationalKey: "phone_national" as const,
-                  label: dict.form.phoneLabel,
-                  placeholder: dict.form.phonePlaceholder,
-                },
-                {
-                  key: "phone2" as const,
-                  dialKey: "phone2_dial" as const,
-                  nationalKey: "phone2_national" as const,
-                  label: dict.form.phone2Label,
-                  placeholder: dict.form.phone2Placeholder,
-                },
-              ]
-            ).map((f) => (
-              <div key={f.key}>
-                {/* 🛡️ GÖRÜNÜR ÜST LABEL KALDIRILDI ("Telefon 1 *" /
-                    "Telefon 2 *"). Diğer alanlarla (Ad/E-posta/TC) aynı
-                    şekilde yalnız placeholder gösterilir. `f.label`
-                    SİLİNMEDİ: select ve input'un aria-label'ında kalır →
-                    ekran okuyucu hangi telefon olduğunu bilmeye devam
-                    eder. Zorunluluk mantığı DEĞİŞMEDİ. */}
-                <div className="flex items-stretch gap-2">
-                  <select
-                    aria-label={`${f.label} — ${dict.form.phoneCountryAriaLabel}`}
-                    value={form[f.dialKey]}
-                    onChange={(e) => {
-                      const dial = e.target.value;
-                      setForm({
-                        ...form,
-                        [f.dialKey]: dial,
-                        [f.key]: joinPhone(dial, form[f.nationalKey]),
-                      });
-                      setErrors((prev) => ({ ...prev, [f.key]: "" }));
-                    }}
-                    className={`${inputBase} ${
-                      errors[f.key] ? inputErr : inputOk
-                    } !w-[104px] shrink-0 px-2 tabular-nums`}
-                  >
-                    {DIAL_CODES.map((c) => (
-                      <option key={c.iso} value={c.dial}>
-                        {c.dial} {c.label}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    id={`reservation-${f.key}`}
-                    aria-label={f.label}
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete={f.key === "phone" ? "tel" : "tel-national"}
-                    value={form[f.nationalKey]}
-                    placeholder={f.placeholder}
-                    onChange={(e) => {
-                      const national = e.target.value;
-                      setForm({
-                        ...form,
-                        [f.nationalKey]: national,
-                        [f.key]: joinPhone(form[f.dialKey], national),
-                      });
-                      setErrors((prev) => ({ ...prev, [f.key]: "" }));
-                    }}
-                    className={`${inputBase} ${
-                      errors[f.key] ? inputErr : inputOk
-                    } flex-1 min-w-0`}
-                  />
-                </div>
-                {errors[f.key] && (
-                  <p className="text-xs text-red-500 mt-1.5">{errors[f.key]}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* ADDRESS SECTION */}
-        <Section
-          eyebrow={dict.form.step2Eyebrow}
-          title={dict.form.step2Title}
-          subtitle={dict.form.step2Subtitle}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <select
-              value={form.country || ""}
-              onChange={(e) => handleCountryChange(e.target.value)}
-              className={`${inputBase} ${inputOk}`}
-            >
-              <option value="">{dict.form.countrySelect}</option>
-              {countries.map((c) => (
-                <option key={c.isoCode} value={c.isoCode}>
-                  {/* 🌍 Display override: TR locale'de "Türkiye";
-                      EN/DE'de Intl ülke adı. Option value hâlâ ISO code
-                      (`c.isoCode`); form payload ve validation aynen
-                      ISO code akar. */}
-                  {formatCountryLabel(c.isoCode, activeLocale, () => c.name)}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={form.city ?? ""}
-              onChange={(e) => setForm({ ...form, city: e.target.value })}
-              disabled={!form.country}
-              className={`${inputBase} ${inputOk} disabled:opacity-60`}
-            >
-              <option value="">
-                {form.country
-                  ? dict.form.citySelect
-                  : dict.form.citySelectDisabled}
-              </option>
-              {cities.map((c) => (
-                <option key={c.isoCode} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-
-            <input
-              value={form.address}
-              placeholder={dict.form.addressPlaceholder}
-              className={`md:col-span-2 ${inputBase} ${inputOk}`}
-              onChange={(e) =>
-                setForm({ ...form, address: e.target.value })
-              }
-            />
-
-            <input
-              value={form.note}
-              placeholder={dict.form.notePlaceholder}
-              onChange={(e) => setForm({ ...form, note: e.target.value })}
-              className={`md:col-span-2 ${inputBase} ${inputOk}`}
-            />
-          </div>
-        </Section>
-
-        {/* GUESTS SECTION */}
-        <Section
-          eyebrow={dict.form.step3Eyebrow}
-          title={dict.form.step3Title}
-          subtitle={dict.form.step3Subtitle}
-        >
-          <div className="bg-[var(--color-sand-50)] border border-[var(--color-sand-100)] rounded-xl px-4 py-3 text-sm flex justify-between items-center mb-4">
-            <span className="font-medium text-[var(--color-stone-700)]">
-              {dict.form.totalGuestsLabel}
-            </span>
-            <span className="text-[var(--color-stone-900)] font-semibold">
-              {formatDictionaryString(dict.form.guestsPersonCount, {
-                n: form.guests || 1,
-              })}
-              {(adults || children) && (
-                <span className="text-[var(--color-stone-500)] ml-2 font-normal">
-                  (
-                  {formatDictionaryString(bookingDict.guestsSummary, {
-                    adults: adults || 0,
-                    children: children || 0,
-                  })}
-                  )
-                </span>
-              )}
-            </span>
-          </div>
-
-          {guestNames.length > 0 && (
-            <div className="space-y-2.5">
-              <p className="text-[12px] tracking-[0.08em] uppercase font-semibold text-[var(--color-stone-500)]">
-                {dict.form.otherGuests}
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {guestNames.map((g, i) => (
-                  <input
-                    key={i}
-                    value={g}
-                    placeholder={formatDictionaryString(
-                      dict.form.guestNamePlaceholder,
-                      { n: i + 2 }
-                    )}
-                    onChange={(e) => {
-                      const updated = [...guestNames];
-                      updated[i] = e.target.value;
-                      setGuestNames(updated);
-                    }}
-                    className={`${inputBase} ${inputOk}`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </Section>
-
-        {/* PAYMENT */}
-        <Section
-          eyebrow={dict.form.step4Eyebrow}
-          title={dict.form.step4Title}
-          subtitle={dict.form.step4Subtitle}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {paymentMethods.length === 0 && (
-              <p className="text-sm text-[var(--color-stone-400)] italic">
-                {dict.form.noPaymentMethod}
-              </p>
             )}
-            {paymentMethods.map((p) => {
-              const checked = form.payment_method_id === p.id;
-              return (
-                <label
-                  key={p.id}
-                  className={`
-                    flex items-center gap-3 px-4 py-3.5 rounded-xl
-                    border cursor-pointer transition
-                    ${checked
-                      ? "border-[var(--color-champagne-500)] bg-[var(--color-sand-50)]"
-                      : "border-[var(--color-stone-100)] hover:border-[var(--color-stone-200)]"
-                    }
-                  `}
-                >
-                  <input
-                    type="radio"
-                    checked={checked}
-                    onChange={() =>
-                      setForm({ ...form, payment_method_id: p.id })
-                    }
-                    className="!w-4 !h-4 accent-[var(--color-champagne-500)]"
-                  />
-                  <CreditCard
-                    size={16}
-                    className="text-[var(--color-stone-500)]"
-                  />
-                  <span className="text-sm font-medium text-[var(--color-stone-900)]">
-                    {resolveTaxonomyName(
-                      p.name,
-                      p.name_by_locale,
-                      activeLocale
-                    )}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-          {errors.payment_method_id && (
-            <p className="text-xs text-red-500 mt-2">
-              {errors.payment_method_id}
-            </p>
-          )}
-        </Section>
 
-        {/* PAYMENT PREFERENCE */}
-        <Section
-          eyebrow={dict.form.step5Eyebrow}
-          title={dict.form.step5Title}
-          subtitle={dict.form.step5Subtitle}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              {
-                value: "prepayment" as PaymentPreference,
-                label: dict.form.prepaymentOption,
-                hint: formatDictionaryString(dict.form.prepaymentHint, {
-                  rate: prepaymentRate,
-                }),
-              },
-              {
-                value: "full_payment" as PaymentPreference,
-                label: dict.form.fullPaymentOption,
-                hint: dict.form.fullPaymentHint,
-              },
-            ].map((opt) => {
-              const checked = form.payment_preference === opt.value;
-              return (
-                <label
-                  key={opt.value}
-                  className={`
-                    flex items-start gap-3 px-4 py-3.5 rounded-xl
-                    border cursor-pointer transition
-                    ${checked
-                      ? "border-[var(--color-champagne-500)] bg-[var(--color-sand-50)]"
-                      : "border-[var(--color-stone-100)] hover:border-[var(--color-stone-200)]"
-                    }
-                  `}
-                >
-                  <input
-                    type="radio"
-                    name="payment_preference"
-                    checked={checked}
-                    onChange={() =>
-                      setForm({ ...form, payment_preference: opt.value })
-                    }
-                    className="!w-4 !h-4 mt-0.5 accent-[var(--color-champagne-500)]"
-                  />
-                  <span className="flex-1">
-                    <span className="block text-sm font-medium text-[var(--color-stone-900)]">
-                      {opt.label}
-                    </span>
-                    <span className="block text-[11px] text-[var(--color-stone-500)] mt-0.5">
-                      {opt.hint}
-                    </span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        </Section>
+            {/* ═══════════════════════════════════════════════════════
+                🛡️ SÖZLEŞME ONAYI — zorunlu checkbox (submit'in HEMEN ÖNÜ)
+                ═══════════════════════════════════════════════════════
+                • Native `<input type="checkbox">` + `<label htmlFor>` →
+                  klavye ile seçilebilir, ekran okuyucuya bağlı.
+                • Metin sözlükten gelir (`termsLabel`, üç placeholder) →
+                  EN/DE'de Türkçe sızıntısı YOK.
+                • Link hedefleri `localeHref` ile aktif locale'i taşır.
+                • Linkler `stopPropagation` + `target="_blank"`: tıklamak
+                  checkbox'ı toggle ETMEZ ve doldurulmuş form kaybolmaz.
+                • Mevcut typography/spacing/renk token'ları; yeni global
+                  CSS veya yeni component YOK. */}
+            <div className="flex items-start gap-2.5">
+              <input
+                id="reservation-terms-accept"
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => {
+                  setTermsAccepted(e.target.checked);
+                  /* Onay verilince eksik-onay uyarısı kendiliğinden kalkar;
+                     diğer submitError mesajlarına DOKUNULMAZ. */
+                  if (e.target.checked && submitError === dict.form.termsRequired) {
+                    setSubmitError(null);
+                  }
+                }}
+                className="!w-4 !h-4 mt-0.5 shrink-0 accent-[#1B4EF5]"
+              />
+              <label
+                htmlFor="reservation-terms-accept"
+                className="flex-1 text-[12px] leading-[1.6] text-[#5B6478] cursor-pointer"
+              >
+                {(() => {
+                  /* Şablon placeholder'larından bölünür; metin sırası ve
+                     noktalama sözlükten AYNEN gelir (locale'e göre cümle
+                     kurgusu değişebilsin diye). */
+                  /* ⚠️ Alan adı bilinçli olarak `path` (`href` DEĞİL): bunlar
+                     HAM canonical path'lerdir, gerçek `href` aşağıda
+                     `localeHref(...)` ile üretilir. Böylece "prefix'siz iç
+                     link" tarayıcısı (navigation-locale-persistence testi)
+                     yanlış alarm vermez ve gerçek koruma sürer. */
+                  const LINKS: Record<string, { path: string; label: string }> = {
+                    "{cancellation}": {
+                      path: "/p/rezervasyon-ve-iptal-kosullari",
+                      label: dict.form.termsCancellationLink,
+                    },
+                    "{distanceSales}": {
+                      path: "/p/mesafeli-satis-sozlesmesi",
+                      label: dict.form.termsDistanceSalesLink,
+                    },
+                    "{privacy}": {
+                      path: "/p/kvkk-ve-gizlilik-politikasi",
+                      label: dict.form.termsPrivacyLink,
+                    },
+                  };
+                  return dict.form.termsLabel
+                    .split(/(\{cancellation\}|\{distanceSales\}|\{privacy\})/)
+                    .map((part, i) => {
+                      const link = LINKS[part];
+                      if (!link) return <span key={i}>{part}</span>;
+                      return (
+                        <Link
+                          key={i}
+                          href={localeHref(link.path, activeLocale)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="underline underline-offset-2 text-[#1B4EF5] hover:text-[#1640CC] transition-colors"
+                        >
+                          {link.label}
+                        </Link>
+                      );
+                    });
+                })()}
+              </label>
+            </div>
 
-        {/* ═══════════════════════════════════════════════════════
-            🛡️ SÖZLEŞME ONAYI — zorunlu checkbox (submit'in HEMEN ÖNÜ)
-            ═══════════════════════════════════════════════════════
-            • Native `<input type="checkbox">` + `<label htmlFor>` →
-              klavye ile seçilebilir, ekran okuyucuya bağlı.
-            • Metin sözlükten gelir (`termsLabel`, üç placeholder) →
-              EN/DE'de Türkçe sızıntısı YOK.
-            • Link hedefleri `localeHref` ile aktif locale'i taşır.
-            • Linkler `stopPropagation` + `target="_blank"`: tıklamak
-              checkbox'ı toggle ETMEZ ve doldurulmuş form kaybolmaz.
-            • Mevcut typography/spacing/renk token'ları; yeni global
-              CSS veya yeni component YOK. */}
-        <div className="flex items-start gap-3 mb-4">
-          <input
-            id="reservation-terms-accept"
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={(e) => {
-              setTermsAccepted(e.target.checked);
-              /* Onay verilince eksik-onay uyarısı kendiliğinden kalkar;
-                 diğer submitError mesajlarına DOKUNULMAZ. */
-              if (e.target.checked && submitError === dict.form.termsRequired) {
-                setSubmitError(null);
-              }
-            }}
-            className="!w-4 !h-4 mt-0.5 shrink-0 accent-[var(--color-champagne-500)]"
-          />
-          <label
-            htmlFor="reservation-terms-accept"
-            className="flex-1 text-[13px] leading-relaxed text-[var(--color-stone-600)] cursor-pointer"
-          >
-            {(() => {
-              /* Şablon placeholder'larından bölünür; metin sırası ve
-                 noktalama sözlükten AYNEN gelir (locale'e göre cümle
-                 kurgusu değişebilsin diye). */
-              /* ⚠️ Alan adı bilinçli olarak `path` (`href` DEĞİL): bunlar
-                 HAM canonical path'lerdir, gerçek `href` aşağıda
-                 `localeHref(...)` ile üretilir. Böylece "prefix'siz iç
-                 link" tarayıcısı (navigation-locale-persistence testi)
-                 yanlış alarm vermez ve gerçek koruma sürer. */
-              const LINKS: Record<string, { path: string; label: string }> = {
-                "{cancellation}": {
-                  path: "/p/rezervasyon-ve-iptal-kosullari",
-                  label: dict.form.termsCancellationLink,
-                },
-                "{distanceSales}": {
-                  path: "/p/mesafeli-satis-sozlesmesi",
-                  label: dict.form.termsDistanceSalesLink,
-                },
-                "{privacy}": {
-                  path: "/p/kvkk-ve-gizlilik-politikasi",
-                  label: dict.form.termsPrivacyLink,
-                },
-              };
-              return dict.form.termsLabel
-                .split(/(\{cancellation\}|\{distanceSales\}|\{privacy\})/)
-                .map((part, i) => {
-                  const link = LINKS[part];
-                  if (!link) return <span key={i}>{part}</span>;
-                  return (
-                    <Link
-                      key={i}
-                      href={localeHref(link.path, activeLocale)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="underline underline-offset-2 text-[var(--color-champagne-700)] hover:text-[var(--color-champagne-600)] transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  );
-                });
-            })()}
-          </label>
+            {/* SUBMIT */}
+            <button
+              onClick={handleSubmit}
+              disabled={!isFormValid || loading}
+              className={`
+                w-full inline-flex items-center justify-center gap-2
+                h-[52px] rounded-[13px] text-[14px] font-semibold
+                transition-[background-color,transform,box-shadow] duration-200 motion-reduce:transition-none
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/40 focus-visible:ring-offset-2
+                ${isFormValid && !loading
+                  ? "bg-[#1B4EF5] text-white shadow-[0_6px_16px_-8px_rgba(27,78,245,0.55)] hover:bg-[#1640CC] hover:-translate-y-px motion-reduce:hover:translate-y-0"
+                  : "bg-[#EEF1F6] text-[#9AA3B5] cursor-not-allowed"
+                }
+              `}
+            >
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  {dict.form.submitting}
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={17} />
+                  {dict.form.submit}
+                </>
+              )}
+            </button>
+
+            {/* GÜVEN SATIRI — mevcut sayfa rozet metinleri (yeni iddia YOK) */}
+            <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pt-1">
+              {[dict.page.badgeLine1, dict.page.badgeLine2, dict.page.badgeLine3].map((t) => (
+                <li
+                  key={t}
+                  className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-[#5B6478]"
+                >
+                  <ShieldCheck size={13} strokeWidth={2} aria-hidden="true" className="text-[#1B4EF5]" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-
-        {/* SUBMIT */}
-        <button
-          onClick={handleSubmit}
-          disabled={!isFormValid || loading}
-          className={`
-            w-full inline-flex items-center justify-center gap-2
-            py-4 rounded-xl font-semibold text-base transition
-            ${isFormValid && !loading
-              ? "btn-primary"
-              : "bg-[var(--color-stone-100)] text-[var(--color-stone-400)] cursor-not-allowed"
-            }
-          `}
-        >
-          {loading ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              {dict.form.submitting}
-            </>
-          ) : (
-            <>
-              <CheckCircle2 size={17} />
-              {dict.form.submit}
-            </>
-          )}
-        </button>
-      </div>
+      </aside>
     </div>
   );
 }
 
 /* ── Helpers ── */
 
+/* 🎨 Checkout bölüm kartı — beyaz yüzey, 16px radius, ince #E5E7EB
+   border, çok hafif shadow. */
+const CARD_CLASS =
+  "rounded-2xl border border-[#E5E7EB] bg-white shadow-[0_1px_2px_rgba(10,22,51,0.04)] p-5 md:p-6";
+
+function SectionHeader({
+  icon,
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 mb-4 md:mb-5">
+      <span
+        aria-hidden="true"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EEF3FF] text-[#1B4EF5]"
+      >
+        {icon}
+      </span>
+      <div className="min-w-0">
+        {eyebrow && (
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#8A93A6]">
+            {eyebrow}
+          </p>
+        )}
+        <h2 className="font-display font-bold text-[16px] md:text-[17px] leading-tight text-[#0A1633] tracking-[-0.01em]">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="mt-1 text-[12.5px] leading-relaxed text-[#64708A]">{subtitle}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Section({
+  icon,
   eyebrow,
   title,
   subtitle,
   children,
 }: {
+  icon: React.ReactNode;
   eyebrow: string;
   title: string;
   subtitle: string;
   children: React.ReactNode;
 }) {
   return (
-    <section>
-      <p className="eyebrow">{eyebrow}</p>
-      <h2 className="font-display text-2xl text-[var(--color-stone-900)] mt-1.5 tracking-[-0.015em]">
-        {title}
-      </h2>
-      <p className="text-sm text-[var(--color-stone-500)] mt-1.5 mb-5">
-        {subtitle}
-      </p>
+    <section className={CARD_CLASS}>
+      <SectionHeader icon={icon} eyebrow={eyebrow} title={title} subtitle={subtitle} />
       {children}
     </section>
   );

@@ -921,6 +921,11 @@ export type Dictionary = {
        ülke/şehir adları · referans numarası · WhatsApp bağlantısı. */
   reservation: {
     page: {
+      checkoutTitle: string;
+      stepsAriaLabel: string;
+      stepVilla: string;
+      stepDetails: string;
+      stepReservation: string;
       breadcrumbCurrent: string;
       title: string;
       description: string;
@@ -933,6 +938,7 @@ export type Dictionary = {
       notFoundTitle: string;
     };
     summary: {
+      summaryLabel: string;
       eyebrow: string;
       /** `formatDictionaryString` — `{n}`. */
       guestsCount: string;
@@ -941,6 +947,8 @@ export type Dictionary = {
       payNowAll: string;
     };
     form: {
+      stayInfoTitle: string;
+      nightsLabel: string;
       step1Eyebrow: string;
       step1Title: string;
       step1Subtitle: string;

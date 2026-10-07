@@ -82,7 +82,7 @@ vi.mock("@/lib/storage.helpers", () => ({
 import ReservationForm from "@/app/components/reservation/ReservationForm";
 import ReservationPageBody from "@/app/components/reservation/ReservationPageBody";
 import ReservationSuccessBody from "@/app/components/reservation/ReservationSuccessBody";
-import PageHero from "@/app/components/ui/PageHero";
+import ReservationCheckoutHeader from "@/app/components/reservation/ReservationCheckoutHeader";
 
 const LOCALES: Locale[] = ["tr", "en", "de"];
 
@@ -292,6 +292,20 @@ function childrenOf(el: any): any[] {
   return Array.isArray(c) ? c.flat(Infinity) : c ? [c] : [];
 }
 
+/* 🎨 Checkout layout turu: PageHero yerine ReservationCheckoutHeader;
+   ReservationForm artık iç içe wrapper'larda → element ağacında TİPE
+   göre derin arama (className'e bağımlılık YOK). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function findByType(el: any, type: unknown): any {
+  if (!el || typeof el !== "object") return undefined;
+  if (el.type === type) return el;
+  for (const c of childrenOf(el)) {
+    const hit = findByType(c, type);
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
 async function renderBody(locale: Locale, slug = "test-villa") {
   getVillaBySlugMock.mockResolvedValue(VILLA);
   getVillaPricesMock.mockResolvedValue([]);
@@ -312,21 +326,25 @@ async function renderBody(locale: Locale, slug = "test-villa") {
 }
 
 describe("ReservationPageBody — locale-aware gövde", () => {
-  it.each(LOCALES)("9) %s — PageHero başlık/açıklama dictionary'den", async (locale) => {
+  it.each(LOCALES)("9) %s — checkout başlığı/açıklama/adımlar dictionary'den", async (locale) => {
     const el = await renderBody(locale);
-    const hero = childrenOf(el).find((c) => c?.type === PageHero);
+    const hero = findByType(el, ReservationCheckoutHeader);
     const dict = getDictionary(locale).reservation.page;
-    expect(hero.props.title).toBe(dict.title);
+    expect(hero.props.title).toBe(dict.checkoutTitle);
     expect(hero.props.description).toBe(dict.description);
-    expect(hero.props.badge).toEqual({
-      eyebrow: dict.badgeEyebrow,
-      lines: [dict.badgeLine1, dict.badgeLine2, dict.badgeLine3],
-    });
+    expect(hero.props.steps.map((s: { label: string }) => s.label)).toEqual([
+      dict.stepVilla,
+      dict.stepDetails,
+      dict.stepReservation,
+    ]);
+    /* Yalnız görsel gösterge — kullanıcı "Bilgiler" adımında. */
+    expect(hero.props.activeStep).toBe(1);
+    expect(hero.props.stepsAriaLabel).toBe(dict.stepsAriaLabel);
   });
 
   it.each(LOCALES)("10) %s — breadcrumb isimleri dictionary'den", async (locale) => {
     const el = await renderBody(locale);
-    const hero = childrenOf(el).find((c) => c?.type === PageHero);
+    const hero = findByType(el, ReservationCheckoutHeader);
     const d = getDictionary(locale);
     expect(hero.props.breadcrumb.map((c: { name: string }) => c.name)).toEqual([
       d.search.breadcrumbHome,
@@ -337,7 +355,7 @@ describe("ReservationPageBody — locale-aware gövde", () => {
 
   it("11) TR breadcrumb href'leri BİREBİR eskisi gibi ('/', '/kiralik-villalar')", async () => {
     const el = await renderBody("tr");
-    const hero = childrenOf(el).find((c) => c?.type === PageHero);
+    const hero = findByType(el, ReservationCheckoutHeader);
     expect(hero.props.breadcrumb[0].href).toBe("/");
     expect(hero.props.breadcrumb[1].href).toBe("/kiralik-villalar");
     expect(hero.props.breadcrumb[2].href).toBeUndefined();
@@ -348,27 +366,21 @@ describe("ReservationPageBody — locale-aware gövde", () => {
     ["de", "/de", "/de/kiralik-villalar"],
   ] as const)("12) %s breadcrumb href'leri locale-prefixli", async (locale, home, villas) => {
     const el = await renderBody(locale);
-    const hero = childrenOf(el).find((c) => c?.type === PageHero);
+    const hero = findByType(el, ReservationCheckoutHeader);
     expect(hero.props.breadcrumb[0].href).toBe(home);
     expect(hero.props.breadcrumb[1].href).toBe(villas);
   });
 
   it.each(LOCALES)("13) %s — ReservationForm'a locale prop'u geçilir", async (locale) => {
     const el = await renderBody(locale);
-    const wrapper = childrenOf(el).find(
-      (c) => c?.props?.className === "section-narrow pt-12 md:pt-16 pb-20"
-    );
-    const form = childrenOf(wrapper)[0];
+    const form = findByType(el, ReservationForm);
     expect(form.type).toBe(ReservationForm);
     expect(form.props.locale).toBe(locale);
   });
 
   it("14) 🔒 iş mantığı props'ları DEĞİŞMEDİ (searchParams → form)", async () => {
     const el = await renderBody("en");
-    const wrapper = childrenOf(el).find(
-      (c) => c?.props?.className === "section-narrow pt-12 md:pt-16 pb-20"
-    );
-    const form = childrenOf(wrapper)[0];
+    const form = findByType(el, ReservationForm);
     /* 🔒 Tam VillaDTO değil, yalnız formun okuduğu alanlar AYNI
        değerlerle geçer; server-only alanlar client'a gitmez. */
     const expectedVilla = Object.fromEntries(
@@ -422,10 +434,7 @@ describe("ReservationPageBody — locale-aware gövde", () => {
       locale: "tr",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
-    const wrapper = childrenOf(el).find(
-      (c) => c?.props?.className === "section-narrow pt-12 md:pt-16 pb-20"
-    );
-    expect(childrenOf(wrapper)[0].props.poolHeatingSelected).toBe(false);
+    expect(findByType(el, ReservationForm).props.poolHeatingSelected).toBe(false);
   });
 
   it.each(LOCALES)("17) %s — boş slug → locale'e uygun 'Geçersiz URL'", async (locale) => {
@@ -468,8 +477,8 @@ describe("ReservationPageBody — locale-aware gövde", () => {
       searchParams: Promise.resolve({}),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
-    const hero = childrenOf(el).find((c) => c?.type === PageHero);
-    expect(hero.props.title).toBe("Kişisel Bilgilerinizi Girin");
+    const hero = findByType(el, ReservationCheckoutHeader);
+    expect(hero.props.title).toBe("Rezervasyonunuzu Tamamlayın");
     expect(hero.props.breadcrumb[0].href).toBe("/");
   });
 });
@@ -1235,5 +1244,131 @@ describe("source-lock — rezervasyon gövdelerinde hardcoded TR metin yok", () 
     const src = sourceWithoutComments(SOURCE_LOCKED[0]);
     expect(src).toContain("/rezervasyon/basarili");
     expect(src).toContain("${activeLocale}/rezervasyon/basarili");
+  });
+});
+
+/* ===============================================================
+   🎨 CHECKOUT LAYOUT (UI redesign turu) — yalnız sunum; form/fiyat/
+   submit mantığı yukarıdaki testlerle AYNEN kilitli.
+   =============================================================== */
+describe("ReservationForm — checkout layout (UI)", () => {
+  it("desktop 2 kolon (~%62 / ~%38), sağ özet sticky; mobilde tek kolon (DOM sırası: bilgiler → özet)", () => {
+    const { container } = renderForm("tr");
+    const grid = container.firstElementChild as HTMLElement;
+    expect(grid).toHaveClass(
+      "grid",
+      "grid-cols-1",
+      "lg:grid-cols-[minmax(0,1.63fr)_minmax(0,1fr)]"
+    );
+    const [left, aside] = Array.from(grid.children) as HTMLElement[];
+    expect(left.tagName).toBe("DIV");
+    expect(aside.tagName).toBe("ASIDE");
+    expect(aside).toHaveClass("lg:sticky", "lg:top-24");
+    /* Form alanları solda, gönder butonu sağ özet kartında. */
+    expect(left).toContainElement(screen.getByPlaceholderText("İsim Soyisim"));
+    expect(aside).toContainElement(screen.getByText("Rezervasyon Gönder"));
+    expect(aside).toContainElement(screen.getByText("Toplam Tutar"));
+  });
+
+  it("özet kartı: 'Rezervasyon Özeti' etiketi, villa adı/görseli, tarih + misafir", () => {
+    const d = getDictionary("tr").reservation;
+    renderForm("tr");
+    const aside = screen.getByText(d.summary.summaryLabel).closest("aside") as HTMLElement;
+    expect(aside).toBeTruthy();
+    expect(aside).toContainElement(screen.getByText("7 gece"));
+    expect(aside).toContainElement(screen.getByText("3 misafir"));
+    expect(aside.querySelector("img")).toHaveAttribute("src", "/cover.jpg");
+  });
+
+  it("A) Konaklama Bilgileri kartı: giriş / çıkış / gece / misafir (veri AYNEN)", () => {
+    const d = getDictionary("tr");
+    renderForm("tr");
+    const card = screen.getByText(d.reservation.form.stayInfoTitle).closest("section") as HTMLElement;
+    expect(card).toHaveClass("rounded-2xl", "border", "border-[#E5E7EB]", "bg-white");
+    const dl = card.querySelector("dl") as HTMLElement;
+    const labels = Array.from(dl.querySelectorAll("dt")).map((n) => n.textContent);
+    expect(labels).toEqual([
+      d.booking.checkInPillLabel,
+      d.booking.checkOutPillLabel,
+      d.reservation.form.nightsLabel,
+      d.booking.guestsLabel,
+    ]);
+    const values = Array.from(dl.querySelectorAll("dd")).map((n) => n.textContent);
+    expect(values[0]).toMatch(/1 Haziran 2026/);
+    expect(values[1]).toMatch(/8 Haziran 2026/);
+    expect(values[2]).toBe("7");
+    expect(values[3]).toBe("3");
+  });
+
+  it("bölümler ayrı beyaz kartlarda, başlık yanında küçük mavi ikon", () => {
+    const d = getDictionary("tr").reservation.form;
+    renderForm("tr");
+    for (const t of [d.step1Title, d.step2Title, d.step3Title, d.step4Title, d.step5Title]) {
+      const h = screen.getByRole("heading", { name: t });
+      expect(h).toHaveClass("text-[16px]");
+      const card = h.closest("section") as HTMLElement;
+      expect(card).toHaveClass("rounded-2xl", "border-[#E5E7EB]", "bg-white");
+      expect(card.querySelector("span.text-\\[\\#1B4EF5\\] svg")).toBeTruthy();
+    }
+  });
+
+  it("input dili: ~50px, 13px, #DDE3EC border, odakta #1B4EF5", () => {
+    renderForm("tr");
+    const input = screen.getByPlaceholderText("İsim Soyisim");
+    expect(input).toHaveClass(
+      "h-[50px]",
+      "text-[13px]",
+      "rounded-[11px]",
+      "!border-[#DDE3EC]",
+      "focus:!border-[#1B4EF5]"
+    );
+  });
+
+  it("CTA: tam genişlik, 52px, 14px semibold; geçersiz formda disabled + gri (mevcut koşul AYNEN)", () => {
+    renderForm("tr");
+    const btn = screen.getByText("Rezervasyon Gönder").closest("button") as HTMLButtonElement;
+    expect(btn).toHaveClass("w-full", "h-[52px]", "text-[14px]", "font-semibold", "rounded-[13px]");
+    /* Boş form → isFormValid=false → disabled (mevcut davranış). */
+    expect(btn).toBeDisabled();
+    expect(btn).toHaveClass("bg-[#EEF1F6]");
+  });
+
+  it("onay metni CTA'nın HEMEN ÜSTÜNDE ve aynı kartta; güven satırı mevcut rozet metinleri (TR/EN)", () => {
+    for (const locale of ["tr", "en"] as const) {
+      cleanup();
+      const d = getDictionary(locale).reservation;
+      renderForm(locale);
+      const btn = screen.getByText(d.form.submit).closest("button") as HTMLElement;
+      const terms = document.getElementById("reservation-terms-accept") as HTMLElement;
+      expect(btn.parentElement).toContainElement(terms);
+      expect(
+        terms.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+      for (const t of [d.page.badgeLine1, d.page.badgeLine2, d.page.badgeLine3]) {
+        expect(screen.getByText(t)).toBeInTheDocument();
+      }
+    }
+  });
+});
+
+describe("ReservationCheckoutHeader — sunum", () => {
+  it("breadcrumb linkleri + aktif adım aria-current='step'", () => {
+    render(
+      <ReservationCheckoutHeader
+        breadcrumb={[{ name: "Ana Sayfa", href: "/" }, { name: "Rezervasyon" }]}
+        steps={[{ label: "Villa Seçimi" }, { label: "Bilgiler" }, { label: "Rezervasyon" }]}
+        activeStep={1}
+        stepsAriaLabel="Rezervasyon adımları"
+        title="Rezervasyonunuzu Tamamlayın"
+        description="Açıklama"
+      />
+    );
+    expect(screen.getByRole("heading", { level: 1, name: "Rezervasyonunuzu Tamamlayın" })).toBeInTheDocument();
+    expect(screen.getByText("Ana Sayfa").closest("a")).toHaveAttribute("href", "/");
+    const steps = screen.getByRole("list", { name: "Rezervasyon adımları" });
+    const items = steps.querySelectorAll("li");
+    expect(items).toHaveLength(3);
+    expect(items[1]).toHaveAttribute("aria-current", "step");
+    expect(items[0]).not.toHaveAttribute("aria-current");
   });
 });

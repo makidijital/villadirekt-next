@@ -666,6 +666,11 @@ export const en: Dictionary = {
   /* 🛡️ /en/rezervasyon statik UI metinleri. */
   reservation: {
     page: {
+      checkoutTitle: "Complete Your Reservation",
+      stepsAriaLabel: "Reservation steps",
+      stepVilla: "Villa Selection",
+      stepDetails: "Details",
+      stepReservation: "Reservation",
       breadcrumbCurrent: "Reservation",
       title: "Enter Your Personal Details",
       description:
@@ -679,12 +684,15 @@ export const en: Dictionary = {
       notFoundTitle: "Villa not found",
     },
     summary: {
+      summaryLabel: "Reservation Summary",
       eyebrow: "Stay",
       guestsCount: "{n} guests",
       nightsCount: "{n} nights",
       payNowAll: "Due now (full amount)",
     },
     form: {
+      stayInfoTitle: "Stay Details",
+      nightsLabel: "Nights",
       step1Eyebrow: "Step 1",
       step1Title: "Contact details",
       step1Subtitle: "Share the details we can reach you on for the booking.",

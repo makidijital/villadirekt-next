@@ -670,6 +670,11 @@ export const de: Dictionary = {
   /* 🛡️ /de/rezervasyon statik UI metinleri. */
   reservation: {
     page: {
+      checkoutTitle: "Reservierung abschließen",
+      stepsAriaLabel: "Reservierungsschritte",
+      stepVilla: "Villa-Auswahl",
+      stepDetails: "Angaben",
+      stepReservation: "Reservierung",
       breadcrumbCurrent: "Buchung",
       title: "Geben Sie Ihre persönlichen Daten ein",
       description:
@@ -683,12 +688,15 @@ export const de: Dictionary = {
       notFoundTitle: "Villa nicht gefunden",
     },
     summary: {
+      summaryLabel: "Reservierungsübersicht",
       eyebrow: "Aufenthalt",
       guestsCount: "{n} Gäste",
       nightsCount: "{n} Nächte",
       payNowAll: "Jetzt fällig (Gesamtbetrag)",
     },
     form: {
+      stayInfoTitle: "Aufenthaltsdetails",
+      nightsLabel: "Nächte",
       step1Eyebrow: "Schritt 1",
       step1Title: "Kontaktdaten",
       step1Subtitle:
