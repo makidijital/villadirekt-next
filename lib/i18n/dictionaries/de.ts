@@ -629,6 +629,7 @@ export const de: Dictionary = {
       "Villen, die an Ihren gewählten Daten nicht verfügbar sind, aber innerhalb von ±3 Tagen alternative Verfügbarkeit bieten.",
     flexibleCountSuffix: "alternative Villen",
     filters: {
+      subtitle: "Finden Sie ganz einfach die passende Villa.",
       title: "Filtern und Termin wählen",
       closeAriaLabel: "Filter schließen",
       dateLabel: "Termin",

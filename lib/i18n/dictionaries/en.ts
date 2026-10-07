@@ -625,6 +625,7 @@ export const en: Dictionary = {
       "Villas that are not available on your selected dates but have alternative availability within ±3 days.",
     flexibleCountSuffix: "alternative villas",
     filters: {
+      subtitle: "Easily find the villa that suits you.",
       title: "Filter and Pick Dates",
       closeAriaLabel: "Close filters",
       dateLabel: "Dates",

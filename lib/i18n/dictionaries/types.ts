@@ -853,6 +853,7 @@ export type Dictionary = {
     /** FilterSidebar (client island) — `/arama` ve `/kiralik-villalar`
      *  tarafından PAYLAŞILAN panel. */
     filters: {
+      subtitle: string;
       title: string;
       closeAriaLabel: string;
       dateLabel: string;

@@ -641,6 +641,7 @@ export const tr: Dictionary = {
       "Seçtiğiniz tarihlerde müsait olmayan ancak ±3 gün içinde alternatif müsaitlik bulunan villalar.",
     flexibleCountSuffix: "alternatif villa",
     filters: {
+      subtitle: "Size uygun villayı kolayca bulun.",
       title: "Filtrele ve Tarih Seç",
       closeAriaLabel: "Filtreleri kapat",
       dateLabel: "Tarih",

@@ -577,23 +577,47 @@ export default function FilterSidebar({
        max-h içinde header + scroll + footer distribution'ı doğru
        hesaplar. */
     <div className="flex flex-col h-full min-h-0">
-      {/* HEADER — desktop'ta minimal eyebrow, mobile'da X button */}
-      <div className="flex items-start justify-between gap-4 pb-6 border-b border-[var(--color-stone-100)]">
-        <div>
-          <h2 className="font-display text-[26px] md:text-[28px] text-[var(--color-stone-900)] tracking-[-0.025em] leading-tight">
-            {dict.title}
-          </h2>
+      {/* HEADER — ikon + başlık + kısa açıklama; sağda "Temizle"
+          (AYNI resetFilters / disabled koşulu) + mobilde kapat. */}
+      <div className="flex items-start justify-between gap-3 pb-4 border-b border-[#E5E7EB]">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <span
+            aria-hidden="true"
+            className="shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#EFF4FF] text-[#1B4EF5]"
+          >
+            <SlidersHorizontal size={16} strokeWidth={2} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-display font-bold text-[17px] leading-tight tracking-[-0.01em] text-[#0A1633]">
+              {dict.title}
+            </h2>
+            <p className="mt-0.5 text-[12px] leading-snug text-[#64708A]">
+              {dict.subtitle}
+            </p>
+          </div>
         </div>
 
-        {/* Mobile only — close */}
-        <button
-          type="button"
-          onClick={() => setMobileOpen(false)}
-          aria-label={dict.closeAriaLabel}
-          className="md:hidden -mr-1 w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-stone-700)] hover:bg-[var(--color-sand-50)] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40"
-        >
-          <X size={18} />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={resetFilters}
+            disabled={activeFilterCount === 0 || isPending}
+            className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-[8px] text-[12px] font-semibold text-[#1B4EF5] hover:bg-[#EFF4FF] transition-colors motion-reduce:transition-none disabled:text-[#A3ACBD] disabled:hover:bg-transparent disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/30"
+          >
+            <RotateCcw size={12} />
+            {dict.reset}
+          </button>
+
+          {/* Mobile only — close */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            aria-label={dict.closeAriaLabel}
+            className="md:hidden -mr-1 w-10 h-10 rounded-full flex items-center justify-center text-[#0A1633] hover:bg-[#F4F7FF] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/30"
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       {/* SCROLL AREA — drawer içinde sticky CTA için flex-1 */}
@@ -614,13 +638,13 @@ export default function FilterSidebar({
              md:overflow-visible`. Panel doğal yüksekliğinde uzar,
              sayfa normal şekilde scroll olur. Body/page scroll
              davranışına DOKUNULMADI. */}
-      <div className="flex-1 min-h-0 overflow-y-auto md:flex-none md:overflow-visible py-6 space-y-8 pr-1 -mr-1 md:pr-0 md:mr-0">
+      <div className="flex-1 min-h-0 overflow-y-auto md:flex-none md:overflow-visible py-5 pr-1 -mr-1 md:pr-0 md:mr-0 [&>*+*]:mt-5 [&>*+*]:pt-5 [&>*+*]:border-t [&>*+*]:border-[#E5E7EB]">
         {/* ============ 1) TARİH ============ */}
         <FilterGroup
           icon={
             <Calendar
               size={14}
-              className="text-[var(--color-champagne-500)]"
+              className="text-[#1B4EF5]"
             />
           }
           label={dict.dateLabel}
@@ -644,8 +668,19 @@ export default function FilterSidebar({
           <div
             data-drawer-initial-focus=""
             tabIndex={-1}
-            className="rounded-xl border border-[var(--color-stone-100)] bg-white px-3 py-3 flex items-center gap-3 outline-none"
+            className={
+              "min-h-[48px] rounded-[12px] border px-3 py-2.5 flex items-center gap-3 outline-none transition-[border-color,box-shadow,background-color] focus-within:border-[#1B4EF5] focus-within:ring-4 focus-within:ring-[#1B4EF5]/10 " +
+              (startDate || endDate
+                ? "border-[#1B4EF5] bg-[#F4F7FF]"
+                : "border-[#E5E7EB] bg-white hover:border-[#B9C3D3]")
+            }
           >
+            <Calendar
+              size={16}
+              strokeWidth={1.9}
+              aria-hidden="true"
+              className="shrink-0 text-[#1B4EF5]"
+            />
             <DatePicker
               selected={startDate}
               onChange={(dates: any) => {
@@ -698,7 +733,7 @@ export default function FilterSidebar({
                     })
                   : ""
               }
-              className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[14px] font-medium !text-[var(--color-stone-900)] placeholder-[var(--color-stone-400)] cursor-pointer outline-none"
+              className="!bg-transparent !border-0 !shadow-none !p-0 !rounded-none w-full text-[13.5px] font-semibold !text-[#0A1633] placeholder-[#8A93A6] cursor-pointer outline-none"
               /* 🛡️ Mobil klavye baskılama — customInput içinde
                  inputMode="none". Display override için verilen
                  value prop, react-datepicker tarafından customInput'a
@@ -713,7 +748,7 @@ export default function FilterSidebar({
                   setEndDate(null);
                 }}
                 aria-label={dict.clearDateAriaLabel}
-                className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-stone-500)] hover:bg-[var(--color-sand-50)] hover:text-[var(--color-stone-900)] transition-colors motion-reduce:transition-none"
+                className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[#64708A] hover:bg-white hover:text-[#1B4EF5] transition-colors motion-reduce:transition-none"
               >
                 <X size={13} />
               </button>
@@ -726,14 +761,14 @@ export default function FilterSidebar({
             URL contract: ?guests=N (1 default → param yazılmaz). */}
         <FilterGroup
           icon={
-            <Users size={14} className="text-[var(--color-champagne-500)]" />
+            <Users size={14} className="text-[#1B4EF5]" />
           }
           label={dict.guestsLabel}
           summary={formatDictionaryString(dict.guestsSummary, {
             n: guestCount > 1 ? guestCount : 1,
           })}
         >
-          <div className="space-y-3">
+          <div className="space-y-2.5 rounded-[12px] border border-[#E5E7EB] bg-white px-3.5 py-3">
             <CounterRow
               label={dict.guestsCounterLabel}
               hint={dict.guestsCounterHint}
@@ -743,7 +778,7 @@ export default function FilterSidebar({
               max={20}
               onChange={setGuestCount}
             />
-            <p className="text-[11px] tracking-[0.04em] text-[var(--color-stone-400)] pt-1 leading-relaxed">
+            <p className="text-[11px] text-[#8A93A6] leading-relaxed">
               <span className="tabular-nums">{guestCount}</span>
               {dict.guestsHint}
             </p>
@@ -752,7 +787,7 @@ export default function FilterSidebar({
 
         {/* ============ 3) BÖLGE ============ */}
         <FilterGroup
-          icon={<MapPin size={14} className="text-[var(--color-champagne-500)]" />}
+          icon={<MapPin size={14} className="text-[#1B4EF5]" />}
           label={dict.regionLabel}
           summary={
             regions.length === 0
@@ -763,7 +798,7 @@ export default function FilterSidebar({
           }
         >
           {regionGroups.length === 0 ? (
-            <p className="text-[13px] text-[var(--color-stone-400)]">
+            <p className="text-[13px] text-[#8A93A6]">
               {dict.regionEmpty}
             </p>
           ) : (
@@ -778,7 +813,7 @@ export default function FilterSidebar({
                 return (
                   <div
                     key={g.group}
-                    className="rounded-xl border border-[var(--color-stone-100)] overflow-hidden"
+                    className="rounded-[12px] border border-[#E5E7EB] bg-white overflow-hidden"
                   >
                     <button
                       type="button"
@@ -789,19 +824,19 @@ export default function FilterSidebar({
                         }))
                       }
                       aria-expanded={isOpen}
-                      className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-[14px] text-[var(--color-stone-800)] hover:bg-[var(--color-sand-50)] transition-colors motion-reduce:transition-none"
+                      className="w-full min-h-[46px] flex items-center justify-between gap-3 px-3 py-2.5 text-[13.5px] text-[#0A1633] hover:bg-[#F4F7FF] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1B4EF5]/30"
                     >
                       <span className="flex items-center gap-2 font-medium truncate">
                         <ChevronDown
                           size={14}
-                          className={`text-[var(--color-stone-400)] shrink-0 transition-transform motion-reduce:transition-none ${
+                          className={`text-[#8A93A6] shrink-0 transition-transform motion-reduce:transition-none ${
                             isOpen ? "" : "-rotate-90"
                           }`}
                         />
                         <span className="truncate">{g.group}</span>
                       </span>
                       {selectedCount > 0 && (
-                        <span className="text-[11px] tabular-nums text-[var(--color-stone-400)] shrink-0">
+                        <span className="text-[11px] font-semibold tabular-nums text-[#1B4EF5] bg-[#EFF4FF] rounded-full px-2 py-0.5 shrink-0">
                           {formatDictionaryString(dict.selectedCount, {
                             n: selectedCount,
                           })}
@@ -815,17 +850,17 @@ export default function FilterSidebar({
                           return (
                             <li key={opt.id}>
                               <label
-                                className={`flex items-center gap-3 text-[14px] px-3 py-2.5 rounded-lg cursor-pointer transition-colors motion-reduce:transition-none ${
+                                className={`flex items-center gap-3 text-[13.5px] px-3 min-h-[42px] py-2 rounded-[10px] cursor-pointer transition-colors motion-reduce:transition-none ${
                                   checked
-                                    ? "bg-[var(--color-sand-50)] text-[var(--color-stone-900)]"
-                                    : "text-[var(--color-stone-700)] hover:bg-[var(--color-sand-50)]"
+                                    ? "bg-[#EFF4FF] text-[#1B4EF5] font-medium"
+                                    : "text-[#0A1633] hover:bg-[#F4F7FF]"
                                 }`}
                               >
                                 <input
                                   type="checkbox"
                                   checked={checked}
                                   onChange={() => toggleRegion(opt, g.group)}
-                                  className="!w-4 !h-4 accent-[var(--color-champagne-500)] !rounded"
+                                  className="!w-4 !h-4 accent-[#1B4EF5] !rounded"
                                 />
                                 <span className="truncate">
                                   {regionShortLabel(opt.name, g.group, dict)}
@@ -849,7 +884,7 @@ export default function FilterSidebar({
             kontratı ve filtreleme mantığı DEĞİŞMEDİ; yalnız görünürlük
             toggle'ı eklendi. */}
         <FilterGroup
-          icon={<Tag size={14} className="text-[var(--color-champagne-500)]" />}
+          icon={<Tag size={14} className="text-[#1B4EF5]" />}
           label={dict.typeLabel}
           summary={
             categories.length === 0
@@ -863,7 +898,7 @@ export default function FilterSidebar({
           onToggle={() => toggleSection("type", typeSectionOpen)}
         >
           {categoryOptions.length === 0 ? (
-            <p className="text-[13px] text-[var(--color-stone-400)]">
+            <p className="text-[13px] text-[#8A93A6]">
               {dict.typeEmpty}
             </p>
           ) : (
@@ -873,10 +908,10 @@ export default function FilterSidebar({
                 return (
                   <li key={opt.id}>
                     <label
-                      className={`flex items-center gap-3 text-[14px] px-3 py-2.5 rounded-xl cursor-pointer transition-colors motion-reduce:transition-none ${
+                      className={`flex items-center gap-3 text-[13.5px] px-3 min-h-[44px] py-2 rounded-[10px] cursor-pointer transition-colors motion-reduce:transition-none ${
                         checked
-                          ? "bg-[var(--color-sand-50)] text-[var(--color-stone-900)]"
-                          : "text-[var(--color-stone-700)] hover:bg-[var(--color-sand-50)]"
+                          ? "bg-[#EFF4FF] text-[#1B4EF5] font-medium ring-1 ring-[#1B4EF5]/25"
+                          : "text-[#0A1633] hover:bg-[#F4F7FF]"
                       }`}
                     >
                       <input
@@ -885,7 +920,7 @@ export default function FilterSidebar({
                         onChange={() =>
                           toggleInList(opt.id, categories, setCategories)
                         }
-                        className="!w-4 !h-4 accent-[var(--color-champagne-500)] !rounded"
+                        className="!w-4 !h-4 accent-[#1B4EF5] !rounded"
                       />
                       <span className="truncate">{opt.name}</span>
                     </label>
@@ -908,7 +943,7 @@ export default function FilterSidebar({
             icon={
               <Sparkles
                 size={14}
-                className="text-[var(--color-champagne-500)]"
+                className="text-[#1B4EF5]"
               />
             }
             label={dict.featuresLabel}
@@ -924,7 +959,7 @@ export default function FilterSidebar({
             onToggle={() => toggleSection("features", featureSectionOpen)}
           >
             {featureOptions.length === 0 ? (
-              <p className="text-[13px] text-[var(--color-stone-400)]">
+              <p className="text-[13px] text-[#8A93A6]">
                 {dict.featuresEmpty}
               </p>
             ) : (
@@ -934,10 +969,10 @@ export default function FilterSidebar({
                   return (
                     <li key={opt.id}>
                       <label
-                        className={`flex items-center gap-3 text-[14px] px-3 py-2.5 rounded-xl cursor-pointer transition-colors motion-reduce:transition-none ${
+                        className={`flex items-center gap-3 text-[13.5px] px-3 min-h-[44px] py-2 rounded-[10px] cursor-pointer transition-colors motion-reduce:transition-none ${
                           checked
-                            ? "bg-[var(--color-sand-50)] text-[var(--color-stone-900)]"
-                            : "text-[var(--color-stone-700)] hover:bg-[var(--color-sand-50)]"
+                            ? "bg-[#EFF4FF] text-[#1B4EF5] font-medium ring-1 ring-[#1B4EF5]/25"
+                            : "text-[#0A1633] hover:bg-[#F4F7FF]"
                         }`}
                       >
                         <input
@@ -946,7 +981,7 @@ export default function FilterSidebar({
                           onChange={() =>
                             toggleInList(opt.id, features, setFeatures)
                           }
-                          className="!w-4 !h-4 accent-[var(--color-champagne-500)] !rounded"
+                          className="!w-4 !h-4 accent-[#1B4EF5] !rounded"
                         />
                         <span className="truncate">{opt.name}</span>
                       </label>
@@ -963,19 +998,19 @@ export default function FilterSidebar({
             görünür. Draft: Uygula'da buildHref yazar. Ana tarih/normal
             filtre/sonuç mantığı DEĞİŞMEZ. */}
         <div className="pt-1">
-          <p className="mb-2 px-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--color-stone-500)]">
+          <p className="mb-2.5 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#0A1633]">
             {dict.advancedTitle}
           </p>
-          <label className="flex items-start gap-3 rounded-xl bg-[var(--color-sand-50)]/60 px-3 py-3 text-[14px] cursor-pointer transition-colors motion-reduce:transition-none hover:bg-[var(--color-sand-50)]">
+          <label className="flex items-start gap-3 rounded-[12px] border border-[#E5E7EB] bg-[#F4F7FF] px-3.5 py-3 text-[13.5px] cursor-pointer transition-colors motion-reduce:transition-none hover:border-[#1B4EF5]/40 has-[:checked]:border-[#1B4EF5]">
             <input
               type="checkbox"
               checked={flexible}
               onChange={(e) => setFlexible(e.target.checked)}
-              className="mt-0.5 shrink-0 !w-4 !h-4 accent-[var(--color-champagne-500)] !rounded"
+              className="mt-0.5 shrink-0 !w-4 !h-4 accent-[#1B4EF5] !rounded"
             />
-            <span className="leading-snug text-[var(--color-stone-700)]">
+            <span className="leading-snug text-[#0A1633]">
               {dict.advancedCheckbox}
-              <span className="mt-1 block text-[12px] text-[var(--color-stone-400)]">
+              <span className="mt-1 block text-[12px] text-[#64708A]">
                 {dict.advancedHint}
               </span>
             </span>
@@ -983,22 +1018,14 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* STICKY FOOTER — Filtrele + Temizle */}
-      <div className="pt-5 border-t border-[var(--color-stone-100)] flex items-center gap-3">
-        <button
-          type="button"
-          onClick={resetFilters}
-          disabled={activeFilterCount === 0 || isPending}
-          className="inline-flex items-center gap-2 px-4 py-3 rounded-full border border-[var(--color-stone-200)] text-[13px] font-medium text-[var(--color-stone-700)] hover:border-[var(--color-stone-300)] hover:text-[var(--color-stone-900)] transition-colors motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40"
-        >
-          <RotateCcw size={13} />
-          {dict.reset}
-        </button>
+      {/* FOOTER — "Filtrele" (AYNI applyFilters / isPending); "Temizle"
+          header'a taşındı (AYNI resetFilters). */}
+      <div className="pt-4 border-t border-[#E5E7EB] flex items-center gap-3">
         <button
           type="button"
           onClick={applyFilters}
           disabled={isPending}
-          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-[var(--color-stone-900)] text-white text-[13px] font-medium tracking-[0.04em] hover:bg-[var(--color-stone-700)] transition-colors motion-reduce:transition-none disabled:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40"
+          className="flex-1 inline-flex items-center justify-center gap-2 h-[48px] px-4 rounded-[12px] bg-[#1B4EF5] text-white text-[14px] font-semibold shadow-[0_6px_16px_-8px_rgba(27,78,245,0.55)] hover:bg-[#1640CC] transition-colors motion-reduce:transition-none disabled:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/40 focus-visible:ring-offset-2"
         >
           <Search size={14} />
           <span>
@@ -1024,34 +1051,34 @@ export default function FilterSidebar({
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="w-full inline-flex items-center justify-between gap-4 px-5 py-4 rounded-2xl bg-white border border-[var(--color-stone-100)] text-left hover:border-[var(--color-stone-200)] transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40"
+          className="w-full min-h-[56px] inline-flex items-center justify-between gap-4 px-4 py-3 rounded-[14px] bg-white border border-[#E5E7EB] shadow-[0_1px_2px_rgba(10,22,51,0.04)] text-left hover:border-[#1B4EF5]/40 transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/30"
           aria-haspopup="dialog"
           aria-expanded={mobileOpen}
         >
           <span className="flex items-center gap-3">
-            <span className="w-9 h-9 rounded-full bg-[var(--color-sand-50)] border border-[var(--color-stone-100)] flex items-center justify-center">
+            <span className="w-9 h-9 rounded-[10px] bg-[#EFF4FF] flex items-center justify-center">
               <SlidersHorizontal
                 size={15}
-                className="text-[var(--color-stone-700)]"
+                className="text-[#1B4EF5]"
               />
             </span>
             <span>
-              <span className="block text-[11px] tracking-[0.18em] uppercase font-medium text-[var(--color-stone-500)]">
+              <span className="block text-[11px] tracking-[0.12em] uppercase font-semibold text-[#1B4EF5]">
                 {dict.mobileTriggerEyebrow}
               </span>
-              <span className="block text-[14px] font-medium text-[var(--color-stone-900)] mt-0.5">
+              <span className="block text-[14px] font-semibold text-[#0A1633] mt-0.5">
                 {dict.mobileTriggerLabel}
               </span>
             </span>
           </span>
           {activeFilterCount > 0 ? (
-            <span className="text-[11px] tracking-[0.12em] uppercase font-semibold tabular-nums px-2.5 py-1 rounded-full bg-[var(--color-stone-900)] text-white">
+            <span className="text-[11px] font-bold tabular-nums min-w-6 h-6 px-2 inline-flex items-center justify-center rounded-full bg-[#1B4EF5] text-white">
               {activeFilterCount}
             </span>
           ) : (
             <ChevronDown
               size={16}
-              className="text-[var(--color-stone-400)]"
+              className="text-[#8A93A6]"
             />
           )}
         </button>
@@ -1070,7 +1097,7 @@ export default function FilterSidebar({
              viewport'a göre kırpıyor ve iç scroll'u zorunlu kılıyordu.
              İkisi de kaldırıldı → card içeriği kadar uzar. Mobil drawer
              (ve içindeki scroll) DEĞİŞMEDİ. */}
-          <div className="bg-white border border-[var(--color-stone-100)] rounded-2xl p-6 flex flex-col">
+          <div className="bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(10,22,51,0.05)] rounded-2xl p-6 flex flex-col">
             {panel}
           </div>
         </div>
@@ -1089,7 +1116,7 @@ export default function FilterSidebar({
         {/* Backdrop */}
         <div
           onClick={() => setMobileOpen(false)}
-          className={`absolute inset-0 bg-[var(--color-stone-900)]/40 backdrop-blur-[2px] transition-opacity duration-300 motion-reduce:transition-none ${
+          className={`absolute inset-0 bg-[#0A1633]/40 backdrop-blur-[2px] transition-opacity duration-300 motion-reduce:transition-none ${
             mobileOpen ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -1105,7 +1132,7 @@ export default function FilterSidebar({
           <div className="flex items-center justify-center pt-3 pb-1">
             <span
               aria-hidden="true"
-              className="w-10 h-1 rounded-full bg-[var(--color-stone-200)]"
+              className="w-10 h-1 rounded-full bg-[#D5DBE6]"
             />
           </div>
           <div className="px-5 pt-2 pb-5 h-[calc(92vh-1.25rem)]">{panel}</div>
@@ -1149,19 +1176,19 @@ function FilterGroup({
           type="button"
           onClick={onToggle}
           aria-expanded={open}
-          className="w-full flex items-center justify-between gap-3 text-left rounded-lg hover:opacity-80 transition-opacity motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40"
+          className="w-full flex items-center justify-between gap-3 text-left rounded-lg hover:opacity-80 transition-opacity motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/30"
         >
-          <h3 className="flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase font-semibold text-[var(--color-stone-700)]">
+          <h3 className="flex items-center gap-2 text-[12px] tracking-[0.08em] uppercase font-semibold text-[#0A1633]">
             {icon}
             {label}
           </h3>
           <span className="flex items-center gap-2 min-w-0 max-w-[55%]">
-            <span className="text-[11px] tracking-[0.06em] text-[var(--color-stone-400)] truncate text-right">
+            <span className="text-[11.5px] text-[#64708A] truncate text-right">
               {summary}
             </span>
             <ChevronDown
               size={14}
-              className={`text-[var(--color-stone-400)] shrink-0 transition-transform motion-reduce:transition-none ${
+              className={`text-[#8A93A6] shrink-0 transition-transform motion-reduce:transition-none ${
                 open ? "" : "-rotate-90"
               }`}
             />
@@ -1169,11 +1196,11 @@ function FilterGroup({
         </button>
       ) : (
         <header className="flex items-center justify-between gap-3">
-          <h3 className="flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase font-semibold text-[var(--color-stone-700)]">
+          <h3 className="flex items-center gap-2 text-[12px] tracking-[0.08em] uppercase font-semibold text-[#0A1633]">
             {icon}
             {label}
           </h3>
-          <span className="text-[11px] tracking-[0.06em] text-[var(--color-stone-400)] truncate max-w-[55%] text-right">
+          <span className="text-[11.5px] text-[#64708A] truncate max-w-[55%] text-right">
             {summary}
           </span>
         </header>
@@ -1206,10 +1233,10 @@ function CounterRow({
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <p className="text-[14px] font-medium text-[var(--color-stone-900)]">
+        <p className="text-[13.5px] font-semibold text-[#0A1633]">
           {label}
         </p>
-        <p className="text-[11px] text-[var(--color-stone-400)] tracking-[0.02em]">
+        <p className="text-[11px] text-[#8A93A6]">
           {hint}
         </p>
       </div>
@@ -1221,11 +1248,11 @@ function CounterRow({
           aria-label={formatDictionaryString(dict.decreaseAriaLabel, {
             label,
           })}
-          className="w-8 h-8 rounded-full border border-[var(--color-stone-200)] text-[var(--color-stone-700)] flex items-center justify-center hover:border-[var(--color-stone-300)] hover:text-[var(--color-stone-900)] transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40"
+          className="w-9 h-9 rounded-[10px] border border-[#DDE3EC] bg-white text-[#0A1633] flex items-center justify-center hover:border-[#1B4EF5] hover:text-[#1B4EF5] hover:bg-[#F4F7FF] transition-colors motion-reduce:transition-none disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:border-[#DDE3EC] disabled:hover:bg-white disabled:hover:text-[#0A1633] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/30"
         >
           <Minus size={13} />
         </button>
-        <span className="tabular-nums text-[14px] font-medium text-[var(--color-stone-900)] w-5 text-center">
+        <span className="tabular-nums text-[15px] font-bold text-[#0A1633] w-6 text-center">
           {value}
         </span>
         <button
@@ -1235,7 +1262,7 @@ function CounterRow({
           aria-label={formatDictionaryString(dict.increaseAriaLabel, {
             label,
           })}
-          className="w-8 h-8 rounded-full border border-[var(--color-stone-200)] text-[var(--color-stone-700)] flex items-center justify-center hover:border-[var(--color-stone-300)] hover:text-[var(--color-stone-900)] transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne-500)]/40"
+          className="w-9 h-9 rounded-[10px] border border-[#DDE3EC] bg-white text-[#0A1633] flex items-center justify-center hover:border-[#1B4EF5] hover:text-[#1B4EF5] hover:bg-[#F4F7FF] transition-colors motion-reduce:transition-none disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:border-[#DDE3EC] disabled:hover:bg-white disabled:hover:text-[#0A1633] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4EF5]/30"
         >
           <Plus size={13} />
         </button>
