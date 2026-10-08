@@ -289,6 +289,7 @@ export default function CmsPageBody({
           title={title || dict.fallbackTitle}
           description={excerpt || undefined}
           badge={cmsBadge}
+          variant="listing"
         />
       )}
 

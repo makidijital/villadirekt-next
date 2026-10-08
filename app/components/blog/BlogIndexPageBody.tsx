@@ -70,6 +70,7 @@ export default async function BlogIndexPageBody({
         eyebrow={dict.eyebrow}
         title={dict.heroTitle}
         description={dict.heroDescription}
+        variant="listing"
       />
     <main className="px-5 md:px-10 lg:px-16 pt-8 md:pt-12 pb-12 md:pb-20">
       <div className="site-container">

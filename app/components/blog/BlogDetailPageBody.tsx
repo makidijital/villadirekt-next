@@ -91,6 +91,7 @@ export default async function BlogDetailPageBody({
         eyebrow={post.category || dict.eyebrow}
         title={title}
         description={excerpt || undefined}
+        variant="listing"
       />
 
       <section className="px-5 md:px-10 lg:px-16 pb-32 md:pb-44 pt-12 md:pt-16">

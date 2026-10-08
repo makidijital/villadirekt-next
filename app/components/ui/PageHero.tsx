@@ -39,10 +39,12 @@ type Props = {
   pills?: string[];
   stat?: { value: string | number; label: string };
   badge?: { eyebrow?: string; lines: string[] };
-  /** 🎨 "listing" → /kiralik-villalar · /villa-turleri/[slug] ·
-   *  /bolgeler/[slug] için kompakt hero (AYNI arka plan görseli, daha
-   *  hafif overlay, küçük başlık, kompakt sayı). Verilmezse "default"
-   *  → diğer tüm sayfalardaki mevcut hero BİREBİR. */
+  /** 🎨 "listing" → public ORTAK kompakt hero standardı (AYNI arka plan
+   *  görseli, hafif düz overlay, küçük başlık; stat/pills/badge varsa
+   *  kompakt pill olarak). Kullananlar: /kiralik-villalar, /villa-turleri,
+   *  /bolgeler, /blog, /blog/[slug], /arama, /favoriler, kurumsal + /p
+   *  CMS sayfaları, /rezervasyon-kontrol. Verilmezse "default" → eski
+   *  hero BİREBİR (geriye dönük güvenlik). */
   variant?: "default" | "listing";
 };
 
@@ -145,6 +147,43 @@ export default async function PageHero({
               </p>
             )}
           </div>
+
+          {/* ALT — filtre pill'leri (varsa, /arama) */}
+          {pills && pills.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-2.5">
+              {pills.map((p, i) => (
+                <span
+                  key={`${p}-${i}`}
+                  className="inline-flex items-center h-7 px-3 rounded-full bg-[#0A1633]/45 ring-1 ring-inset ring-white/20 text-[11.5px] font-medium text-white/90 tabular-nums"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* ALT — içerik rozeti (yalnız stat yokken; kurumsal sayfalar) */}
+          {hasBadge && badge && (
+            <div className="flex justify-center min-w-0">
+              <span className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 min-h-8 px-3.5 py-1 rounded-full bg-[#0A1633]/45 ring-1 ring-inset ring-white/20 text-[12.5px] text-white/90">
+                {badge.eyebrow && (
+                  <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#FAD716]">
+                    {badge.eyebrow}
+                  </span>
+                )}
+                {badge.lines.map((line, i) => (
+                  <span key={`${line}-${i}`} className="inline-flex items-center gap-x-2">
+                    {(i > 0 || badge.eyebrow) && (
+                      <span aria-hidden="true" className="text-white/40">
+                        ·
+                      </span>
+                    )}
+                    <span className="font-medium">{line}</span>
+                  </span>
+                ))}
+              </span>
+            </div>
+          )}
 
           {/* ALT — kompakt sayı (değer AYNEN) + ince ayırıcı */}
           {stat && (

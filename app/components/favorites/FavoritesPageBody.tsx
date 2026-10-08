@@ -37,6 +37,7 @@ export default function FavoritesPageBody({
         eyebrow={dict.heroEyebrow}
         title={dict.heroTitle}
         description={dict.heroDescription}
+        variant="listing"
       />
 
       <section className="px-5 md:px-10 lg:px-16 pt-12 md:pt-16 pb-24 md:pb-32">

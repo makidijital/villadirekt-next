@@ -1269,7 +1269,7 @@ export default async function AramaPageBody({
             ) : (
               <>
                 {dict.heroTitleIdleLead}{" "}
-                <span className="text-[var(--color-stone-400)]">
+                <span className="text-white/65">
                   {dict.heroTitleIdleAccent}
                 </span>
               </>
@@ -1300,6 +1300,7 @@ export default async function AramaPageBody({
           </>
         }
         pills={heroPills}
+        variant="listing"
       />
 
       <section className="px-5 md:px-10 lg:px-16 pt-8 md:pt-12 pb-24 md:pb-32">

@@ -70,6 +70,7 @@ export default async function ReservationLookupPageBody({
         description={
           isShareOk ? dict.heroDescriptionShare : dict.heroDescription
         }
+        variant="listing"
       />
 
       <section className="px-5 md:px-10 lg:px-16 pt-12 md:pt-16 pb-24 md:pb-32">
