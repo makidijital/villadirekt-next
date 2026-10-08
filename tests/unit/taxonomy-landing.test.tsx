@@ -387,6 +387,16 @@ describe("E) gövde", () => {
     ]);
   });
 
+  it("🎨 kategori + bölge landing'leri kompakt listing hero kullanır (veri prop'ları AYNEN)", async () => {
+    await renderLanding("category", "muhafazakar-villalar");
+    expect(heroProps.at(-1)!.variant).toBe("listing");
+    expect((heroProps.at(-1)!.stat as { value: number }).value).toBe(3);
+    heroProps.length = 0;
+    await renderLanding("region", "bodrum");
+    expect(heroProps.at(-1)!.variant).toBe("listing");
+    expect(heroProps.at(-1)!.title).toBe("Bodrum Villaları");
+  });
+
   it("sidebar ön-seçimi + redirect hedefi MEVCUT /arama", async () => {
     await renderLanding("category", "muhafazakar-villalar");
     const sb = sidebarProps.at(-1)!;

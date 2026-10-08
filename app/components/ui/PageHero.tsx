@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import PublicBreadcrumb from "@/app/components/ui/PublicBreadcrumb";
+
 import { getCachedSettings } from "@/lib/cache.helpers";
 import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
 
@@ -37,6 +39,11 @@ type Props = {
   pills?: string[];
   stat?: { value: string | number; label: string };
   badge?: { eyebrow?: string; lines: string[] };
+  /** 🎨 "listing" → /kiralik-villalar · /villa-turleri/[slug] ·
+   *  /bolgeler/[slug] için kompakt hero (AYNI arka plan görseli, daha
+   *  hafif overlay, küçük başlık, kompakt sayı). Verilmezse "default"
+   *  → diğer tüm sayfalardaki mevcut hero BİREBİR. */
+  variant?: "default" | "listing";
 };
 
 export default async function PageHero({
@@ -47,6 +54,7 @@ export default async function PageHero({
   pills,
   stat,
   badge,
+  variant = "default",
 }: Props) {
   const hasBadge = !stat && !!badge && badge.lines.length > 0;
   const hasAside = !!stat || hasBadge;
@@ -77,6 +85,83 @@ export default async function PageHero({
   const cBadgeEyebrow = hasBg ? "text-accent" : "text-[var(--brand-coral)]";
   const cBadgeLine = hasBg ? "text-white" : "text-[var(--color-stone-800)]";
   const cBadgeSep = hasBg ? "text-white/40" : "text-[var(--color-stone-300)]";
+
+  /* 🎨 LISTING VARIANT — kompakt kategori/arşiv hero'su. Görsel kaynağı
+     (settings.page_hero_background_image → bgUrl) ve <img> AYNI; yalnız
+     overlay hafifletildi (tek düz renk, gradient YOK) ve kompozisyon
+     sıkılaştırıldı: üstte breadcrumb, ortada etiket + başlık, altta
+     kompakt sayı. Metin/link/sayı değerleri prop'lardan AYNEN. */
+  if (variant === "listing") {
+    return (
+      <section
+        className={
+          "relative isolate overflow-hidden flex flex-col min-h-[290px] sm:min-h-[330px] lg:min-h-[360px] " +
+          (hasBg ? "" : "bg-[#0A1633]")
+        }
+      >
+        {bgUrl && (
+          <div className="absolute inset-0 z-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bgUrl}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              loading="eager"
+              decoding="async"
+              className="pointer-events-none select-none w-full h-full object-cover"
+            />
+            {/* Hafif, düz okunabilirlik katmanı (eski 0.5 siyah yerine). */}
+            <div className="absolute inset-0 bg-[#0A1633]/35" />
+          </div>
+        )}
+
+        <div className="relative z-10 flex flex-1 flex-col section-narrow w-full min-w-0 py-5 md:py-6">
+          {/* ÜST — breadcrumb (ortak PublicBreadcrumb, beyaz ton) */}
+          <PublicBreadcrumb
+            tone="onImage"
+            singleLine
+            items={breadcrumb}
+          />
+
+          {/* ORTA — etiket + başlık */}
+          <div className="flex flex-1 flex-col items-center justify-center text-center py-6 min-w-0">
+            {eyebrow && (
+              <p className="text-[10.5px] md:text-[11px] font-semibold uppercase tracking-[0.2em] text-[#FAD716]">
+                {eyebrow}
+              </p>
+            )}
+            <h1
+              className={
+                "font-display font-bold text-white leading-[1.1] tracking-[-0.025em] text-[28px] sm:text-[34px] md:text-[42px] lg:text-[46px] max-w-3xl break-words " +
+                (eyebrow ? "mt-2.5" : "")
+              }
+            >
+              {title}
+            </h1>
+            {description && (
+              <p className="mt-3 max-w-xl text-[13.5px] md:text-[14.5px] leading-relaxed text-white/85">
+                {description}
+              </p>
+            )}
+          </div>
+
+          {/* ALT — kompakt sayı (değer AYNEN) + ince ayırıcı */}
+          {stat && (
+            <div className="flex justify-center">
+              <span className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-[#0A1633]/45 ring-1 ring-inset ring-white/20 text-[12.5px] text-white/90">
+                <span className="font-display font-bold text-[14px] text-[#FAD716] tabular-nums">
+                  {stat.value}
+                </span>
+                <span className="font-medium">{stat.label}</span>
+              </span>
+            </div>
+          )}
+        </div>
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 z-10 h-px bg-white/20" />
+      </section>
+    );
+  }
 
   return (
     <section className="relative isolate overflow-hidden px-5 md:px-10 lg:px-16 pt-12 md:pt-20 pb-6 md:pb-10">

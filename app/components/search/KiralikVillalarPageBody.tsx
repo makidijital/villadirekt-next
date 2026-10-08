@@ -390,6 +390,8 @@ export default async function KiralikVillalarPageBody({
           eyebrow={scope ? scope.heroEyebrow : dict.heroEyebrow}
           title={scope ? scope.heroTitle : dict.heroTitle}
           stat={{ value: totalCount, label: dict.heroStatLabel }}
+          /* 🎨 Kompakt listing hero (aynı görsel, yalnız tasarım). */
+          variant="listing"
         />
 
         {/* =======================================================

@@ -25,6 +25,9 @@ type Props = {
   /** true → tek satır + son öğe truncate (uzun villa adı). */
   singleLine?: boolean;
   className?: string;
+  /** "onImage" → koyu görsel üstü beyaz ton (listing hero). Varsayılan
+   *  "default" → mevcut koyu-üstü-açık zemin stili AYNEN. */
+  tone?: "default" | "onImage";
 };
 
 export default function PublicBreadcrumb({
@@ -32,12 +35,20 @@ export default function PublicBreadcrumb({
   ariaLabel = "Breadcrumb",
   singleLine = false,
   className = "",
+  tone = "default",
 }: Props) {
+  const onImage = tone === "onImage";
+  const cBase = onImage ? "text-white/75" : "text-[#64708A]";
+  const cSep = onImage ? "text-white/45" : "text-[#A3ACBD]";
+  const cHover = onImage ? "hover:text-white" : "hover:text-[#1B4EF5]";
+  const cCurrent = onImage ? "font-semibold text-white" : "font-semibold text-[#0A1633]";
   return (
     <nav
       aria-label={ariaLabel}
       className={
-        "flex items-center gap-x-2 text-[12px] text-[#64708A] " +
+        "flex items-center gap-x-2 text-[12px] " +
+        cBase +
+        " " +
         (singleLine ? "min-w-0 overflow-hidden whitespace-nowrap " : "flex-wrap gap-y-1 ") +
         className
       }
@@ -53,12 +64,12 @@ export default function PublicBreadcrumb({
             }
           >
             {i > 0 && (
-              <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-[#A3ACBD]" />
+              <ChevronRight size={12} aria-hidden="true" className={"shrink-0 " + cSep} />
             )}
             {c.href ? (
               <Link
                 href={c.href}
-                className="hover:text-[#1B4EF5] transition-colors motion-reduce:transition-none"
+                className={cHover + " transition-colors motion-reduce:transition-none"}
               >
                 {c.name}
               </Link>
@@ -66,7 +77,7 @@ export default function PublicBreadcrumb({
               <span
                 aria-current="page"
                 title={singleLine ? c.name : undefined}
-                className={"font-semibold text-[#0A1633]" + (singleLine ? " truncate" : "")}
+                className={cCurrent + (singleLine ? " truncate" : "")}
               >
                 {c.name}
               </span>
