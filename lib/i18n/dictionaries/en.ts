@@ -992,6 +992,15 @@ export const en: Dictionary = {
     successTitle: "Your request has been received.",
     successBody:
       "Your villa advisor will contact you shortly and share a personalised selection. Thank you.",
+    /* 🎨 /teklif-al redesign — bölüm başlıkları, özet, yardım kartı */
+    sectionTripTitle: "Trip Details",
+    sectionPrefsTitle: "Your Villa Preferences",
+    sectionExtraTitle: "Additional Details",
+    summaryTitle: "Your Quote Request",
+    summaryEmpty: "Your holiday preferences will be summarised here as you choose them.",
+    summaryGuests: "Guests",
+    helpTitle: "Need help?",
+    helpWhatsapp: "WhatsApp",
   },
 
   reservationLookup: {

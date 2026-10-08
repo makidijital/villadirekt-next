@@ -1018,6 +1018,15 @@ export const tr: Dictionary = {
     successTitle: "Talebiniz alındı.",
     successBody:
       "Villa danışmanınız en kısa sürede sizinle iletişime geçecek ve size özel önerileri iletecek. Teşekkür ederiz.",
+    /* 🎨 /teklif-al redesign — bölüm başlıkları, özet, yardım kartı */
+    sectionTripTitle: "Tatil Bilgileri",
+    sectionPrefsTitle: "Villa Tercihleriniz",
+    sectionExtraTitle: "Ek Bilgiler",
+    summaryTitle: "Teklif Talebiniz",
+    summaryEmpty: "Tatil tercihlerinizi seçtikçe burada özetlenecek.",
+    summaryGuests: "Misafir",
+    helpTitle: "Yardıma mı ihtiyacınız var?",
+    helpWhatsapp: "WhatsApp",
   },
 
   /* 🛡️ /rezervasyon-kontrol — TR değerleri BİREBİR. */

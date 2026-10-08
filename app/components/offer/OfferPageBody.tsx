@@ -1,116 +1,80 @@
-import { Clock, BellRing, Compass } from "lucide-react";
-
 import OfferRequestForm from "@/app/(public)/teklif-al/OfferRequestForm";
+import PublicBreadcrumb from "@/app/components/ui/PublicBreadcrumb";
 
 /* 🛡️ PUBLIC ÇOKLU DİL — statik metinler MEVCUT public dictionary'den
    (`offer` namespace). Taxonomy verisi, API endpoint'i, honeypot/
    time-trap ve submit payload'ı DEĞİŞTİRİLMEDİ. */
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { localeHref } from "@/lib/i18n/locale-href";
+/* 🎨 Yardım kartı — public layout / FloatingSocial'ın ZATEN okuduğu
+   cache'li settings (aynı request'te dedupe → ek DB sorgusu YOK). */
+import { getCachedSettings } from "@/lib/cache.helpers";
 
 /* ===============================================================
    🛡️ /teklif-al — ORTAK GÖVDE
    ===============================================================
-   `app/(public)/teklif-al/page.tsx`'in GERÇEK gövdesinin TAŞINMIŞ
-   hâlidir (DOM/CSS DEĞİŞTİRİLMEDEN) — `/en/teklif-al` ve
-   `/de/teklif-al` AYNI gövdeyi render eder; kodun ikinci/üçüncü
-   kopyası YOKTUR (`ContactPageBody` deseni).
+   `/teklif-al`, `/en/teklif-al`, `/de/teklif-al` AYNI gövdeyi render
+   eder (`ContactPageBody` deseni).
+
+   🎨 REDESIGN (yalnız UI): PublicBreadcrumb + kompakt başlık; güven
+   satırları form içindeki sağ kolona (özet/CTA/yardım) taşındı.
+   Telefon/WhatsApp href'leri FloatingSocial ile BİREBİR aynı türetilir.
    =============================================================== */
 
-export default function OfferPageBody({
+export default async function OfferPageBody({
   locale = DEFAULT_LOCALE,
 }: {
   locale?: Locale;
 }) {
-  const dict = getDictionary(locale).offer;
+  const dictionary = getDictionary(locale);
+  const dict = dictionary.offer;
+
+  const settings = await getCachedSettings().catch(() => null);
+  const phoneHref = settings?.phone?.trim()
+    ? `tel:${settings.phone.trim()}`
+    : null;
+  const phoneDigits = (settings?.phone || "").replace(/\D/g, "");
+  const whatsappHref =
+    settings?.whatsapp_link?.trim() ||
+    (phoneDigits ? `https://wa.me/${phoneDigits}` : null);
 
   return (
-    <div className="px-5 md:px-10 lg:px-16 pt-10 md:pt-14 pb-20 md:pb-28 bg-white ">
-      <div className="site-container">
-        {/* ════════════════════════════════════════════════════
-            INTRO + TRUST CARD (asimetrik 2-col, light luxury)
-            ════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mb-10 md:mb-14">
-          <div className="lg:col-span-7">
-            <p className="text-[10.5px] tracking-[0.28em] uppercase font-medium inline-flex items-center text-[var(--brand-coral)]">
-              <span
-                aria-hidden="true"
-                className="inline-block w-6 h-px align-middle mr-3 bg-[var(--brand-coral)]/60"
-              />
-              {dict.heroEyebrow}
-            </p>
-            <h1 className="font-display font-medium text-[28px] md:text-[36px] lg:text-[42px] text-[var(--color-stone-900)] mt-4 leading-tight tracking-[-0.02em]">
-              {dict.heroTitle}
-            </h1>
-            <p className="mt-4 text-[14.5px] md:text-[15px] leading-relaxed text-[var(--color-stone-500)] max-w-xl">
-              {dict.heroDescription}
-            </p>
-          </div>
+    <div className="bg-[#F7F9FC]">
+      <div className="section-narrow pt-6 md:pt-10 pb-16 md:pb-24">
+        <PublicBreadcrumb
+          className="mb-6 md:mb-8"
+          items={[
+            {
+              name: dictionary.search.breadcrumbHome,
+              href: localeHref("/", locale),
+            },
+            { name: dictionary.header.offer },
+          ]}
+        />
 
-          {/* Trust strip — küçük floating card */}
-          <aside className="lg:col-span-5">
-            <ul
-              role="list"
-              className="rounded-3xl bg-white border border-[var(--color-stone-100)] shadow-[0_12px_28px_-18px_rgba(27,26,23,0.10)] p-5 md:p-6 space-y-4"
-            >
-              <TrustRow
-                icon={<Clock size={16} aria-hidden strokeWidth={1.6} />}
-                title={dict.trust1Title}
-                description={dict.trust1Description}
-              />
-              <TrustRow
-                icon={<BellRing size={16} aria-hidden strokeWidth={1.6} />}
-                title={dict.trust2Title}
-                description={dict.trust2Description}
-              />
-              <TrustRow
-                icon={<Compass size={16} aria-hidden strokeWidth={1.6} />}
-                title={dict.trust3Title}
-                description={dict.trust3Description}
-              />
-            </ul>
-          </aside>
+        {/* HEADER — kompakt */}
+        <header className="max-w-2xl">
+          <p className="text-[10.5px] md:text-[11px] font-bold uppercase tracking-[0.18em] text-[#1B4EF5]">
+            {dictionary.header.offer}
+          </p>
+          <h1 className="mt-2 font-display font-bold text-[27px] sm:text-[30px] md:text-[36px] lg:text-[40px] leading-[1.12] tracking-[-0.025em] text-[#0A1633]">
+            {dict.heroTitle}
+          </h1>
+          <p className="mt-3 text-[13.5px] md:text-[14.5px] leading-relaxed text-[#5B6478]">
+            {dict.heroDescription}
+          </p>
+        </header>
+
+        {/* FORM (client island) — sol bölümler + sağ özet/CTA/yardım */}
+        <div className="mt-6 md:mt-8">
+          <OfferRequestForm
+            locale={locale}
+            phoneHref={phoneHref}
+            whatsappHref={whatsappHref}
+          />
         </div>
-
-        {/* ════════════════════════════════════════════════════
-            FORM (client island)
-            ════════════════════════════════════════════════════ */}
-        <OfferRequestForm locale={locale} />
       </div>
     </div>
-  );
-}
-
-function TrustRow({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <li className="flex items-start gap-3">
-      <span
-        className="
-          shrink-0 w-9 h-9 rounded-full
-          bg-[var(--brand-coral-tint)]
-          flex items-center justify-center
-          text-[var(--brand-coral)]
-        "
-        aria-hidden
-      >
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <p className="text-[13.5px] font-medium text-[var(--color-stone-900)] leading-tight">
-          {title}
-        </p>
-        <p className="text-[12.5px] text-[var(--color-stone-500)] mt-1 leading-snug">
-          {description}
-        </p>
-      </div>
-    </li>
   );
 }

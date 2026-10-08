@@ -1338,6 +1338,15 @@ export type Dictionary = {
     errorGeneric: string;
     successTitle: string;
     successBody: string;
+    /* 🎨 /teklif-al redesign */
+    sectionTripTitle: string;
+    sectionPrefsTitle: string;
+    sectionExtraTitle: string;
+    summaryTitle: string;
+    summaryEmpty: string;
+    summaryGuests: string;
+    helpTitle: string;
+    helpWhatsapp: string;
   };
 
   /* 🛡️ PUBLIC ÇOKLU DİL TAMAMLAMA — /rezervasyon-kontrol.

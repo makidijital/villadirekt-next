@@ -1003,6 +1003,15 @@ export const de: Dictionary = {
     successTitle: "Ihre Anfrage ist eingegangen.",
     successBody:
       "Ihr Villa-Berater meldet sich in Kürze bei Ihnen und übermittelt Ihnen persönliche Empfehlungen. Vielen Dank.",
+    /* 🎨 /teklif-al redesign — bölüm başlıkları, özet, yardım kartı */
+    sectionTripTitle: "Reisedaten",
+    sectionPrefsTitle: "Ihre Villa-Wünsche",
+    sectionExtraTitle: "Weitere Angaben",
+    summaryTitle: "Ihre Angebotsanfrage",
+    summaryEmpty: "Ihre Urlaubswünsche werden hier zusammengefasst, sobald Sie sie auswählen.",
+    summaryGuests: "Gäste",
+    helpTitle: "Brauchen Sie Hilfe?",
+    helpWhatsapp: "WhatsApp",
   },
 
   reservationLookup: {
