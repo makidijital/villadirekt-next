@@ -23,6 +23,10 @@ import SiteTrackingScripts from "@/app/components/layout/SiteTrackingScripts";
    edilmez; aktifse hafif client loader karar verip modalı lazy yükler. */
 import SitePopupLoader from "@/app/components/layout/site-popup/SitePopupLoader";
 import { getCachedSitePopup } from "@/lib/site-popup.cache";
+/* 🎬 Global public preloader (yalnız ilk yükleme; admin'de YOK). Logo
+   header ile AYNI kaynaktan (`settings.site_logo`) — EK FETCH YOK. */
+import PublicPreloader from "@/app/components/layout/PublicPreloader";
+import { resolveAssetUrlVersioned } from "@/lib/storage.helpers";
 
 /* ===============================================================
    🛡️ PUBLIC LAYOUT — MAINTENANCE MODE GATE
@@ -85,12 +89,30 @@ export default async function PublicLayout({
      (site etkilenmez). */
   const sitePopup = await getCachedSitePopup().catch(() => null);
 
+  /* 🎬 Preloader logosu — HeaderWrapper ile BİREBİR aynı çözümleme
+     (`site_logo` + `updated_at` versiyonu); hata → wordmark fallback. */
+  let preloaderLogo: string | null = null;
+  try {
+    preloaderLogo =
+      resolveAssetUrlVersioned(settings?.site_logo, settings?.updated_at) ||
+      null;
+  } catch {
+    preloaderLogo = null;
+  }
+
   return (
     <>
     {/* 🛡️ SEC-05 Phase 2 — takip/özel script alanları (public-only).
        public-shell'in ÖNCESİNDE → önceki DOM sırası (body başı) korunur. */}
     <SiteTrackingScripts settings={settings} />
     <div className="public-shell flex flex-col min-h-screen bg-[var(--color-ivory)]">
+      {/* 🎬 PRELOADER — fixed overlay, aria-hidden; layout shift yok.
+         Client navigasyonunda layout yeniden mount olmaz → yalnız ilk
+         yüklemede görünür. */}
+      <PublicPreloader
+        logoSrc={preloaderLogo}
+        brand={settings?.site_name}
+      />
       {/* HEADER */}
       <HeaderWrapper />
 
