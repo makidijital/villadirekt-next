@@ -41,6 +41,8 @@ export const de: Dictionary = {
     support: "Support",
     menuOpen: "Menü öffnen",
     menuClose: "Menü schließen",
+    /** 🎨 Mega-menü alt CTA — "{label}" = menü öğesi adı. */
+    megaMenuViewAll: "Alle {label}",
     logoAlt: "Website-Logo",
     submenuOpenAriaLabel: "Öffnen: Untermenü {label}",
     submenuCloseAriaLabel: "Schließen: Untermenü {label}",

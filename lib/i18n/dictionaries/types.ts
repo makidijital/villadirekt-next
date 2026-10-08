@@ -99,6 +99,8 @@ export type Dictionary = {
     support: string;
     menuOpen: string;
     menuClose: string;
+    /** 🎨 Mega-menü alt CTA şablonu — `{label}`. */
+    megaMenuViewAll: string;
     /** 🛡️ Logo `alt` metni. */
     logoAlt: string;
     /** `formatDictionaryString` — `{label}`. Alt menü aç/kapa aria-label. */

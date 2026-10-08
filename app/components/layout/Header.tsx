@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, MapPin, House, ChevronRight, ArrowRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import TopBar from "./TopBar";
 /* 🛡️ FAZ 36 — Favorites shortcut (localStorage badge counter) */
@@ -85,7 +85,38 @@ type MenuItem = {
    *  öğelerde `HeaderWrapper` tarafından doldurulur; diğer öğelerde
    *  undefined → canonical `name` gösterilir (eski davranış). */
   nameByLocale?: TaxonomyNameByLocale;
+  /** 🎨 OPSİYONEL — `getMenu()` düğümlerinde ZATEN var (region /
+   *  category / page / manual). Yalnız mega-menü ikonunu seçmek için
+   *  okunur; link/sıra/veri DEĞİŞMEZ. */
+  source_type?: string | null;
 };
+
+/* 🎨 MEGA-MENU (desktop) — alt öğe sayısına göre kolon sayısı ve panel
+   genişliği. Bölgeler en çok 4, villa tipleri en çok 3 kolon. Veri/sıra
+   AYNEN `item.children`. */
+function megaLayout(children: MenuItem[]) {
+  const n = children.length;
+  const isRegion = children.some((c) => c.source_type === "region");
+  const maxCols = isRegion ? 4 : 3;
+  const cols = Math.max(1, Math.min(maxCols, Math.ceil(n / 4)));
+  const grid =
+    cols >= 4
+      ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      : cols === 3
+        ? "grid-cols-2 lg:grid-cols-3"
+        : cols === 2
+          ? "grid-cols-2"
+          : "grid-cols-1";
+  const width =
+    cols >= 4
+      ? "w-[1040px]"
+      : cols === 3
+        ? "w-[800px]"
+        : cols === 2
+          ? "w-[560px]"
+          : "w-[320px]";
+  return { grid, width };
+}
 
 export default function Header({
   menu = [],
@@ -225,7 +256,7 @@ export default function Header({
         <TopBar />
 
         <div className={headerShellClass}>
-          <div className="site-container h-[72px] md:h-[80px] flex items-center justify-between">
+          <div className="site-container relative h-[72px] md:h-[80px] flex items-center justify-between">
             {/* LOGO */}
             <Link
               href={homeHref}
@@ -272,46 +303,127 @@ export default function Header({
                   locale
                 );
 
+                /* 🎨 Mega-menü paneli header container'ına (relative)
+                   göre konumlanır → ortalı, viewport içinde. Alt öğesi
+                   olan item `static` (panel anchor'ı container olsun);
+                   alt öğesiz item'lar eskisi gibi `relative`. */
+                const mega = hasChildren ? megaLayout(item.children!) : null;
+
                 return (
                   <div
                     key={item.id || item.name}
-                    className="relative group py-5"
+                    className={(hasChildren ? "" : "relative ") + "group py-5"}
                   >
                     {/* Aktif/hover vurgusu — #1B4EF5 üzerinden çok düşük
                        opaklıkta saydam arka plan (gradient/underline YOK).
                        Negatif margin + eşit padding → kutu, mevcut menü
-                       aralığını ve header yüksekliğini DEĞİŞTİRMEZ. */}
+                       aralığını ve header yüksekliğini DEĞİŞTİRMEZ.
+                       🎨 Mega-menü açıkken (hover/focus-within) aynı aktif
+                       vurgu + chevron yukarı. */}
                     <Link
                       href={localeHref(item.href, locale)}
+                      aria-haspopup={hasChildren ? "true" : undefined}
                       className={
                         "flex items-center gap-1 -mx-2.5 -my-1.5 px-2.5 py-1.5 rounded-lg transition-colors motion-reduce:transition-none " +
                         (isActive
                           ? "text-[var(--color-stone-900)] bg-brand/[0.08]"
-                          : "hover:text-[var(--color-stone-900)] hover:bg-brand/[0.05]")
+                          : "hover:text-[var(--color-stone-900)] hover:bg-brand/[0.05]") +
+                        (hasChildren
+                          ? " group-hover:text-[var(--color-stone-900)] group-hover:bg-brand/[0.08] group-focus-within:text-[var(--color-stone-900)] group-focus-within:bg-brand/[0.08]"
+                          : "")
                       }
                     >
                       {itemName}
                       {hasChildren && (
-                        <ChevronDown size={14} className="opacity-70" />
+                        <ChevronDown
+                          size={14}
+                          aria-hidden
+                          className="opacity-70 transition-transform duration-200 motion-reduce:transition-none group-hover:rotate-180 group-focus-within:rotate-180"
+                        />
                       )}
                     </Link>
 
-                    {hasChildren && (
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[999]">
-                        <div className="w-56 bg-white rounded-2xl shadow-[0_24px_48px_-16px_rgb(27_26_23/0.18)] border border-[var(--color-stone-100)] overflow-hidden">
-                          {item.children!.map((child) => (
+                    {/* 🎨 Panel, nav öğesinin altındaki boşluğu şeffaf
+                       üst padding ile köprüler (top: container − 14px,
+                       pt-5) → fare öğeden panele inerken menü kapanmaz.
+                       Gizliyken `invisible` → hover yakalamaz. */}
+                    {hasChildren && mega && (
+                      <div
+                        data-testid="header-mega-menu"
+                        className="
+                          absolute inset-x-0 top-[calc(100%-14px)] z-[999]
+                          flex justify-center px-2
+                          pt-5
+                          opacity-0 invisible translate-y-1
+                          group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
+                          group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0
+                          transition-[opacity,transform,visibility] duration-200
+                          motion-reduce:transition-none
+                        "
+                      >
+                        <div
+                          className={
+                            mega.width +
+                            " max-w-full min-w-0 bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_18px_40px_-20px_rgba(10,22,51,0.22)] overflow-hidden"
+                          }
+                        >
+                          <div className="flex items-center justify-between gap-4 px-5 pt-4 pb-3 border-b border-[#EEF1F5]">
+                            <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-[#1B4EF5]">
+                              {itemName}
+                            </p>
+                          </div>
+                          <ul
+                            role="list"
+                            className={"grid gap-x-2 gap-y-0.5 p-2.5 " + mega.grid}
+                          >
+                            {item.children!.map((child) => {
+                              const childActive = pathname === child.href;
+                              const Icon =
+                                child.source_type === "region"
+                                  ? MapPin
+                                  : child.source_type === "category"
+                                    ? House
+                                    : ChevronRight;
+                              return (
+                                <li key={child.id} className="min-w-0">
+                                  <Link
+                                    href={localeHref(child.href, locale)}
+                                    className={
+                                      "group/mi flex items-center gap-2.5 min-w-0 h-10 px-3 rounded-[10px] text-[13px] font-medium transition-colors motion-reduce:transition-none " +
+                                      (childActive
+                                        ? "bg-[#EFF4FF] text-[#1B4EF5]"
+                                        : "text-[#0A1633] hover:bg-[#EFF4FF] hover:text-[#1B4EF5] focus-visible:bg-[#EFF4FF] focus-visible:outline-none")
+                                    }
+                                  >
+                                    <Icon
+                                      size={15}
+                                      strokeWidth={1.9}
+                                      aria-hidden
+                                      className="shrink-0 text-[#1B4EF5]"
+                                    />
+                                    <span className="truncate">
+                                      {resolveTaxonomyName(
+                                        child.name,
+                                        child.nameByLocale,
+                                        locale
+                                      )}
+                                    </span>
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          {item.href && item.href !== "#" && (
+                          <div className="flex justify-end px-5 py-3 border-t border-[#EEF1F5] bg-[#F7F9FC]">
                             <Link
-                              key={child.id}
-                              href={localeHref(child.href, locale)}
-                              className="block px-5 py-3 text-[12px] text-[var(--color-stone-700)] hover:bg-[var(--color-sand-50)] hover:text-[var(--color-stone-900)] transition"
+                              href={localeHref(item.href, locale)}
+                              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#1B4EF5] hover:text-[#1236B8] transition-colors"
                             >
-                              {resolveTaxonomyName(
-                                child.name,
-                                child.nameByLocale,
-                                locale
-                              )}
+                              {formatDictionaryString(dictionary.header.megaMenuViewAll, { label: itemName })}
+                              <ArrowRight size={13} strokeWidth={2.2} aria-hidden />
                             </Link>
-                          ))}
+                          </div>
+                          )}
                         </div>
                       </div>
                     )}
